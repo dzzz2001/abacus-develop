@@ -739,6 +739,7 @@ TEST_F(write_input, BerryWannier17)
     EXPECT_THAT(
         output,
         testing::HasSubstr("out_wannier_wvfn_formatted     1 #output UNK. file in text format or in binary format"));
+
     EXPECT_THAT(output, testing::HasSubstr(""));
     ifs.close();
     remove("write_input_test.log");

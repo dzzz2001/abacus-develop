@@ -7,98 +7,46 @@ namespace GintKernel
 
 void gtask_rho(const Grid_Technique& gridt,
                const int grid_index_ij,
-               std::vector<bool>& gpu_mat_cal_flag,
-               const int max_atom,
                const UnitCell& ucell,
-               const double* rcut,
-               double* psi_input_double,
-               int* psi_input_int,
-               int* atom_num_per_bcell,
+               double* dr_x,
+               double* dr_y,
+               double* dr_z,
                int* start_idx_per_bcell,
-               int& atom_per_z)
-              
+               uint8_t* atom_type,
+               int* atoms_per_bcell,
+               int& num_atoms)         
 {
-    const int nwmax = ucell.nwmax;
-    const int psi_size_max = max_atom * gridt.bxyz;
-    atom_per_z = 0;
-
-    // generate data for calculating psir
+    num_atoms = 0;
     for (int z_index = 0; z_index < gridt.nbzp; z_index++)
     {
-        int num_get_psi = 0;
         int grid_index = grid_index_ij + z_index;
-        int num_psi_pos = psi_size_max * z_index;
-        int calc_flag_index = max_atom * z_index;
         int bcell_start_index = gridt.bcell_start[grid_index];
         int na_grid = gridt.how_many_atoms[grid_index];
-        start_idx_per_bcell[z_index] = 0;
-
+        atoms_per_bcell[z_index] = na_grid;
+        start_idx_per_bcell[z_index] = num_atoms;
         for (int id = 0; id < na_grid; id++)
         {
-            int ib = 0;
             int mcell_index = bcell_start_index + id;
             int imcell = gridt.which_bigcell[mcell_index];
             int iat = gridt.which_atom[mcell_index];
             int it_temp = ucell.iat2it[iat];
-            int start_ind_grid = gridt.start_ind[grid_index];
 
-            for (int bx_index = 0; bx_index < gridt.bx; bx_index++)
-            {
-                for (int by_index = 0; by_index < gridt.by; by_index++)
-                {
-                    for (int bz_index = 0; bz_index < gridt.bz; bz_index++)
-                    {
-                        double dr_temp[3];
-                        dr_temp[0] = gridt.meshcell_pos[ib][0]
-                                     + gridt.meshball_positions[imcell][0]
-                                     - gridt.tau_in_bigcell[iat][0];
-                        dr_temp[1] = gridt.meshcell_pos[ib][1]
-                                     + gridt.meshball_positions[imcell][1]
-                                     - gridt.tau_in_bigcell[iat][1];
-                        dr_temp[2] = gridt.meshcell_pos[ib][2]
-                                     + gridt.meshball_positions[imcell][2]
-                                     - gridt.tau_in_bigcell[iat][2];
-
-                        double distance = sqrt(dr_temp[0] * dr_temp[0]
-                                               + dr_temp[1] * dr_temp[1]
-                                               + dr_temp[2] * dr_temp[2]);
-                        if (distance <= rcut[it_temp])
-                        {
-                            gpu_mat_cal_flag[calc_flag_index + id] = true;
-                            const int pos_temp_double = (atom_per_z + num_get_psi) * 4;
-                            const int pos_temp_int = (atom_per_z + num_get_psi) * 2;
-                            if (distance < 1.0E-9)
-                            {
-                                distance += 1.0E-9;
-                            }
-                            psi_input_double[pos_temp_double]
-                                = dr_temp[0] / distance;
-                            psi_input_double[pos_temp_double + 1]
-                                = dr_temp[1] / distance;
-                            psi_input_double[pos_temp_double + 2]
-                                = dr_temp[2] / distance;
-                            psi_input_double[pos_temp_double + 3] = distance;
-
-                            psi_input_int[pos_temp_int] = it_temp; // atom type
-                            psi_input_int[pos_temp_int + 1]
-                                = (z_index * gridt.bxyz + ib) * max_atom * nwmax
-                                  + id * nwmax; // psir index in psir_ylm
-                            num_get_psi++;
-                        }
-                        ib++;
-                    }
-                }
-            }
+            dr_x[num_atoms] = gridt.meshball_positions[imcell][0]
+                      - gridt.tau_in_bigcell[iat][0];
+            dr_y[num_atoms] = gridt.meshball_positions[imcell][1]
+                      - gridt.tau_in_bigcell[iat][1];
+            dr_z[num_atoms] = gridt.meshball_positions[imcell][2]
+                      - gridt.tau_in_bigcell[iat][2];
+            atom_type[num_atoms] = it_temp;
+            num_atoms++;
         }
-        atom_num_per_bcell[z_index] = num_get_psi;
-        start_idx_per_bcell[z_index] = atom_per_z;
-        atom_per_z += num_get_psi;
     }
 }
 
 void alloc_mult_dot_rho(const Grid_Technique& gridt,
                         const UnitCell& ucell,
-                        const std::vector<bool>& gpu_mat_cal_flag,
+                        const int* start_idx_per_bcell,
+                        const bool* gpu_mat_cal_flag,
                         const int grid_index_ij,
                         const int max_atom,
                         const int lgd,
@@ -131,7 +79,7 @@ void alloc_mult_dot_rho(const Grid_Technique& gridt,
     for (int z_index = 0; z_index < gridt.nbzp; z_index++)
     {
         int grid_index = grid_index_ij + z_index;
-        int calc_flag_index = max_atom * z_index;
+        int calc_flag_index = start_idx_per_bcell[z_index];
         int bcell_start_index = gridt.bcell_start[grid_index];
         int bcell_start_psir = z_index * gridt.bxyz * max_atom * nwmax;
 

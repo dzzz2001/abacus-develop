@@ -6,55 +6,70 @@ namespace GintKernel
 {
 
 __global__ void get_psi(const double* const ylmcoef,
-                        double delta_r_g,
-                        int bxyz_g,
-                        double nwmax_g,
-                        const double* const psi_input_double,
-                        const int* const psi_input_int,
-                        const int* const atom_num_per_bcell,
-                        const int* const start_idx_per_bcell,
+                        const double delta_r,
+                        const int bxyz,
+                        const int nwmax,
+                        const int max_atom,
                         const int* const ucell_atom_nwl,
                         const bool* const atom_iw2_new,
                         const int* const atom_iw2_ylm,
                         const int* const atom_nw,
-                        int nr_max,
+                        const double* const rcut,
+                        const int nr_max,
                         const double* const psi_u,
+                        const double* const mcell_pos,
+                        const double* const dr_x_part,
+                        const double* const dr_y_part,
+                        const double* const dr_z_part,
+                        const int* const atoms_per_bcell,
+                        const uint8_t* const atom_type,
+                        const int* const start_idx_per_bcell,
+                        bool* mat_cal_flag,
                         double* psi)
 {
-    const int size = atom_num_per_bcell[blockIdx.x];
-    const int bcell_start = start_idx_per_bcell[blockIdx.x];
-    const int end_index = bcell_start + size;
-    const int start_index = bcell_start + threadIdx.x + blockDim.x * blockIdx.y;
-    for (int index = start_index; index < end_index;
-         index += blockDim.x * gridDim.y)
+    const int bcell_id = blockIdx.x;
+    const int num_atoms = atoms_per_bcell[bcell_id];
+    const int bcell_start = start_idx_per_bcell[bcell_id];
+    for(int mcell_id = threadIdx.x; mcell_id < bxyz; mcell_id += blockDim.x)
     {
-        double dr[3];
-        const int index_double = index * 4;
-        dr[0] = psi_input_double[index_double];
-        dr[1] = psi_input_double[index_double + 1];
-        dr[2] = psi_input_double[index_double + 2];
-        const double distance = psi_input_double[index_double + 3];
-        double ylma[49];
-        const int index_int = index * 2;
-        const int it = psi_input_int[index_int];
-        int dist_tmp = psi_input_int[index_int + 1];
-        const int nwl = ucell_atom_nwl[it];
-
-        spherical_harmonics(dr, nwl, ylma, ylmcoef);
-
-        interpolate(distance,
-                    delta_r_g,
-                    it,
-                    nwmax_g,
-                    nr_max,
-                    atom_nw,
-                    atom_iw2_new,
-                    psi_u,
-                    ylma,
-                    atom_iw2_ylm,
-                    psi,
-                    dist_tmp,
-                    1);
+        const double mcell_pos_x = mcell_pos[mcell_id];
+        const double mcell_pos_y = mcell_pos[bxyz + mcell_id];
+        const double mcell_pos_z = mcell_pos[2 * bxyz + mcell_id];
+        for(int atom_id = 0; atom_id < num_atoms; ++atom_id)
+        {
+            const double dr_x = dr_x_part[bcell_start + atom_id] + mcell_pos_x;
+            const double dr_y = dr_y_part[bcell_start + atom_id] + mcell_pos_y;
+            const double dr_z = dr_z_part[bcell_start + atom_id] + mcell_pos_z;
+            double dist = sqrt(dr_x * dr_x + dr_y * dr_y + dr_z * dr_z);
+            const int atype = __ldg(atom_type + bcell_start + atom_id);
+            const int nwl = __ldg(ucell_atom_nwl + atype);
+            if(dist < rcut[atype])
+            {
+                if (dist < 1.0E-9)
+                {
+                    dist += 1.0E-9;
+                }
+                mat_cal_flag[bcell_start + atom_id] = true;
+                double dr[3] = {dr_x / dist, dr_y / dist, dr_z / dist};
+                double ylma[49];
+                spherical_harmonics(dr, nwl, ylma, ylmcoef);
+                int psi_idx = (bcell_id * bxyz + mcell_id) * max_atom * nwmax
+                                  + atom_id * nwmax;
+                interpolate(dist,
+                            delta_r,
+                            atype,
+                            nwmax,
+                            nr_max,
+                            atom_nw,
+                            atom_iw2_new,
+                            psi_u,
+                            ylma,
+                            atom_iw2_ylm,
+                            psi,
+                            psi_idx,
+                            1);
+            }
+        }
     }
 }
 

@@ -586,7 +586,35 @@ void Grid_Technique::init_gpu_gint_variables(const UnitCell& ucell, const int nu
     checkCudaErrors(
         cudaMemcpy(atom_ylm_g, atom_iw2_ylm_now, ucell.ntype * ucell.nwmax * sizeof(int), cudaMemcpyHostToDevice));
     checkCudaErrors(
-        cudaMemcpy(atom_l_g, atom_iw2_l_now, ucell.ntype * ucell.nwmax * sizeof(int), cudaMemcpyHostToDevice));
+        cudaMemcpy(atom_l_g,
+                   atom_iw2_l_now,
+                   ucell.ntype * ucell.nwmax * sizeof(int),
+                   cudaMemcpyHostToDevice));
+    
+    checkCudaErrors(cudaMalloc((void**)&rcut_g, ucell.ntype * sizeof(double)));
+    std::vector<double> rcut(ucell.ntype);
+    for (int it = 0; it < ucell.ntype; it++)
+    {
+        rcut[it] = orb.Phi[it].getRcut();
+    }
+    checkCudaErrors(cudaMemcpy(rcut_g,
+                               rcut.data(),
+                               ucell.ntype * sizeof(double),
+                               cudaMemcpyHostToDevice));
+    std::vector<double> mcell_pos(bxyz * 3, 0);
+    for (int i = 0; i < bxyz; i++)
+    {
+        mcell_pos[i] = meshcell_pos[i][0];
+        mcell_pos[bxyz + i] = meshcell_pos[i][1];
+        mcell_pos[2 * bxyz + i] = meshcell_pos[i][2];
+    }
+    checkCudaErrors(cudaMalloc((void**)&mcell_pos_g,
+                               bxyz * 3 * sizeof(double)));
+    checkCudaErrors(cudaMemcpy(mcell_pos_g,
+                               mcell_pos.data(),
+                               bxyz * 3 * sizeof(double),
+                               cudaMemcpyHostToDevice));
+
 
     gemm_algo_selector(bxyz, fastest_matrix_mul, ucell);
 
@@ -611,6 +639,8 @@ void Grid_Technique::free_gpu_gint_variables(int nat)
     checkCudaErrors(cudaFree(atom_ylm_g));
     checkCudaErrors(cudaFree(atom_nw_g));
     checkCudaErrors(cudaFree(atom_l_g));
+    checkCudaErrors(cudaFree(rcut_g));
+    checkCudaErrors(cudaFree(mcell_pos_g));
 
     is_malloced = false;
 }

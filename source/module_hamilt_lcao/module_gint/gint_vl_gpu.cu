@@ -14,14 +14,8 @@ namespace GintKernel
  *
  * @param hRGint Pointer to the HContainer<double> object to store the computed
  * integrals.
- * @param lgd Dimension information for the computation results.
- * @param max_atom The maximum number of neighboring atoms for a grid point.
- * @param vfactor Related to volume. The scaling factor for the Vlocal
- * integrals.
  * @param vlocal Pointer to the Vlocal array.
  * @param ylmcoef_now Pointer to the Ylm coefficients array.
- * @param nczp The number of grid layers in the C direction.
- * @param nbxx The total number of grid points.
  * @param dr The grid spacing.
  * @param rcut Pointer to the cutoff radius array.
  * @param gridt The Grid_Technique object containing grid information.
@@ -49,7 +43,6 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
     checkCuda(cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync));
     const int nbzp = gridt.nbzp;
     const int num_streams = gridt.nstreams;
-    const int lgd = gridt.lgd;
     const int max_atom = gridt.max_atom;
     const int max_atom_per_bcell = max_atom * gridt.bxyz;
     const int max_atom_per_z = max_atom_per_bcell * nbzp;

@@ -2,6 +2,7 @@
 #define GINT_RHO_CUH
 
 #include <cuda_runtime.h>
+#include <stdint.h>
 namespace GintKernel
 {
 
@@ -12,19 +13,25 @@ namespace GintKernel
  * parameters.
  */
 __global__ void get_psi(const double* const ylmcoef,
-                        double delta_r_g,
-                        int bxyz_g,
-                        double nwmax_g,
-                        const double* const psi_input_double,
-                        const int* const psi_input_int,
-                        const int* const atom_num_per_bcell,
-                        const int* const start_idx_per_bcell,
+                        const double delta_r,
+                        const int bxyz,
+                        const int nwmax,
+                        const int max_atom,
                         const int* const ucell_atom_nwl,
                         const bool* const atom_iw2_new,
                         const int* const atom_iw2_ylm,
                         const int* const atom_nw,
-                        int nr_max,
+                        const double* const rcut,
+                        const int nr_max,
                         const double* const psi_u,
+                        const double* const mcell_pos,
+                        const double* const dr_x_part,
+                        const double* const dr_y_part,
+                        const double* const dr_z_part,
+                        const int* const atoms_per_bcell,
+                        const uint8_t* const atom_type,
+                        const int* const start_idx_per_bcell,
+                        bool* mat_cal_flag,
                         double* psi);
 
 __global__ void psir_dot(const int bxyz,

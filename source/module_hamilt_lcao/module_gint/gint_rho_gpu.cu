@@ -25,10 +25,10 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
     const int num_mcell_on_proc = nczp * gridt.ncx * gridt.ncy;
     const int lgd = gridt.lgd;
     const int max_atom = gridt.max_atom;
-    const int num_streams = gridt.nstreams;
+    int num_streams = gridt.nstreams;
     const int max_atom_per_bcell = max_atom * gridt.bxyz;
-    const int max_atom_per_z = max_atom_per_bcell * nbzp;
-    const int max_phi_per_z = max_atom_per_z * ucell.nwmax;
+    const int max_atom_per_z = max_atom * nbzp;
+    const int max_phi_per_z = max_atom_per_bcell * nbzp * ucell.nwmax;
     const int max_atompair_per_z = max_atom * max_atom * nbzp;
 
     std::vector<cudaStream_t> streams(num_streams);
@@ -36,10 +36,13 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
     {
         checkCuda(cudaStreamCreate(&streams[i]));
     }
-    
-    Cuda_Mem_Wrapper<double> psi_input_double(4 * max_atom_per_z, num_streams, true);
-    Cuda_Mem_Wrapper<int> psi_input_int(2 * max_atom_per_z, num_streams, true);
-    Cuda_Mem_Wrapper<int> atom_num_per_bcell(nbzp, num_streams, true);
+
+    Cuda_Mem_Wrapper<bool> mat_cal_flag(max_atom_per_z, num_streams, true);
+    Cuda_Mem_Wrapper<double> dr_x(max_atom_per_z, num_streams, true);
+    Cuda_Mem_Wrapper<double> dr_y(max_atom_per_z, num_streams, true);
+    Cuda_Mem_Wrapper<double> dr_z(max_atom_per_z, num_streams, true);
+    Cuda_Mem_Wrapper<uint8_t> atom_type(max_atom_per_z, num_streams, true);
+    Cuda_Mem_Wrapper<int> atoms_per_bcell(nbzp, num_streams, true);
     Cuda_Mem_Wrapper<int> start_idx_per_bcell(nbzp, num_streams, true);
 
     Cuda_Mem_Wrapper<double> psi(max_phi_per_z, num_streams, false);
@@ -106,27 +109,66 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             int max_m = 0;
             int max_n = 0;
             int atom_pair_num = 0;
-            int atom_per_z = 0;
+            int num_atoms = 0;
             const int grid_index_ij = i * gridt.nby * nbzp + j * nbzp;
-            std::vector<bool> gpu_matrix_cal_flag(max_atom * nbzp, false);
 
             // generate GPU tasks, including the calculation of psir, matrix
             // multiplication, and dot product
             gtask_rho(gridt,
                       grid_index_ij,
-                      gpu_matrix_cal_flag,
-                      max_atom,
                       ucell,
-                      rcut,
-                      psi_input_double.get_host_pointer(sid),
-                      psi_input_int.get_host_pointer(sid),
-                      atom_num_per_bcell.get_host_pointer(sid),
+                      dr_x.get_host_pointer(sid),
+                      dr_y.get_host_pointer(sid),
+                      dr_z.get_host_pointer(sid),
                       start_idx_per_bcell.get_host_pointer(sid),
-                      atom_per_z);
+                      atom_type.get_host_pointer(sid),
+                      atoms_per_bcell.get_host_pointer(sid),
+                      num_atoms);
             
+            dr_x.copy_host_to_device_async(streams[sid], sid, num_atoms);
+            dr_y.copy_host_to_device_async(streams[sid], sid, num_atoms);
+            dr_z.copy_host_to_device_async(streams[sid], sid, num_atoms);
+            atom_type.copy_host_to_device_async(streams[sid], sid, num_atoms);
+            start_idx_per_bcell.copy_host_to_device_async(streams[sid], sid);
+            atoms_per_bcell.copy_host_to_device_async(streams[sid], sid);
+
+            mat_cal_flag.memset_device_async(streams[sid], sid, 0);
+            psi.memset_device_async(streams[sid], sid, 0);
+
+            // Launching kernel to calculate psi
+            dim3 grid_psi(nbzp);
+            dim3 block_psi(std::min(gridt.bxyz, 1024));
+            get_psi<<<grid_psi, block_psi, 0, streams[sid]>>>(
+                gridt.ylmcoef_g,
+                dr,
+                gridt.bxyz,
+                ucell.nwmax,
+                max_atom,
+                gridt.atom_nwl_g,
+                gridt.atom_new_g,
+                gridt.atom_ylm_g,
+                gridt.atom_nw_g,
+                gridt.rcut_g,
+                gridt.nr_max,
+                gridt.psi_u_g,
+                gridt.mcell_pos_g,
+                dr_x.get_device_pointer(sid),
+                dr_y.get_device_pointer(sid),
+                dr_z.get_device_pointer(sid),
+                atoms_per_bcell.get_device_pointer(sid),
+                atom_type.get_device_pointer(sid),
+                start_idx_per_bcell.get_device_pointer(sid),
+                mat_cal_flag.get_device_pointer(sid),
+                psi.get_device_pointer(sid));
+            checkCudaLastError();
+
+            mat_cal_flag.copy_device_to_host_async(streams[sid], sid, num_atoms);
+            checkCuda(cudaStreamSynchronize(streams[sid]));
+
             alloc_mult_dot_rho(gridt,
                             ucell,
-                            gpu_matrix_cal_flag,
+                            start_idx_per_bcell.get_host_pointer(sid),
+                            mat_cal_flag.get_host_pointer(sid),
                             grid_index_ij,
                             max_atom,
                             lgd,
@@ -150,10 +192,6 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                             rho_g.get_device_pointer(),
                             dot_product.get_host_pointer(sid));
            
-            psi_input_double.copy_host_to_device_async(streams[sid], sid, 4 * atom_per_z);
-            psi_input_int.copy_host_to_device_async(streams[sid], sid, 2 * atom_per_z);
-            atom_num_per_bcell.copy_host_to_device_async(streams[sid], sid);
-            start_idx_per_bcell.copy_host_to_device_async(streams[sid], sid);
             gemm_alpha.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
             gemm_m.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
             gemm_n.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
@@ -166,29 +204,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             gemm_C.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
             dot_product.copy_host_to_device_async(streams[sid], sid);
             
-            psi.memset_device_async(streams[sid], sid, 0);
             psi_dm.memset_device_async(streams[sid], sid, 0);
-
-            // Launching kernel to calculate psi
-            dim3 grid_psi(nbzp, 8);
-            dim3 block_psi(64);
-            get_psi<<<grid_psi, block_psi, 0, streams[sid]>>>(
-                gridt.ylmcoef_g,
-                dr,
-                gridt.bxyz,
-                ucell.nwmax,
-                psi_input_double.get_device_pointer(sid),
-                psi_input_int.get_device_pointer(sid),
-                atom_num_per_bcell.get_device_pointer(sid),
-                start_idx_per_bcell.get_device_pointer(sid),
-                gridt.atom_nwl_g,
-                gridt.atom_new_g,
-                gridt.atom_ylm_g,
-                gridt.atom_nw_g,
-                gridt.nr_max,
-                gridt.psi_u_g,
-                psi.get_device_pointer(sid));
-            checkCudaLastError();
 
             // Performing matrix multiplication alpha * mat_dm * mat_psir
             gridt.fastest_matrix_mul(max_m,

@@ -5,7 +5,7 @@
 
 namespace GintKernel
 {
-static __device__ void cd interpolate(const double dist,
+static __device__ void interpolate(const double dist,
                                    const double delta_r,
                                    const int atype,
                                    const double nwmax,

@@ -198,21 +198,21 @@ void Grid_Technique::init_atoms_on_grid(const int& ny,
 
     // (5) record how many atoms on
     // each local grid point (ix,iy,iz)
-    int iat = 0;
-    int normal = 0;
-    this->total_atoms_on_grid = 0;
+    int total_atoms = 0;
     int nat_local = 0;
-    for (int it = 0; it < ucell.ntype; it++)
+#pragma omp parallel for reduction(+ : total_atoms, nat_local)
+    for(int iat = 0; iat < ucell.nat; iat++)
     {
-        for (int ia = 0; ia < ucell.atoms[it].na; ia++)
+        const int it = ucell.iat2it[iat];
+        for (int im = 0; im < this->meshball_ncells; im++)
         {
-            for (int im = 0; im < this->meshball_ncells; im++)
+            // bcell[iat]: which bcell iat atom is in.
+            // ball[im]: relative position of adjacent bcell.
+            const int normal = index2normal[this->index_atom[iat] + this->index_ball[im]];
+#ifdef __DEBUG
+            if (normal >= nbxyz)
             {
-                // bcell[iat]: which bcell iat atom is in.
-                // ball[im]: relative position of adjacent bcell.
-                normal = index2normal[this->index_atom[iat] + this->index_ball[im]];
-
-                if (normal >= nbxyz)
+                #pragma omp critical
                 {
                     std::cout << " index_atom=" << index_atom[iat] << std::endl;
                     std::cout << " index_ball=" << index_ball[im] << std::endl;
@@ -220,23 +220,47 @@ void Grid_Technique::init_atoms_on_grid(const int& ny,
                     std::cout << " nbxyz=" << nbxyz << std::endl;
                     ModuleBase::WARNING_QUIT("Grid_Technique::init_atoms_on_grid", "normal >= nbxyz");
                 }
+            }
+#endif
+            assert(normal >= 0);
 
-                assert(normal >= 0);
+            const int bcell_idx_on_proc = ind_bigcell[normal];
+            if (!bigcell_on_processor[normal])
+            {    
+                continue;
+            }
 
-                int f = ind_bigcell[normal];
-                if (!bigcell_on_processor[normal])
-                    continue;
-
-                ++how_many_atoms[f];
-                ++total_atoms_on_grid;
-
+            const double rcut_square = this->rcuts[it] * this->rcuts[it];
+            bool is_atom_on_bcell = false;
+            const double dr_x_part = this->meshball_positions[im][0] - this->tau_in_bigcell[iat][0];
+            const double dr_y_part = this->meshball_positions[im][1] - this->tau_in_bigcell[iat][1];
+            const double dr_z_part = this->meshball_positions[im][2] - this->tau_in_bigcell[iat][2];
+            for(int imcell = 0; imcell < this -> bxyz; imcell++)
+            {
+                const double dr_x = this->meshcell_pos[imcell][0] + dr_x_part;
+                const double dr_y = this->meshcell_pos[imcell][1] + dr_y_part;
+                const double dr_z = this->meshcell_pos[imcell][2] + dr_z_part;
+                const double dist_square = dr_x * dr_x + dr_y * dr_y + dr_z * dr_z;
+                if(dist_square <= rcut_square)
+                {
+                    is_atom_on_bcell = true;
+                    break;
+                }
+            }
+            if(is_atom_on_bcell)
+            {
+                #pragma omp atomic
+                ++how_many_atoms[bcell_idx_on_proc];
+                ++total_atoms;
                 this->in_this_processor[iat] = true;
             }
-            if (this->in_this_processor[iat])
-                ++nat_local;
-            ++iat;
+        }
+        if (this->in_this_processor[iat])
+        {
+            ++nat_local;
         }
     }
+    this->total_atoms_on_grid = total_atoms;
 
     if (GlobalV::test_gridt)
         ModuleBase::GlobalFunc::OUT(GlobalV::ofs_running, "Total_atoms_on_grid", total_atoms_on_grid);
@@ -348,48 +372,70 @@ void Grid_Technique::init_atoms_on_grid2(const int* index2normal, const UnitCell
     // the atom is in, then we search meshball aroung this
     // grid, and record each grid's atom position.
     int count = 0;
-    int iat = 0;
     this->how_many_atoms = std::vector<int>(nbxx, 0);
     ModuleBase::Memory::record("GT::how many atoms", sizeof(int) * nbxx);
-    for (int it = 0; it < ucell.ntype; it++)
+#pragma omp parallel for reduction(+ : count)
+    for(int iat = 0; iat < ucell.nat; iat++)
     {
-        for (int ia = 0; ia < ucell.atoms[it].na; ia++)
+        int it = ucell.iat2it[iat];
+        // zero bigcell of meshball indicate ?
+        for (int im = 0; im < this->meshball_ncells; im++)
         {
-            // zero bigcell of meshball indicate ?
-            for (int im = 0; im < this->meshball_ncells; im++)
+            const int extgrid = this->index_atom[iat] + this->index_ball[im];
+            const int normal = index2normal[extgrid];
+
+            // mohan add 2010-07-01
+            const int bcell_idx_on_proc = ind_bigcell[normal];
+            if (!bigcell_on_processor[normal])
             {
-                const int extgrid = this->index_atom[iat] + this->index_ball[im];
-                const int normal = index2normal[extgrid];
-
-                // mohan add 2010-07-01
-                int f = ind_bigcell[normal];
-                if (!bigcell_on_processor[normal])
-                {
-                    continue;
-                }
-
-                // it's not the normal order to calculate which_atom
-                // and which_bigcell, especailly in 1D array.
-                // Each grid's adjacent atom number is different,
-                // so, first we need to locate which grid, using
-                // bcell_start, then we need to count which adjacent atom.
-                // using how_many_atoms.
-                int index = this->bcell_start[f] + this->how_many_atoms[f];
-
-                // we save which_atom and which_bigcell in 1D array,
-                // once you want to use this in grid integration,
-                // the only information you got is the 'normal' index,
-                // so you need to use bcell_start
-                // to get the 'mesh_index', then you can you this mesh_index
-                // to use which_atom or which_bigcell.
-                this->which_atom[index] = iat;
-                this->which_bigcell[index] = im;
-                this->which_unitcell[index] = index2ucell[extgrid];
-
-                ++how_many_atoms[f];
-                ++count;
+                continue;
             }
-            ++iat;
+            
+            const double rcut_square = this->rcuts[it] * this->rcuts[it];
+            bool is_atom_on_bcell = false;
+            const double dr_x_part = this->meshball_positions[im][0] - this->tau_in_bigcell[iat][0];
+            const double dr_y_part = this->meshball_positions[im][1] - this->tau_in_bigcell[iat][1];
+            const double dr_z_part = this->meshball_positions[im][2] - this->tau_in_bigcell[iat][2];
+            for(int imcell = 0; imcell < this -> bxyz; imcell++)
+            {
+                const double dr_x = this->meshcell_pos[imcell][0] + dr_x_part;
+                const double dr_y = this->meshcell_pos[imcell][1] + dr_y_part;
+                const double dr_z = this->meshcell_pos[imcell][2] + dr_z_part;
+                const double dist_square = dr_x * dr_x + dr_y * dr_y + dr_z * dr_z;
+                if(dist_square <= rcut_square)
+                {
+                    is_atom_on_bcell = true;
+                    break;
+                }
+            }
+
+            if(is_atom_on_bcell)
+            {
+            // it's not the normal order to calculate which_atom
+            // and which_bigcell, especailly in 1D array.
+            // Each grid's adjacent atom number is different,
+            // so, first we need to locate which grid, using
+            // bcell_start, then we need to count which adjacent atom.
+            // using how_many_atoms.
+            int index = this->bcell_start[bcell_idx_on_proc];
+            #pragma omp critical
+            {
+                index += this->how_many_atoms[bcell_idx_on_proc];
+                ++how_many_atoms[bcell_idx_on_proc];
+            }
+
+            // we save which_atom and which_bigcell in 1D array,
+            // once you want to use this in grid integration,
+            // the only information you got is the 'normal' index,
+            // so you need to use bcell_start
+            // to get the 'mesh_index', then you can you this mesh_index
+            // to use which_atom or which_bigcell.
+            this->which_atom[index] = iat;
+            this->which_bigcell[index] = im;
+            this->which_unitcell[index] = index2ucell[extgrid];
+
+            ++count;
+            }
         }
     }
     assert(count == total_atoms_on_grid);
@@ -529,11 +575,10 @@ void Grid_Technique::init_gpu_gint_variables(const UnitCell& ucell, const int nu
         ucell_atom_nwl_now[i] = ucell.atoms[i].nwl;
     }
 
-    nr_max = static_cast<int>(1000 * max_cut) + 10;
     // double psi_u_now[ucell.ntype * ucell.nwmax * nr_max *
     // 2];
-    double* psi_u_now = (double*)malloc(ucell.ntype * ucell.nwmax * nr_max * 2 * sizeof(double));
-    memset(psi_u_now, 0, ucell.ntype * ucell.nwmax * nr_max * 2 * sizeof(double));
+    double* psi_u_now = (double*)malloc(ucell.ntype * ucell.nwmax * this->nr_max * 2 * sizeof(double));
+    memset(psi_u_now, 0, ucell.ntype * ucell.nwmax * this->nr_max * 2 * sizeof(double));
     bool* atom_iw2_new_now = (bool*)malloc(ucell.ntype * ucell.nwmax * sizeof(bool));
     memset(atom_iw2_new_now, 0, ucell.ntype * ucell.nwmax * sizeof(bool));
     int* atom_iw2_ylm_now = (int*)malloc(ucell.ntype * ucell.nwmax * sizeof(int));
@@ -571,10 +616,10 @@ void Grid_Technique::init_gpu_gint_variables(const UnitCell& ucell, const int nu
     checkCudaErrors(cudaMalloc((void**)&atom_nwl_g, ucell.ntype * sizeof(int)));
     checkCudaErrors(cudaMemcpy(atom_nwl_g, ucell_atom_nwl_now, ucell.ntype * sizeof(int), cudaMemcpyHostToDevice));
 
-    checkCudaErrors(cudaMalloc((void**)&psi_u_g, ucell.ntype * ucell.nwmax * nr_max * sizeof(double) * 2));
+    checkCudaErrors(cudaMalloc((void**)&psi_u_g, ucell.ntype * ucell.nwmax * this->nr_max * sizeof(double) * 2));
     checkCudaErrors(cudaMemcpy(psi_u_g,
                                psi_u_now,
-                               ucell.ntype * ucell.nwmax * nr_max * sizeof(double) * 2,
+                               ucell.ntype * ucell.nwmax * this->nr_max * sizeof(double) * 2,
                                cudaMemcpyHostToDevice));
 
     checkCudaErrors(cudaMalloc((void**)&atom_new_g, ucell.ntype * ucell.nwmax * sizeof(bool)));
@@ -592,13 +637,8 @@ void Grid_Technique::init_gpu_gint_variables(const UnitCell& ucell, const int nu
                    cudaMemcpyHostToDevice));
     
     checkCudaErrors(cudaMalloc((void**)&rcut_g, ucell.ntype * sizeof(double)));
-    std::vector<double> rcut(ucell.ntype);
-    for (int it = 0; it < ucell.ntype; it++)
-    {
-        rcut[it] = orb.Phi[it].getRcut();
-    }
     checkCudaErrors(cudaMemcpy(rcut_g,
-                               rcut.data(),
+                               rcuts.data(),
                                ucell.ntype * sizeof(double),
                                cudaMemcpyHostToDevice));
     std::vector<double> mcell_pos(bxyz * 3, 0);

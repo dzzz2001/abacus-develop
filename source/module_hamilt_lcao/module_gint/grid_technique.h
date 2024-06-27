@@ -154,7 +154,6 @@ class Grid_Technique : public Grid_MeshBall
     int* atom_l_g;
     double* rcut_g;
     double*mcell_pos_g;
-    int nr_max;
 
     int nstreams = 4;
     // streams[nstreams]

@@ -67,7 +67,7 @@ void Grid_Technique::set_pbc_grid(const int& ncx_in,
     this->ucell = &ucell;
     this->dr_uniform = dr_uniform;
 
-    this->nwmax = ucell.nwmax;
+    this->nwmax = 0;
     this->ntype = ucell.ntype;
 
     this->rcuts = rcuts;
@@ -198,9 +198,7 @@ void Grid_Technique::init_atoms_on_grid(const int& ny,
 
     // (5) record how many atoms on
     // each local grid point (ix,iy,iz)
-    int total_atoms = 0;
     int nat_local = 0;
-#pragma omp parallel for reduction(+ : total_atoms, nat_local)
     for(int iat = 0; iat < ucell.nat; iat++)
     {
         const int it = ucell.iat2it[iat];
@@ -223,7 +221,6 @@ void Grid_Technique::init_atoms_on_grid(const int& ny,
             }
 #endif
             assert(normal >= 0);
-
             const int bcell_idx_on_proc = ind_bigcell[normal];
             if (!bigcell_on_processor[normal])
             {    
@@ -249,18 +246,17 @@ void Grid_Technique::init_atoms_on_grid(const int& ny,
             }
             if(is_atom_on_bcell)
             {
-                #pragma omp atomic
                 ++how_many_atoms[bcell_idx_on_proc];
-                ++total_atoms;
+                ++this->total_atoms_on_grid;
                 this->in_this_processor[iat] = true;
             }
         }
         if (this->in_this_processor[iat])
         {
             ++nat_local;
+            this->nwmax = std::max(this->nwmax, ucell.atoms[it].nw);
         }
     }
-    this->total_atoms_on_grid = total_atoms;
 
     if (GlobalV::test_gridt)
         ModuleBase::GlobalFunc::OUT(GlobalV::ofs_running, "Total_atoms_on_grid", total_atoms_on_grid);
@@ -374,7 +370,6 @@ void Grid_Technique::init_atoms_on_grid2(const int* index2normal, const UnitCell
     int count = 0;
     this->how_many_atoms = std::vector<int>(nbxx, 0);
     ModuleBase::Memory::record("GT::how many atoms", sizeof(int) * nbxx);
-#pragma omp parallel for reduction(+ : count)
     for(int iat = 0; iat < ucell.nat; iat++)
     {
         int it = ucell.iat2it[iat];
@@ -417,12 +412,7 @@ void Grid_Technique::init_atoms_on_grid2(const int* index2normal, const UnitCell
             // so, first we need to locate which grid, using
             // bcell_start, then we need to count which adjacent atom.
             // using how_many_atoms.
-            int index = this->bcell_start[bcell_idx_on_proc];
-            #pragma omp critical
-            {
-                index += this->how_many_atoms[bcell_idx_on_proc];
-                ++how_many_atoms[bcell_idx_on_proc];
-            }
+            int index = this->bcell_start[bcell_idx_on_proc] + this->how_many_atoms[bcell_idx_on_proc];
 
             // we save which_atom and which_bigcell in 1D array,
             // once you want to use this in grid integration,
@@ -435,6 +425,7 @@ void Grid_Technique::init_atoms_on_grid2(const int* index2normal, const UnitCell
             this->which_unitcell[index] = index2ucell[extgrid];
 
             ++count;
+            ++how_many_atoms[bcell_idx_on_proc];
             }
         }
     }

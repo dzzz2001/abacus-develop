@@ -104,7 +104,6 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             checkCuda(cudaSetDevice(dev_id));
             // get stream id
             const int sid = omp_get_thread_num();
-            checkCuda(cudaStreamSynchronize(streams[sid]));
 
             int max_m = 0;
             int max_n = 0;
@@ -136,8 +135,8 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             psi.memset_device_async(streams[sid], sid, 0);
 
             // Launching kernel to calculate psi
-            dim3 grid_psi(nbzp);
-            dim3 block_psi(std::min(gridt.bxyz, 1024));
+            dim3 grid_psi(nbzp, gridt.bxyz);
+            dim3 block_psi(128);
             get_psi<<<grid_psi, block_psi, 0, streams[sid]>>>(
                 gridt.ylmcoef_g,
                 dr,
@@ -234,6 +233,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                 psi_dm.get_device_pointer(sid),
                 dot_product.get_device_pointer(sid));
             checkCudaLastError();
+            checkCuda(cudaStreamSynchronize(streams[sid]));
         }
     }
 

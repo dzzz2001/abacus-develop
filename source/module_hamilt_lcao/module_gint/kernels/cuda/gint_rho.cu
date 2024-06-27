@@ -4,7 +4,6 @@
 
 namespace GintKernel
 {
-
 __global__ void get_psi(const double* const ylmcoef,
                         const double delta_r,
                         const int bxyz,
@@ -30,45 +29,43 @@ __global__ void get_psi(const double* const ylmcoef,
     const int bcell_id = blockIdx.x;
     const int num_atoms = atoms_per_bcell[bcell_id];
     const int bcell_start = start_idx_per_bcell[bcell_id];
-    for(int mcell_id = threadIdx.x; mcell_id < bxyz; mcell_id += blockDim.x)
+    const int mcell_id = blockIdx.y;
+    const double mcell_pos_x = mcell_pos[mcell_id];
+    const double mcell_pos_y = mcell_pos[bxyz + mcell_id];
+    const double mcell_pos_z = mcell_pos[2 * bxyz + mcell_id];
+    for(int atom_id = threadIdx.x; atom_id < num_atoms; atom_id+=blockDim.x)
     {
-        const double mcell_pos_x = mcell_pos[mcell_id];
-        const double mcell_pos_y = mcell_pos[bxyz + mcell_id];
-        const double mcell_pos_z = mcell_pos[2 * bxyz + mcell_id];
-        for(int atom_id = 0; atom_id < num_atoms; ++atom_id)
+        const double dr_x = dr_x_part[bcell_start + atom_id] + mcell_pos_x;
+        const double dr_y = dr_y_part[bcell_start + atom_id] + mcell_pos_y;
+        const double dr_z = dr_z_part[bcell_start + atom_id] + mcell_pos_z;
+        double dist = sqrt(dr_x * dr_x + dr_y * dr_y + dr_z * dr_z);
+        const int atype = __ldg(atom_type + bcell_start + atom_id);
+        const int nwl = __ldg(ucell_atom_nwl + atype);
+        if(dist < rcut[atype])
         {
-            const double dr_x = dr_x_part[bcell_start + atom_id] + mcell_pos_x;
-            const double dr_y = dr_y_part[bcell_start + atom_id] + mcell_pos_y;
-            const double dr_z = dr_z_part[bcell_start + atom_id] + mcell_pos_z;
-            double dist = sqrt(dr_x * dr_x + dr_y * dr_y + dr_z * dr_z);
-            const int atype = __ldg(atom_type + bcell_start + atom_id);
-            const int nwl = __ldg(ucell_atom_nwl + atype);
-            if(dist < rcut[atype])
+            if (dist < 1.0E-9)
             {
-                if (dist < 1.0E-9)
-                {
-                    dist += 1.0E-9;
-                }
-                mat_cal_flag[bcell_start + atom_id] = true;
-                double dr[3] = {dr_x / dist, dr_y / dist, dr_z / dist};
-                double ylma[49];
-                spherical_harmonics(dr, nwl, ylma, ylmcoef);
-                int psi_idx = (bcell_id * bxyz + mcell_id) * max_atom * nwmax
-                                  + atom_id * nwmax;
-                interpolate(dist,
-                            delta_r,
-                            atype,
-                            nwmax,
-                            nr_max,
-                            atom_nw,
-                            atom_iw2_new,
-                            psi_u,
-                            ylma,
-                            atom_iw2_ylm,
-                            psi,
-                            psi_idx,
-                            1);
+                dist += 1.0E-9;
             }
+            mat_cal_flag[bcell_start + atom_id] = true;
+            double dr[3] = {dr_x / dist, dr_y / dist, dr_z / dist};
+            double ylma[49];
+            spherical_harmonics(dr, nwl, ylma, ylmcoef);
+            int psi_idx = (bcell_id * bxyz + mcell_id) * max_atom * nwmax
+                                + atom_id * nwmax;
+            interpolate(dist,
+                        delta_r,
+                        atype,
+                        nwmax,
+                        nr_max,
+                        atom_nw,
+                        atom_iw2_new,
+                        psi_u,
+                        ylma,
+                        atom_iw2_ylm,
+                        psi,
+                        psi_idx,
+                        1);
         }
     }
 }

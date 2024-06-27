@@ -46,7 +46,6 @@ void gtask_rho(const Grid_Technique& gridt,
 void alloc_mult_dot_rho(const Grid_Technique& gridt,
                         const UnitCell& ucell,
                         const int* start_idx_per_bcell,
-                        const bool* gpu_mat_cal_flag,
                         const int grid_index_ij,
                         const int max_atom,
                         const int lgd,
@@ -85,10 +84,6 @@ void alloc_mult_dot_rho(const Grid_Technique& gridt,
 
         for (int atom1 = 0; atom1 < gridt.how_many_atoms[grid_index]; atom1++)
         {
-            if (!gpu_mat_cal_flag[calc_flag_index + atom1])
-            {
-                continue;
-            }
             int mcell_index1 = bcell_start_index + atom1;
             int iat1 = gridt.which_atom[mcell_index1];
             int it1 = ucell.iat2it[iat1];
@@ -99,10 +94,6 @@ void alloc_mult_dot_rho(const Grid_Technique& gridt,
             for (int atom2 = atom1; atom2 < gridt.how_many_atoms[grid_index];
                  atom2++)
             {
-                if (!gpu_mat_cal_flag[calc_flag_index + atom2])
-                {
-                    continue;
-                }
                 int mcell_index2 = bcell_start_index + atom2;
                 int iat2 = gridt.which_atom[mcell_index2];
                 int it2 = ucell.iat2it[iat2];

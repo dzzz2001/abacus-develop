@@ -31,7 +31,6 @@ __global__ void get_psi(const double* const ylmcoef,
                         const int* const atoms_per_bcell,
                         const uint8_t* const atom_type,
                         const int* const start_idx_per_bcell,
-                        bool* mat_cal_flag,
                         double* psi);
 
 __global__ void psir_dot(const int bxyz,

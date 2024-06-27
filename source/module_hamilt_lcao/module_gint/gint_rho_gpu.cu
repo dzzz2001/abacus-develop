@@ -37,7 +37,6 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
         checkCuda(cudaStreamCreate(&streams[i]));
     }
 
-    Cuda_Mem_Wrapper<bool> mat_cal_flag(max_atom_per_z, num_streams, true);
     Cuda_Mem_Wrapper<double> dr_x(max_atom_per_z, num_streams, true);
     Cuda_Mem_Wrapper<double> dr_y(max_atom_per_z, num_streams, true);
     Cuda_Mem_Wrapper<double> dr_z(max_atom_per_z, num_streams, true);
@@ -123,6 +122,33 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                       atom_type.get_host_pointer(sid),
                       atoms_per_bcell.get_host_pointer(sid),
                       num_atoms);
+
+            alloc_mult_dot_rho(
+                gridt,
+                ucell,
+                start_idx_per_bcell.get_host_pointer(sid),
+                grid_index_ij,
+                max_atom,
+                lgd,
+                nczp,
+                psi.get_device_pointer(sid),
+                psi_dm.get_device_pointer(sid),
+                dm_matrix.get_device_pointer(),
+                gemm_alpha.get_host_pointer(sid),
+                gemm_m.get_host_pointer(sid),
+                gemm_n.get_host_pointer(sid),
+                gemm_k.get_host_pointer(sid),
+                gemm_lda.get_host_pointer(sid),
+                gemm_ldb.get_host_pointer(sid),
+                gemm_ldc.get_host_pointer(sid),
+                gemm_A.get_host_pointer(sid),
+                gemm_B.get_host_pointer(sid),
+                gemm_C.get_host_pointer(sid),
+                max_m,
+                max_n,
+                atom_pair_num,
+                rho_g.get_device_pointer(),
+                dot_product.get_host_pointer(sid));
             
             dr_x.copy_host_to_device_async(streams[sid], sid, num_atoms);
             dr_y.copy_host_to_device_async(streams[sid], sid, num_atoms);
@@ -131,7 +157,6 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             start_idx_per_bcell.copy_host_to_device_async(streams[sid], sid);
             atoms_per_bcell.copy_host_to_device_async(streams[sid], sid);
 
-            mat_cal_flag.memset_device_async(streams[sid], sid, 0);
             psi.memset_device_async(streams[sid], sid, 0);
 
             // Launching kernel to calculate psi
@@ -157,39 +182,8 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                 atoms_per_bcell.get_device_pointer(sid),
                 atom_type.get_device_pointer(sid),
                 start_idx_per_bcell.get_device_pointer(sid),
-                mat_cal_flag.get_device_pointer(sid),
                 psi.get_device_pointer(sid));
             checkCudaLastError();
-
-            mat_cal_flag.copy_device_to_host_async(streams[sid], sid, num_atoms);
-            checkCuda(cudaStreamSynchronize(streams[sid]));
-
-            alloc_mult_dot_rho(gridt,
-                            ucell,
-                            start_idx_per_bcell.get_host_pointer(sid),
-                            mat_cal_flag.get_host_pointer(sid),
-                            grid_index_ij,
-                            max_atom,
-                            lgd,
-                            nczp,
-                            psi.get_device_pointer(sid),
-                            psi_dm.get_device_pointer(sid),
-                            dm_matrix.get_device_pointer(),
-                            gemm_alpha.get_host_pointer(sid),
-                            gemm_m.get_host_pointer(sid),
-                            gemm_n.get_host_pointer(sid),
-                            gemm_k.get_host_pointer(sid),
-                            gemm_lda.get_host_pointer(sid),
-                            gemm_ldb.get_host_pointer(sid),
-                            gemm_ldc.get_host_pointer(sid),
-                            gemm_A.get_host_pointer(sid),
-                            gemm_B.get_host_pointer(sid),
-                            gemm_C.get_host_pointer(sid),
-                            max_m,
-                            max_n,
-                            atom_pair_num,
-                            rho_g.get_device_pointer(),
-                            dot_product.get_host_pointer(sid));
            
             gemm_alpha.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
             gemm_m.copy_host_to_device_async(streams[sid], sid, atom_pair_num);

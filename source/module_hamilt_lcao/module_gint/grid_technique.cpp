@@ -202,6 +202,7 @@ void Grid_Technique::init_atoms_on_grid(const int& ny,
     for(int iat = 0; iat < ucell.nat; iat++)
     {
         const int it = ucell.iat2it[iat];
+        const double rcut_square = this->rcuts[it] * this->rcuts[it];
         for (int im = 0; im < this->meshball_ncells; im++)
         {
             // bcell[iat]: which bcell iat atom is in.
@@ -227,7 +228,6 @@ void Grid_Technique::init_atoms_on_grid(const int& ny,
                 continue;
             }
 
-            const double rcut_square = this->rcuts[it] * this->rcuts[it];
             bool is_atom_on_bcell = false;
             const double dr_x_part = this->meshball_positions[im][0] - this->tau_in_bigcell[iat][0];
             const double dr_y_part = this->meshball_positions[im][1] - this->tau_in_bigcell[iat][1];
@@ -372,7 +372,8 @@ void Grid_Technique::init_atoms_on_grid2(const int* index2normal, const UnitCell
     ModuleBase::Memory::record("GT::how many atoms", sizeof(int) * nbxx);
     for(int iat = 0; iat < ucell.nat; iat++)
     {
-        int it = ucell.iat2it[iat];
+        const int it = ucell.iat2it[iat];
+        const double rcut_square = this->rcuts[it] * this->rcuts[it];
         // zero bigcell of meshball indicate ?
         for (int im = 0; im < this->meshball_ncells; im++)
         {
@@ -386,7 +387,6 @@ void Grid_Technique::init_atoms_on_grid2(const int* index2normal, const UnitCell
                 continue;
             }
             
-            const double rcut_square = this->rcuts[it] * this->rcuts[it];
             bool is_atom_on_bcell = false;
             const double dr_x_part = this->meshball_positions[im][0] - this->tau_in_bigcell[iat][0];
             const double dr_y_part = this->meshball_positions[im][1] - this->tau_in_bigcell[iat][1];
@@ -412,7 +412,7 @@ void Grid_Technique::init_atoms_on_grid2(const int* index2normal, const UnitCell
             // so, first we need to locate which grid, using
             // bcell_start, then we need to count which adjacent atom.
             // using how_many_atoms.
-            int index = this->bcell_start[bcell_idx_on_proc] + this->how_many_atoms[bcell_idx_on_proc];
+            const int index = this->bcell_start[bcell_idx_on_proc] + this->how_many_atoms[bcell_idx_on_proc];
 
             // we save which_atom and which_bigcell in 1D array,
             // once you want to use this in grid integration,

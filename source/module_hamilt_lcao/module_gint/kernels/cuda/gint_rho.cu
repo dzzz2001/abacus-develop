@@ -23,7 +23,6 @@ __global__ void get_psi(const double* const ylmcoef,
                         const int* const atoms_per_bcell,
                         const uint8_t* const atom_type,
                         const int* const start_idx_per_bcell,
-                        bool* mat_cal_flag,
                         double* psi)
 {
     const int bcell_id = blockIdx.x;
@@ -47,7 +46,6 @@ __global__ void get_psi(const double* const ylmcoef,
             {
                 dist += 1.0E-9;
             }
-            mat_cal_flag[bcell_start + atom_id] = true;
             double dr[3] = {dr_x / dist, dr_y / dist, dr_z / dist};
             double ylma[49];
             spherical_harmonics(dr, nwl, ylma, ylmcoef);

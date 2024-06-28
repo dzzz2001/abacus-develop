@@ -157,7 +157,20 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             start_idx_per_bcell.copy_host_to_device_async(streams[sid], sid);
             atoms_per_bcell.copy_host_to_device_async(streams[sid], sid);
 
+            gemm_alpha.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            gemm_m.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            gemm_n.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            gemm_k.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            gemm_lda.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            gemm_ldb.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            gemm_ldc.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            gemm_A.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            gemm_B.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            gemm_C.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
+            dot_product.copy_host_to_device_async(streams[sid], sid);
+            
             psi.memset_device_async(streams[sid], sid, 0);
+            psi_dm.memset_device_async(streams[sid], sid, 0);
 
             // Launching kernel to calculate psi
             dim3 grid_psi(nbzp, gridt.bxyz);
@@ -184,20 +197,6 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                 start_idx_per_bcell.get_device_pointer(sid),
                 psi.get_device_pointer(sid));
             checkCudaLastError();
-           
-            gemm_alpha.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            gemm_m.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            gemm_n.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            gemm_k.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            gemm_lda.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            gemm_ldb.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            gemm_ldc.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            gemm_A.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            gemm_B.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            gemm_C.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
-            dot_product.copy_host_to_device_async(streams[sid], sid);
-            
-            psi_dm.memset_device_async(streams[sid], sid, 0);
 
             // Performing matrix multiplication alpha * mat_dm * mat_psir
             gridt.fastest_matrix_mul(max_m,

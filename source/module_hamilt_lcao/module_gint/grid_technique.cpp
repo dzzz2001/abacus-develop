@@ -635,9 +635,9 @@ void Grid_Technique::init_gpu_gint_variables(const UnitCell& ucell, const int nu
     std::vector<double> mcell_pos(bxyz * 3, 0);
     for (int i = 0; i < bxyz; i++)
     {
-        mcell_pos[i] = meshcell_pos[i][0];
-        mcell_pos[bxyz + i] = meshcell_pos[i][1];
-        mcell_pos[2 * bxyz + i] = meshcell_pos[i][2];
+        mcell_pos[3 * i] = meshcell_pos[i][0];
+        mcell_pos[3 * i + 1] = meshcell_pos[i][1];
+        mcell_pos[3 * i + 2] = meshcell_pos[i][2];
     }
     checkCudaErrors(cudaMalloc((void**)&mcell_pos_g,
                                bxyz * 3 * sizeof(double)));

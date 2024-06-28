@@ -29,9 +29,9 @@ __global__ void get_psi(const double* const ylmcoef,
     const int num_atoms = atoms_per_bcell[bcell_id];
     const int bcell_start = start_idx_per_bcell[bcell_id];
     const int mcell_id = blockIdx.y;
-    const double mcell_pos_x = mcell_pos[mcell_id];
-    const double mcell_pos_y = mcell_pos[bxyz + mcell_id];
-    const double mcell_pos_z = mcell_pos[2 * bxyz + mcell_id];
+    const double mcell_pos_x = mcell_pos[3 * mcell_id];
+    const double mcell_pos_y = mcell_pos[3 * mcell_id + 1];
+    const double mcell_pos_z = mcell_pos[3 * mcell_id + 2];
     for(int atom_id = threadIdx.x; atom_id < num_atoms; atom_id+=blockDim.x)
     {
         const double dr_x = dr_x_part[bcell_start + atom_id] + mcell_pos_x;

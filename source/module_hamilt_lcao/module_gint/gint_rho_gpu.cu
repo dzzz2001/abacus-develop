@@ -107,7 +107,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             int max_m = 0;
             int max_n = 0;
             int atom_pair_num = 0;
-            int num_atoms = 0;
+            int atoms_per_z = 0;
             const int grid_index_ij = i * gridt.nby * nbzp + j * nbzp;
 
             // generate GPU tasks, including the calculation of psir, matrix
@@ -121,7 +121,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                       start_idx_per_bcell.get_host_pointer(sid),
                       atom_type.get_host_pointer(sid),
                       atoms_per_bcell.get_host_pointer(sid),
-                      num_atoms);
+                      atoms_per_z);
 
             alloc_mult_dot_rho(
                 gridt,
@@ -150,10 +150,10 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                 rho_g.get_device_pointer(),
                 dot_product.get_host_pointer(sid));
             
-            dr_x.copy_host_to_device_async(streams[sid], sid, num_atoms);
-            dr_y.copy_host_to_device_async(streams[sid], sid, num_atoms);
-            dr_z.copy_host_to_device_async(streams[sid], sid, num_atoms);
-            atom_type.copy_host_to_device_async(streams[sid], sid, num_atoms);
+            dr_x.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
+            dr_y.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
+            dr_z.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
+            atom_type.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
             start_idx_per_bcell.copy_host_to_device_async(streams[sid], sid);
             atoms_per_bcell.copy_host_to_device_async(streams[sid], sid);
 

@@ -25,7 +25,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
     const int num_mcell_on_proc = nczp * gridt.ncx * gridt.ncy;
     const int lgd = gridt.lgd;
     const int max_atom = gridt.max_atom;
-    int num_streams = gridt.nstreams;
+    const int num_streams = gridt.nstreams;
     const int max_atom_per_bcell = max_atom * gridt.bxyz;
     const int max_atom_per_z = max_atom * nbzp;
     const int max_phi_per_z = max_atom_per_bcell * nbzp * ucell.nwmax;

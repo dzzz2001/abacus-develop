@@ -14,16 +14,16 @@ void gtask_rho(const Grid_Technique& gridt,
                int* start_idx_per_bcell,
                uint8_t* atom_type,
                int* atoms_per_bcell,
-               int& num_atoms_per_z)         
+               int& atoms_per_z)         
 {
-    num_atoms_per_z = 0;
+    atoms_per_z = 0;
     for (int z_index = 0; z_index < gridt.nbzp; z_index++)
     {
         int grid_index = grid_index_ij + z_index;
         int bcell_start_index = gridt.bcell_start[grid_index];
         int na_grid = gridt.how_many_atoms[grid_index];
         atoms_per_bcell[z_index] = na_grid;
-        start_idx_per_bcell[z_index] = num_atoms_per_z;
+        start_idx_per_bcell[z_index] = atoms_per_z;
         for (int id = 0; id < na_grid; id++)
         {
             int mcell_index = bcell_start_index + id;
@@ -31,14 +31,14 @@ void gtask_rho(const Grid_Technique& gridt,
             int iat = gridt.which_atom[mcell_index];
             int it_temp = ucell.iat2it[iat];
 
-            dr_x[num_atoms_per_z] = gridt.meshball_positions[imcell][0]
+            dr_x[atoms_per_z] = gridt.meshball_positions[imcell][0]
                       - gridt.tau_in_bigcell[iat][0];
-            dr_y[num_atoms_per_z] = gridt.meshball_positions[imcell][1]
+            dr_y[atoms_per_z] = gridt.meshball_positions[imcell][1]
                       - gridt.tau_in_bigcell[iat][1];
-            dr_z[num_atoms_per_z] = gridt.meshball_positions[imcell][2]
+            dr_z[atoms_per_z] = gridt.meshball_positions[imcell][2]
                       - gridt.tau_in_bigcell[iat][2];
-            atom_type[num_atoms_per_z] = it_temp;
-            num_atoms_per_z++;
+            atom_type[atoms_per_z] = it_temp;
+            atoms_per_z++;
         }
     }
 }

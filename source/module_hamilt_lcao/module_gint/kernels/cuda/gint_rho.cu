@@ -17,9 +17,7 @@ __global__ void get_psi(const double* const ylmcoef,
                         const int nr_max,
                         const double* const psi_u,
                         const double* const mcell_pos,
-                        const double* const dr_x_part,
-                        const double* const dr_y_part,
-                        const double* const dr_z_part,
+                        const double* const dr_part,
                         const int* const atoms_per_bcell,
                         const uint8_t* const atom_type,
                         const int* const start_idx_per_bcell,
@@ -35,11 +33,12 @@ __global__ void get_psi(const double* const ylmcoef,
 
     for(int atom_id = threadIdx.x; atom_id < num_atoms; atom_id += blockDim.x)
     {
-        const double dr_x = dr_x_part[bcell_start + atom_id] + mcell_pos_x;
-        const double dr_y = dr_y_part[bcell_start + atom_id] + mcell_pos_y;
-        const double dr_z = dr_z_part[bcell_start + atom_id] + mcell_pos_z;
+        const int aid = bcell_start + atom_id;
+        const double dr_x = dr_part[aid * 3] + mcell_pos_x;
+        const double dr_y = dr_part[aid * 3 + 1] + mcell_pos_y;
+        const double dr_z = dr_part[aid * 3 + 2] + mcell_pos_z;
         double dist = sqrt(dr_x * dr_x + dr_y * dr_y + dr_z * dr_z);
-        const int atype = __ldg(atom_type + bcell_start + atom_id);
+        const int atype = __ldg(atom_type + aid);
         if(dist < rcut[atype])
         {
             if (dist < 1.0E-9)

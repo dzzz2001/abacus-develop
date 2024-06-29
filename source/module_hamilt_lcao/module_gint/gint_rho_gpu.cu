@@ -37,9 +37,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
         checkCuda(cudaStreamCreate(&streams[i]));
     }
 
-    Cuda_Mem_Wrapper<double> dr_x(max_atom_per_z, num_streams, true);
-    Cuda_Mem_Wrapper<double> dr_y(max_atom_per_z, num_streams, true);
-    Cuda_Mem_Wrapper<double> dr_z(max_atom_per_z, num_streams, true);
+    Cuda_Mem_Wrapper<double> dr_part(max_atom_per_z * 3, num_streams, true);
     Cuda_Mem_Wrapper<uint8_t> atom_type(max_atom_per_z, num_streams, true);
     Cuda_Mem_Wrapper<int> atoms_per_bcell(nbzp, num_streams, true);
     Cuda_Mem_Wrapper<int> start_idx_per_bcell(nbzp, num_streams, true);
@@ -115,9 +113,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             gtask_rho(gridt,
                       grid_index_ij,
                       ucell,
-                      dr_x.get_host_pointer(sid),
-                      dr_y.get_host_pointer(sid),
-                      dr_z.get_host_pointer(sid),
+                      dr_part.get_host_pointer(sid),
                       start_idx_per_bcell.get_host_pointer(sid),
                       atom_type.get_host_pointer(sid),
                       atoms_per_bcell.get_host_pointer(sid),
@@ -149,9 +145,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                 rho_g.get_device_pointer(),
                 dot_product.get_host_pointer(sid));
             
-            dr_x.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
-            dr_y.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
-            dr_z.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
+            dr_part.copy_host_to_device_async(streams[sid], sid, atoms_per_z * 3);
             atom_type.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
             start_idx_per_bcell.copy_host_to_device_async(streams[sid], sid);
             atoms_per_bcell.copy_host_to_device_async(streams[sid], sid);
@@ -188,9 +182,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                 gridt.nr_max,
                 gridt.psi_u_g,
                 gridt.mcell_pos_g,
-                dr_x.get_device_pointer(sid),
-                dr_y.get_device_pointer(sid),
-                dr_z.get_device_pointer(sid),
+                dr_part.get_device_pointer(sid),
                 atoms_per_bcell.get_device_pointer(sid),
                 atom_type.get_device_pointer(sid),
                 start_idx_per_bcell.get_device_pointer(sid),

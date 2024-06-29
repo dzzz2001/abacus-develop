@@ -8,9 +8,7 @@ namespace GintKernel
 void gtask_rho(const Grid_Technique& gridt,
                const int grid_index_ij,
                const UnitCell& ucell,
-               double* dr_x,
-               double* dr_y,
-               double* dr_z,
+               double* dr_part,
                int* start_idx_per_bcell,
                uint8_t* atom_type,
                int* atoms_per_bcell,
@@ -31,11 +29,11 @@ void gtask_rho(const Grid_Technique& gridt,
             int iat = gridt.which_atom[mcell_index];
             int it_temp = ucell.iat2it[iat];
 
-            dr_x[atoms_per_z] = gridt.meshball_positions[imcell][0]
+            dr_part[atoms_per_z * 3] = gridt.meshball_positions[imcell][0]
                       - gridt.tau_in_bigcell[iat][0];
-            dr_y[atoms_per_z] = gridt.meshball_positions[imcell][1]
+            dr_part[atoms_per_z * 3 + 1] = gridt.meshball_positions[imcell][1]
                       - gridt.tau_in_bigcell[iat][1];
-            dr_z[atoms_per_z] = gridt.meshball_positions[imcell][2]
+            dr_part[atoms_per_z * 3 + 2] = gridt.meshball_positions[imcell][2]
                       - gridt.tau_in_bigcell[iat][2];
             atom_type[atoms_per_z] = it_temp;
             atoms_per_z++;

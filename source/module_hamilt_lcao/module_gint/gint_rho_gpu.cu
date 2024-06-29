@@ -18,7 +18,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                         double* rho)
 {
     int dev_id = base_device::information::set_device_by_rank();
-    checkCuda(cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync));
+    // checkCuda(cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync));
 
     const int nbzp = gridt.nbzp;
     const int nczp =nbzp * gridt.bz;
@@ -126,7 +126,6 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             alloc_mult_dot_rho(
                 gridt,
                 ucell,
-                start_idx_per_bcell.get_host_pointer(sid),
                 grid_index_ij,
                 max_atom,
                 lgd,
@@ -228,12 +227,6 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             checkCudaLastError();
             checkCuda(cudaStreamSynchronize(streams[sid]));
         }
-    }
-
-    // Synchronizing streams
-    for (int i = 0; i < num_streams; i++)
-    {
-        checkCuda(cudaStreamSynchronize(streams[i]));
     }
 
     // Copy rho from device to host

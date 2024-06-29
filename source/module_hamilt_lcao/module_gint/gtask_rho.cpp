@@ -45,7 +45,6 @@ void gtask_rho(const Grid_Technique& gridt,
 
 void alloc_mult_dot_rho(const Grid_Technique& gridt,
                         const UnitCell& ucell,
-                        const int* start_idx_per_bcell,
                         const int grid_index_ij,
                         const int max_atom,
                         const int lgd,
@@ -78,7 +77,6 @@ void alloc_mult_dot_rho(const Grid_Technique& gridt,
     for (int z_index = 0; z_index < gridt.nbzp; z_index++)
     {
         int grid_index = grid_index_ij + z_index;
-        int calc_flag_index = start_idx_per_bcell[z_index];
         int bcell_start_index = gridt.bcell_start[grid_index];
         int bcell_start_psir = z_index * gridt.bxyz * max_atom * nwmax;
 

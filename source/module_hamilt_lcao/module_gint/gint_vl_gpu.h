@@ -19,23 +19,20 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
                        const UnitCell& ucell);
 
 void gtask_vlocal(const Grid_Technique& gridt,
-                  const double* rcut,
                   const UnitCell& ucell,
-                  std::vector<bool>& gpu_matrix_calc_flag,
                   const int grid_index_ij,
-                  const int max_atom,
                   const int nczp,
                   const double vfactor,
                   const double* vlocal_global_value,
-                  double* psi_input_double,
-                  int* psi_input_int,
-                  int* atom_num_per_bcell,
+                  int& atoms_per_z,
+                  int* atoms_per_bcell,
                   int* start_idx_per_bcell,
-                  int& atom_per_z);
+                  uint8_t* atom_type,
+                  double* dr_part,
+                  double* vldr3);
 
 void alloc_mult_vlocal(const Grid_Technique& gridt,
                         const UnitCell& ucell,
-                        const std::vector<bool>& gpu_matrix_calc_flag,
                         const int grid_index_ij,
                         const int max_atom,
                         double* psi,

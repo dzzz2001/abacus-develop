@@ -72,7 +72,6 @@ void gtask_rho(const Grid_Technique& gridt,
  */
 void alloc_mult_dot_rho(const Grid_Technique& gridt,
                         const UnitCell& ucell,
-                        const int* start_idx_per_bcell,
                         const int grid_index_ij,
                         const int max_size,
                         const int lgd,

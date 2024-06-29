@@ -32,14 +32,14 @@ __global__ void get_psi(const double* const ylmcoef,
     const double mcell_pos_x = mcell_pos[3 * mcell_id];
     const double mcell_pos_y = mcell_pos[3 * mcell_id + 1];
     const double mcell_pos_z = mcell_pos[3 * mcell_id + 2];
-    for(int atom_id = threadIdx.x; atom_id < num_atoms; atom_id+=blockDim.x)
+
+    for(int atom_id = threadIdx.x; atom_id < num_atoms; atom_id += blockDim.x)
     {
         const double dr_x = dr_x_part[bcell_start + atom_id] + mcell_pos_x;
         const double dr_y = dr_y_part[bcell_start + atom_id] + mcell_pos_y;
         const double dr_z = dr_z_part[bcell_start + atom_id] + mcell_pos_z;
         double dist = sqrt(dr_x * dr_x + dr_y * dr_y + dr_z * dr_z);
         const int atype = __ldg(atom_type + bcell_start + atom_id);
-        const int nwl = __ldg(ucell_atom_nwl + atype);
         if(dist < rcut[atype])
         {
             if (dist < 1.0E-9)
@@ -48,22 +48,22 @@ __global__ void get_psi(const double* const ylmcoef,
             }
             double dr[3] = {dr_x / dist, dr_y / dist, dr_z / dist};
             double ylma[49];
+            const int nwl = __ldg(ucell_atom_nwl + atype);
+            int psi_idx = ((bcell_id * bxyz + mcell_id) * max_atom + atom_id)* nwmax;
             spherical_harmonics(dr, nwl, ylma, ylmcoef);
-            int psi_idx = (bcell_id * bxyz + mcell_id) * max_atom * nwmax
-                                + atom_id * nwmax;
-            interpolate(dist,
-                        delta_r,
-                        atype,
-                        nwmax,
-                        nr_max,
-                        atom_nw,
-                        atom_iw2_new,
-                        psi_u,
-                        ylma,
-                        atom_iw2_ylm,
-                        psi,
-                        psi_idx,
-                        1);
+            interp_rho(dist,
+                       delta_r,
+                       atype,
+                       nwmax,
+                       nr_max,
+                       atom_nw,
+                       atom_iw2_new,
+                       psi_u,
+                       ylma,
+                       atom_iw2_ylm,
+                       psi,
+                       psi_idx,
+                       1);
         }
     }
 }

@@ -86,10 +86,10 @@ void gtask_force(const Grid_Technique& gridt,
 
                             psi_input_int[pos_temp_int] = it_temp;
                             psi_input_int[pos_temp_int + 1]
-                                = (z_index * gridt.bxyz + ib) * max_atom * nwmax
-                                  + id * nwmax;
+                                = z_index * gridt.bxyz * max_atom * nwmax 
+                                  + id * gridt.bxyz * nwmax + ib * nwmax;
                             iat_per_z[z_index * gridt.bxyz * max_atom
-                                        + ib * max_atom + id]
+                                      + id * gridt.bxyz + ib]
                                 = iat;
                             num_get_psi++;
                         }
@@ -165,15 +165,15 @@ void alloc_mult_force(const Grid_Technique& gridt,
                                                             0)];
                 int nw2 = ucell.atoms[it2].nw;
 
-                int mat_A_idx = bcell_start_psir + atom2 * nwmax;
+                int mat_A_idx = bcell_start_psir + atom2 * nwmax * gridt.bxyz;
                 int mat_B_idx = lgd * lo1 + lo2;
-                int mat_C_idx = bcell_start_psir + atom1 * nwmax;
+                int mat_C_idx = bcell_start_psir + atom1 * nwmax * gridt.bxyz;
                 mat_m[tid] = gridt.bxyz;
                 mat_n[tid] = nw1;
                 mat_k[tid] = nw2;
-                mat_lda[tid] = nwmax * max_atom;
+                mat_lda[tid] = nwmax;
                 mat_ldb[tid] = lgd;
-                mat_ldc[tid] = nwmax * max_atom;
+                mat_ldc[tid] = nwmax;
                 mat_A[tid] = psi_g + mat_A_idx;
                 mat_B[tid] = dm_matrix_g + mat_B_idx;
                 mat_C[tid] = psi_dm_g + mat_C_idx;

@@ -4,6 +4,10 @@
 
 namespace GintKernel
 {
+/*
+    each block calculates the wavefunction on a meshcell,
+    and each thread loops over the atoms on a meshcell.
+*/
 __global__ void get_psi(const double* const ylmcoef,
                         const double delta_r,
                         const int bxyz,
@@ -66,6 +70,10 @@ __global__ void get_psi(const double* const ylmcoef,
     }
 }
 
+/*
+    Each block calculates the dot product on a meshcell,
+    and each thread loops over the wavefunction of atoms on a meshcell.
+*/
 __global__ void psir_dot(const int bxyz,
                          const int nwmax,
                          const int* atoms_num_info,

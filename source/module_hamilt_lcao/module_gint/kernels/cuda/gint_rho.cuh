@@ -26,13 +26,13 @@ __global__ void get_psi(const double* const ylmcoef,
                         const double* const psi_u,
                         const double* const mcell_pos,
                         const double* const dr_part,
-                        const int* const atoms_per_bcell,
                         const uint8_t* const atom_type,
-                        const int* const start_idx_per_bcell,
+                        const int* const atoms_num_info,
                         double* psi);
 
 __global__ void psir_dot(const int bxyz,
-                         const int vec_size,
+                         const int nwmax,
+                         const int* atoms_num_info,
                          const double* __restrict__ vec_a_g,
                          const double* __restrict__  vec_b_g,
                          double** results_g);

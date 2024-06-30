@@ -144,11 +144,10 @@ __global__ void dot_product_force(double* __restrict__ dpsi,
     {
         int ls_offset = tid * 3;
         int psi_offset = offset + i;
-        int psi_offset_force = psi_offset * 3;
         double psi_dm_2 = psir_ylm_dm[psi_offset] * 2;
-        localsum[ls_offset] += dpsi[psi_offset_force] * psi_dm_2;
-        localsum[ls_offset + 1] += dpsi[psi_offset_force + 1] * psi_dm_2;
-        localsum[ls_offset + 2] += dpsi[psi_offset_force + 2] * psi_dm_2;
+        localsum[ls_offset] += dpsi[psi_offset * 3] * psi_dm_2;
+        localsum[ls_offset + 1] += dpsi[psi_offset * 3 + 1] * psi_dm_2;
+        localsum[ls_offset + 2] += dpsi[psi_offset * 3 + 2] * psi_dm_2;
     }
     __syncthreads();
     

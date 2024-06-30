@@ -9,9 +9,8 @@ void gtask_rho(const Grid_Technique& gridt,
                const int grid_index_ij,
                const UnitCell& ucell,
                double* dr_part,
-               int* start_idx_per_bcell,
                uint8_t* atom_type,
-               int* atoms_per_bcell,
+               int* atoms_num_info,
                int& atoms_per_z)         
 {
     atoms_per_z = 0;
@@ -20,8 +19,8 @@ void gtask_rho(const Grid_Technique& gridt,
         int grid_index = grid_index_ij + z_index;
         int bcell_start_index = gridt.bcell_start[grid_index];
         int na_grid = gridt.how_many_atoms[grid_index];
-        atoms_per_bcell[z_index] = na_grid;
-        start_idx_per_bcell[z_index] = atoms_per_z;
+        atoms_num_info[2 * z_index] = na_grid;
+        atoms_num_info[2 * z_index + 1] = atoms_per_z;
         for (int id = 0; id < na_grid; id++)
         {
             int mcell_index = bcell_start_index + id;
@@ -47,6 +46,7 @@ void alloc_mult_dot_rho(const Grid_Technique& gridt,
                         const int max_atom,
                         const int lgd,
                         const int nczp,
+                        const int* atoms_num_info,
                         double* const psir_ylm_g,
                         double* const psir_dm_g,
                         double* const dm_matrix_g,
@@ -76,7 +76,8 @@ void alloc_mult_dot_rho(const Grid_Technique& gridt,
     {
         int grid_index = grid_index_ij + z_index;
         int bcell_start_index = gridt.bcell_start[grid_index];
-        int bcell_start_psir = z_index * gridt.bxyz * max_atom * nwmax;
+        int bcell_start_psir = atoms_num_info[2 * z_index + 1] * gridt.bxyz * nwmax;
+        int na_grid = atoms_num_info[2 * z_index];
 
         for (int atom1 = 0; atom1 < gridt.how_many_atoms[grid_index]; atom1++)
         {
@@ -106,9 +107,9 @@ void alloc_mult_dot_rho(const Grid_Technique& gridt,
                 mat_m[tid] = gridt.bxyz;
                 mat_n[tid] = nw1;
                 mat_k[tid] = nw2;
-                mat_lda[tid] = nwmax * max_atom;
+                mat_lda[tid] = nwmax * na_grid;
                 mat_ldb[tid] = lgd;
-                mat_ldc[tid] = nwmax * max_atom;
+                mat_ldc[tid] = nwmax * na_grid;
                 mat_A[tid] = psir_ylm_g + mat_A_idx;
                 mat_B[tid] = dm_matrix_g + mat_B_idx;
                 mat_C[tid] = psir_dm_g + mat_C_idx;

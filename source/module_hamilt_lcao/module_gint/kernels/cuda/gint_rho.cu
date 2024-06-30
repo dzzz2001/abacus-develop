@@ -18,14 +18,13 @@ __global__ void get_psi(const double* const ylmcoef,
                         const double* const psi_u,
                         const double* const mcell_pos,
                         const double* const dr_part,
-                        const int* const atoms_per_bcell,
                         const uint8_t* const atom_type,
-                        const int* const start_idx_per_bcell,
+                        const int* const atoms_num_info,
                         double* psi)
 {
     const int bcell_id = blockIdx.x;
-    const int num_atoms = atoms_per_bcell[bcell_id];
-    const int bcell_start = start_idx_per_bcell[bcell_id];
+    const int num_atoms = atoms_num_info[2 * bcell_id];
+    const int pre_atoms = atoms_num_info[2 * bcell_id + 1];
     const int mcell_id = blockIdx.y;
     const double mcell_pos_x = mcell_pos[3 * mcell_id];
     const double mcell_pos_y = mcell_pos[3 * mcell_id + 1];
@@ -33,7 +32,7 @@ __global__ void get_psi(const double* const ylmcoef,
 
     for(int atom_id = threadIdx.x; atom_id < num_atoms; atom_id += blockDim.x)
     {
-        const int aid = bcell_start + atom_id;
+        const int aid = pre_atoms + atom_id;
         const double dr_x = dr_part[aid * 3] + mcell_pos_x;
         const double dr_y = dr_part[aid * 3 + 1] + mcell_pos_y;
         const double dr_z = dr_part[aid * 3 + 2] + mcell_pos_z;
@@ -48,7 +47,7 @@ __global__ void get_psi(const double* const ylmcoef,
             double dr[3] = {dr_x / dist, dr_y / dist, dr_z / dist};
             double ylma[49];
             const int nwl = __ldg(ucell_atom_nwl + atype);
-            int psi_idx = ((bcell_id * bxyz + mcell_id) * max_atom + atom_id)* nwmax;
+            int psi_idx = (pre_atoms * bxyz + mcell_id * num_atoms + atom_id) * nwmax;
             spherical_harmonics(dr, nwl, ylma, ylmcoef);
             interp_rho(dist,
                        delta_r,
@@ -68,14 +67,18 @@ __global__ void get_psi(const double* const ylmcoef,
 }
 
 __global__ void psir_dot(const int bxyz,
-                         const int vec_size,
+                         const int nwmax,
+                         const int* atoms_num_info,
                          const double* __restrict__ vec_a_g,
                          const double* __restrict__  vec_b_g,
                          double** results_g)
 {
     extern __shared__ double s_data[];
     const int tid = threadIdx.x;
-    const int offset = blockIdx.x * bxyz * vec_size + blockIdx.y * vec_size;
+    const int bcell_id = blockIdx.x;
+    const int mcell_id = blockIdx.y;
+    const int vec_size = atoms_num_info[2 * bcell_id] * nwmax;
+    const int offset = atoms_num_info[2 * bcell_id + 1] * nwmax * bxyz + mcell_id * vec_size;
     const double* vec_a_mcell = vec_a_g + offset;
     const double* vec_b_mcell = vec_b_g + offset;
 
@@ -97,7 +100,7 @@ __global__ void psir_dot(const int bxyz,
     }
 
     if (tid == 0) {
-        *results_g[blockIdx.x*bxyz + blockIdx.y] = s_data[0];
+        *results_g[bcell_id*bxyz + mcell_id] = s_data[0];
     }
 }
 } // namespace GintKernel

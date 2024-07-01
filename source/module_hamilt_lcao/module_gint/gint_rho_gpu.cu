@@ -167,7 +167,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
 
             // Launching kernel to calculate psi
             dim3 grid_psi(nbzp, gridt.bxyz);
-            dim3 block_psi(128);
+            dim3 block_psi(64);
             get_psi<<<grid_psi, block_psi, 0, streams[sid]>>>(
                 gridt.ylmcoef_g,
                 dr,
@@ -206,10 +206,10 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
             checkCudaLastError();
 
             // Launching kernel to calculate dot product psir * psir_dm
-            const int block_size = 128;
+            // if warpSize is not eauql to 32, the psir_dot kernel should be modified
             dim3 grid_dot(nbzp, gridt.bxyz);
-            dim3 block_dot(block_size); 
-            psir_dot<<<grid_dot, block_dot, sizeof(double) * block_size, streams[sid]>>>(
+            dim3 block_dot(64); 
+            psir_dot<<<grid_dot, block_dot, sizeof(double) * 32, streams[sid]>>>(
                 gridt.bxyz,
                 ucell.nwmax,
                 atoms_num_info.get_device_pointer(sid),

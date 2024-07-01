@@ -70,6 +70,16 @@ __global__ void get_psi(const double* const ylmcoef,
     }
 }
 
+__inline__ __device__ double warpReduce(double val)
+{   
+    val += __shfl_xor_sync(0xffffffff, val, 16, 32);
+    val += __shfl_xor_sync(0xffffffff, val, 8, 32);
+    val += __shfl_xor_sync(0xffffffff, val, 4, 32);
+    val += __shfl_xor_sync(0xffffffff, val, 2, 32);
+    val += __shfl_xor_sync(0xffffffff, val, 1, 32);
+    return val;
+}
+
 /*
     Each block calculates the dot product on a meshcell,
     and each thread loops over the wavefunction of atoms on a meshcell.
@@ -81,7 +91,7 @@ __global__ void psir_dot(const int bxyz,
                          const double* __restrict__  vec_b_g,
                          double** results_g)
 {
-    extern __shared__ double s_data[];
+    __shared__ double s_data[32];
     const int tid = threadIdx.x;
     const int bcell_id = blockIdx.x;
     const int mcell_id = blockIdx.y;
@@ -89,26 +99,31 @@ __global__ void psir_dot(const int bxyz,
     const int offset = atoms_num_info[2 * bcell_id + 1] * nwmax * bxyz + mcell_id * vec_size;
     const double* vec_a_mcell = vec_a_g + offset;
     const double* vec_b_mcell = vec_b_g + offset;
+    int warp_id = tid / 32;
+    int lane_id = tid % 32;
+    double mySum = 0;
 
-    s_data[tid] = 0.0;
-
-    for(unsigned int k = tid; k < vec_size; k += blockDim.x)
+    for (int k = tid; k < vec_size; k += blockDim.x)
     {
-        s_data[tid] += vec_a_mcell[k] * vec_b_mcell[k];
-    }
+        mySum += vec_a_mcell[k] * vec_b_mcell[k];
+    }    
 
+    mySum = warpReduce(mySum);
+
+    if (lane_id == 0)
+    {
+        s_data[warp_id] = mySum;
+    }
     __syncthreads();
 
-    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1)
+    mySum = (tid < blockDim.x / 32) ? s_data[tid] : 0;
+    if (warp_id == 0)
     {
-        if (tid < s) {
-            s_data[tid] += s_data[tid + s];
-        }
-        __syncthreads();
+        mySum = warpReduce(mySum);
     }
 
     if (tid == 0) {
-        *results_g[bcell_id*bxyz + mcell_id] = s_data[0];
+        *results_g[bcell_id*bxyz + mcell_id] = mySum;
     }
 }
 } // namespace GintKernel

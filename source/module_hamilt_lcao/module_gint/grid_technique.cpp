@@ -1,4 +1,6 @@
+#if ((defined __CUDA) /* || (defined __ROCM) */)
 #include <cuda_runtime.h>
+#endif
 #include "grid_technique.h"
 
 #include "module_base/memory.h"

@@ -33,7 +33,7 @@ void gtask_rho(const Grid_Technique& gridt,
                const int grid_index_ij,
                const UnitCell& ucell,
                double* dr_part,
-               uint8_t* atom_type,
+               uint8_t* atoms_type,
                int* atoms_num_info,
                int& atoms_per_z);
 

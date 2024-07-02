@@ -27,7 +27,7 @@ void gtask_vlocal(const Grid_Technique& gridt,
                   int& atoms_per_z,
                   int* atoms_per_bcell,
                   int* start_idx_per_bcell,
-                  uint8_t* atom_type,
+                  uint8_t* atoms_type,
                   double* dr_part,
                   double* vldr3);
 

@@ -33,7 +33,7 @@ __global__ void get_psi_and_vldr3(const double* const ylmcoef,
                                   const double* const dr_part,
                                   const double* const vldr3,
                                   int* atom_num_per_bcell,
-                                  const uint8_t* const atom_type,
+                                  const uint8_t* const atoms_type,
                                   const int* const start_idx_per_bcell,
                                   double* psi,
                                   double* psi_vldr3);

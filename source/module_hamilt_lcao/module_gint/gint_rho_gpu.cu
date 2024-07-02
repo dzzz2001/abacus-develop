@@ -38,7 +38,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
     }
 
     Cuda_Mem_Wrapper<double> dr_part(max_atom_per_z * 3, num_streams, true);
-    Cuda_Mem_Wrapper<uint8_t> atom_type(max_atom_per_z, num_streams, true);
+    Cuda_Mem_Wrapper<uint8_t> atoms_type(max_atom_per_z, num_streams, true);
     // The first number in every group of two represents the number of atoms on that bigcell.
     // The second number represents the cumulative number of atoms up to that bigcell.
     Cuda_Mem_Wrapper<int> atoms_num_info(2 * nbzp, num_streams, true);
@@ -115,7 +115,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                       grid_index_ij,
                       ucell,
                       dr_part.get_host_pointer(sid),
-                      atom_type.get_host_pointer(sid),
+                      atoms_type.get_host_pointer(sid),
                       atoms_num_info.get_host_pointer(sid),
                       atoms_per_z);
 
@@ -147,7 +147,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                 dot_product.get_host_pointer(sid));
             
             dr_part.copy_host_to_device_async(streams[sid], sid, atoms_per_z * 3);
-            atom_type.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
+            atoms_type.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
             atoms_num_info.copy_host_to_device_async(streams[sid], sid);
 
             gemm_alpha.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
@@ -183,7 +183,7 @@ void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
                 gridt.psi_u_g,
                 gridt.mcell_pos_g,
                 dr_part.get_device_pointer(sid),
-                atom_type.get_device_pointer(sid),
+                atoms_type.get_device_pointer(sid),
                 atoms_num_info.get_device_pointer(sid),
                 psi.get_device_pointer(sid));
             checkCudaLastError();

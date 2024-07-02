@@ -20,6 +20,11 @@ void dump_cuda_array_to_file(double* cuda_array,
                              int hight,
                              const std::string& filename);
 
+void dump_cuda_array_to_file(int* cuda_array,
+int width,
+int hight,
+const std::string& filename);
+
 static inline int ceil_div(int a, int b)
 {
     return (a + b - 1) / b;

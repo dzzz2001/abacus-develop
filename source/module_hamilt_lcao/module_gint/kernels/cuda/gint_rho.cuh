@@ -2,7 +2,7 @@
 #define GINT_RHO_CUH
 
 #include <cuda_runtime.h>
-#include <stdint.h>
+#include <cstdint>
 namespace GintKernel
 {
 
@@ -26,7 +26,7 @@ __global__ void get_psi(const double* const ylmcoef,
                         const double* const psi_u,
                         const double* const mcell_pos,
                         const double* const dr_part,
-                        const uint8_t* const atom_type,
+                        const uint8_t* const atoms_type,
                         const int* const atoms_num_info,
                         double* psi);
 

@@ -9,7 +9,7 @@ void gtask_rho(const Grid_Technique& gridt,
                const int grid_index_ij,
                const UnitCell& ucell,
                double* dr_part,
-               uint8_t* atom_type,
+               uint8_t* atoms_type,
                int* atoms_num_info,
                int& atoms_per_z)         
 {
@@ -34,7 +34,7 @@ void gtask_rho(const Grid_Technique& gridt,
                       - gridt.tau_in_bigcell[iat][1];
             dr_part[atoms_per_z * 3 + 2] = gridt.meshball_positions[imcell][2]
                       - gridt.tau_in_bigcell[iat][2];
-            atom_type[atoms_per_z] = it_temp;
+            atoms_type[atoms_per_z] = it_temp;
             atoms_per_z++;
         }
     }

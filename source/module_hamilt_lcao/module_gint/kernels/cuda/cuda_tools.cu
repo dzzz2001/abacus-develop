@@ -52,6 +52,34 @@ void dump_cuda_array_to_file(double* cuda_array,
     delete[] h_data;
 }
 
+void dump_cuda_array_to_file(int* cuda_array,
+                             int width,
+                             int hight,
+                             const std::string& filename)
+{
+    int* h_data = new int[width * hight];
+    cudaMemcpy(h_data,
+               cuda_array,
+               width * hight * sizeof(int),
+               cudaMemcpyDeviceToHost);
+
+    std::ofstream outFile(filename);
+    if (!outFile.is_open())
+    {
+        std::cerr << "Failed to open file for writing." << std::endl;
+    }
+    for (int j = 0; j < hight; ++j)
+    {
+        for (int i = 0; i < width; ++i)
+        {
+            outFile << "hight" << j << "   width:" << i << "   "
+                    << h_data[j * width + i] << std::endl;
+        }
+    }
+    outFile.close();
+    delete[] h_data;
+}
+
 template <typename T>
 Cuda_Mem_Wrapper<T>::Cuda_Mem_Wrapper()
 {

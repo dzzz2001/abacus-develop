@@ -21,7 +21,7 @@ __global__ void get_psi_and_vldr3(const double* const ylmcoef,
                                   const double* const dr_part,
                                   const double* const vldr3,
                                   int* atom_num_per_bcell,
-                                  const uint8_t* const atom_type,
+                                  const uint8_t* const atoms_type,
                                   const int* const start_idx_per_bcell,
                                   double* psi,
                                   double* psi_vldr3)
@@ -42,7 +42,7 @@ __global__ void get_psi_and_vldr3(const double* const ylmcoef,
         const double dr_y = dr_part[dr_start + 1] + mcell_pos_y;
         const double dr_z = dr_part[dr_start + 2] + mcell_pos_z;
         double dist = sqrt(dr_x * dr_x + dr_y * dr_y + dr_z * dr_z);
-        const int atype = __ldg(atom_type + bcell_start + atom_id);
+        const int atype = __ldg(atoms_type + bcell_start + atom_id);
         if(dist < rcut[atype])
         {
             if (dist < 1.0E-9)

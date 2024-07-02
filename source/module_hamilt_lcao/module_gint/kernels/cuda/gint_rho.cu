@@ -1,9 +1,21 @@
 #include "interp.cuh"
 #include "gint_rho.cuh"
 #include "sph.cuh"
+#include "cuda_tools.cuh"
 
 namespace GintKernel
 {
+    
+__inline__ __device__ double warpReduceSum(double val)
+{   
+    val += __shfl_xor_sync(0xffffffff, val, 16, 32);
+    val += __shfl_xor_sync(0xffffffff, val, 8, 32);
+    val += __shfl_xor_sync(0xffffffff, val, 4, 32);
+    val += __shfl_xor_sync(0xffffffff, val, 2, 32);
+    val += __shfl_xor_sync(0xffffffff, val, 1, 32);
+    return val;
+}
+
 /*
     each block calculates the wavefunction on a meshcell,
     and each thread loops over the atoms on a meshcell.
@@ -22,7 +34,7 @@ __global__ void get_psi(const double* const ylmcoef,
                         const double* const psi_u,
                         const double* const mcell_pos,
                         const double* const dr_part,
-                        const uint8_t* const atom_type,
+                        const uint8_t* const atoms_type,
                         const int* const atoms_num_info,
                         double* psi)
 {
@@ -41,7 +53,7 @@ __global__ void get_psi(const double* const ylmcoef,
         const double dr_y = dr_part[aid * 3 + 1] + mcell_pos_y;
         const double dr_z = dr_part[aid * 3 + 2] + mcell_pos_z;
         double dist = sqrt(dr_x * dr_x + dr_y * dr_y + dr_z * dr_z);
-        const int atype = __ldg(atom_type + aid);
+        const int atype = __ldg(atoms_type + aid);
         if(dist < rcut[atype])
         {
             if (dist < 1.0E-9)
@@ -70,16 +82,6 @@ __global__ void get_psi(const double* const ylmcoef,
     }
 }
 
-__inline__ __device__ double warpReduce(double val)
-{   
-    val += __shfl_xor_sync(0xffffffff, val, 16, 32);
-    val += __shfl_xor_sync(0xffffffff, val, 8, 32);
-    val += __shfl_xor_sync(0xffffffff, val, 4, 32);
-    val += __shfl_xor_sync(0xffffffff, val, 2, 32);
-    val += __shfl_xor_sync(0xffffffff, val, 1, 32);
-    return val;
-}
-
 /*
     Each block calculates the dot product on a meshcell,
     and each thread loops over the wavefunction of atoms on a meshcell.
@@ -99,8 +101,8 @@ __global__ void psir_dot(const int bxyz,
     const int offset = atoms_num_info[2 * bcell_id + 1] * nwmax * bxyz + mcell_id * vec_size;
     const double* vec_a_mcell = vec_a_g + offset;
     const double* vec_b_mcell = vec_b_g + offset;
-    int warp_id = tid / 32;
-    int lane_id = tid % 32;
+    const int warp_id = tid / 32;
+    const int lane_id = tid % 32;
     double mySum = 0;
 
     for (int k = tid; k < vec_size; k += blockDim.x)
@@ -108,7 +110,7 @@ __global__ void psir_dot(const int bxyz,
         mySum += vec_a_mcell[k] * vec_b_mcell[k];
     }    
 
-    mySum = warpReduce(mySum);
+    mySum = warpReduceSum(mySum);
 
     if (lane_id == 0)
     {
@@ -119,7 +121,7 @@ __global__ void psir_dot(const int bxyz,
     mySum = (tid < blockDim.x / 32) ? s_data[tid] : 0;
     if (warp_id == 0)
     {
-        mySum = warpReduce(mySum);
+        mySum = warpReduceSum(mySum);
     }
 
     if (tid == 0) {

@@ -15,7 +15,7 @@ void gtask_vlocal(const Grid_Technique& gridt,
                   int& atoms_per_z,
                   int* atoms_per_bcell,
                   int* start_idx_per_bcell,
-                  uint8_t* atom_type,
+                  uint8_t* atoms_type,
                   double* dr_part,
                   double* vldr3)
 {
@@ -40,7 +40,7 @@ void gtask_vlocal(const Grid_Technique& gridt,
                                            - gridt.tau_in_bigcell[iat][1];
             dr_part[atoms_per_z * 3 + 2] = gridt.meshball_positions[imcell][2]
                                            - gridt.tau_in_bigcell[iat][2];
-            atom_type[atoms_per_z] = it_temp;
+            atoms_type[atoms_per_z] = it_temp;
             atoms_per_z++;
         }
 

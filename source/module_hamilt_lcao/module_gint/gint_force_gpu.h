@@ -3,8 +3,7 @@
 
 #include "module_hamilt_lcao/module_gint/gint.h"
 #include "module_hamilt_lcao/module_gint/grid_technique.h"
-namespace GintKernel
-{
+namespace GintKernel {
 void gint_fvl_gamma_gpu(hamilt::HContainer<double>* dm,
                         const double* vlocal,
                         double* force_in,
@@ -33,7 +32,7 @@ void alloc_mult_force(const Grid_Technique& gridt,
                       const UnitCell& ucell,
                       const int grid_index_ij,
                       const int max_atom,
-                      const int *atoms_num_info,
+                      const int* atoms_num_info,
                       double* const psi_g,
                       double* const psi_dm_g,
                       double* const dm_matrix_g,

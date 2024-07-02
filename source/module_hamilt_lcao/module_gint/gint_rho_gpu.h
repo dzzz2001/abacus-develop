@@ -1,14 +1,13 @@
 #ifndef GINT_RHO_H
 #define GINT_RHO_H
+#include "module_hamilt_lcao/module_gint/gint.h"
+#include "module_hamilt_lcao/module_gint/grid_technique.h"
+
 #include <cublas_v2.h>
 #include <cuda.h> // for CUDA_VERSION
 #include <cuda_runtime.h>
 
-#include "module_hamilt_lcao/module_gint/gint.h"
-#include "module_hamilt_lcao/module_gint/grid_technique.h"
-
-namespace GintKernel
-{
+namespace GintKernel {
 
 /**
  * calculate the rho by GPU
@@ -38,12 +37,13 @@ void gtask_rho(const Grid_Technique& gridt,
                int& atoms_per_z);
 
 /**
- * Allocate resources and perform matrix multiplication and vector dot products 
+ * Allocate resources and perform matrix multiplication and vector dot products
  * for computing the rho.
  *
  * @param gridt Grid_Technique object containing grid information.
  * @param ucell UnitCell object containing unit cell information.
- * @param gpu_mat_cal_flag Flags indicating which parts of the calculation will use the GPU.
+ * @param gpu_mat_cal_flag Flags indicating which parts of the calculation will
+ * use the GPU.
  * @param grid_index_ij Combined X and Y indices of the bigcell.
  * @param max_size Maximum number of atoms in a meshcell.
  * @param lgd lgd.
@@ -54,7 +54,8 @@ void gtask_rho(const Grid_Technique& gridt,
  * @param mat_alpha Alpha values for matrix multiplication.
  * @param mat_m Number of rows in mat_dm.
  * @param mat_n Number of columns in mat_psir.
- * @param mat_k Number of columns in mat_dm, which equals the number of rows in mat_psir.
+ * @param mat_k Number of columns in mat_dm, which equals the number of rows in
+ * mat_psir.
  * @param mat_lda Leading dimension of mat_dm.
  * @param mat_ldb Leading dimension of mat_psir.
  * @param mat_ldc Leading dimension of mat_psir_dm.
@@ -63,7 +64,8 @@ void gtask_rho(const Grid_Technique& gridt,
  * @param mat_C Pointers to mat_psir_dm.
  * @param max_m Maximum value of m.
  * @param max_n Maximum value of n.
- * @param atom_pair_num Total count of atom pairs, which is also the number of matrix multiplication operations.
+ * @param atom_pair_num Total count of atom pairs, which is also the number of
+ * matrix multiplication operations.
  * @param rho_g Rho.
  * @param dot_product Pointers to the results of dot products.
  */

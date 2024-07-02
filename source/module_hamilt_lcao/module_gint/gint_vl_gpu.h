@@ -1,11 +1,9 @@
 #ifndef GINT_VL_GPU_H
 #define GINT_VL_GPU_H
-#include <cublas_v2.h>
-#include <cuda.h> // for CUDA_VERSION
-#include <cuda_runtime.h>
 
-#include "module_hamilt_lcao/module_gint/gint.h"
-#include "module_hamilt_lcao/module_gint/grid_technique.h"
+#include "gint.h"
+#include "grid_technique.h"
+#include "kernels/cuda/cuda_tools.cuh"
 
 namespace GintKernel
 {

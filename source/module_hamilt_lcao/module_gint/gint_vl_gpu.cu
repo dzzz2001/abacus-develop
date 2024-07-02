@@ -2,7 +2,6 @@
 
 #include "kernels/cuda/cuda_tools.cuh"
 #include "module_base/ylm.h"
-#include "gint_tools.h"
 #include "gint_vl_gpu.h"
 #include "kernels/cuda/gint_vl.cuh"
 

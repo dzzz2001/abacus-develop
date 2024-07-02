@@ -8,9 +8,6 @@
 #include "module_basis/module_ao/ORB_read.h"
 #include "module_cell/module_neighbor/sltk_grid_driver.h"
 #if ((defined __CUDA) /* || (defined __ROCM) */)
-#include <cuda_runtime.h>
-
-#include "kernels/cuda/cuda_tools.cuh"
 #include "kernels/cuda/gemm_selector.cuh"
 #endif
 

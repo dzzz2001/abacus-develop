@@ -1,3 +1,4 @@
+#include <cuda_runtime.h>
 #include "grid_technique.h"
 
 #include "module_base/memory.h"

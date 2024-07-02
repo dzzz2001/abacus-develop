@@ -5,7 +5,6 @@
 
 namespace GintKernel
 {
-    
 __inline__ __device__ double warpReduceSum(double val)
 {   
     val += __shfl_xor_sync(0xffffffff, val, 16, 32);
@@ -15,6 +14,7 @@ __inline__ __device__ double warpReduceSum(double val)
     val += __shfl_xor_sync(0xffffffff, val, 1, 32);
     return val;
 }
+
 
 /*
     each block calculates the wavefunction on a meshcell,

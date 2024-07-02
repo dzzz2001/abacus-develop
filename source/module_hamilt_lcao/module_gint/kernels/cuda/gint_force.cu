@@ -2,7 +2,6 @@
 #include "interp.cuh"
 #include "gint_force.cuh"
 #include "cuda_tools.cuh"
-#include "cuda_runtime.h"
 // CUDA kernel to calculate psi and force
 namespace GintKernel
 {

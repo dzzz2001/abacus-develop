@@ -16,8 +16,7 @@ static __device__ void interp_rho(const double dist,
                                   const double ylma[49],
                                   const int* __restrict__ atom_iw2_ylm,
                                   double* psi,
-                                  int psi_idx,
-                                  const int stride)
+                                  int psi_idx)
 {
     const double distance = dist / delta_r;
 
@@ -43,7 +42,7 @@ static __device__ void interp_rho(const double dist,
                   + c3 * psi_u[iw_nr + 2] + c4 * psi_u[iw_nr + 3];
         }
         psi[psi_idx] = phi * ylma[atom_iw2_ylm[it_nw_iw]];
-        psi_idx += stride;
+        psi_idx += 1;
         iw_nr += 2 * nr_max;
         it_nw_iw++;
     }
@@ -53,6 +52,7 @@ static __device__ void interp_vl(const double dist,
                                  const double delta_r,
                                  const int atype,
                                  const double nwmax,
+                                 const int bxyz,
                                  const int nr_max,
                                  const int* __restrict__ atom_nw,
                                  const bool* __restrict__ atom_iw2_new,
@@ -62,8 +62,7 @@ static __device__ void interp_vl(const double dist,
                                  const double vldr3_value,
                                  double* psi,
                                  double* psi_vldr3,
-                                 int psi_idx,
-                                 const int stride)
+                                 int psi_idx)
 {
     const double distance = dist / delta_r;
 
@@ -90,7 +89,7 @@ static __device__ void interp_vl(const double dist,
         }
         psi[psi_idx] = phi * ylma[atom_iw2_ylm[it_nw_iw]];
         psi_vldr3[psi_idx] = psi[psi_idx] * vldr3_value;
-        psi_idx += stride;
+        psi_idx += bxyz;
         iw_nr += 2 * nr_max;
         it_nw_iw++;
     }

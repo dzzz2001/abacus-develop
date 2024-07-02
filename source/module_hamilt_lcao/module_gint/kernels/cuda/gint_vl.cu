@@ -58,6 +58,7 @@ __global__ void get_psi_and_vldr3(const double* const ylmcoef,
                       delta_r,
                       atype,
                       nwmax,
+                      bxyz,
                       nr_max,
                       atom_nw,
                       atom_iw2_new,
@@ -67,8 +68,7 @@ __global__ void get_psi_and_vldr3(const double* const ylmcoef,
                       vldr3_value,
                       psi,
                       psi_vldr3,
-                      psi_idx,
-                      bxyz);
+                      psi_idx);
         }
     }
 }

@@ -76,8 +76,7 @@ __global__ void get_psi(const double* const ylmcoef,
                        ylma,
                        atom_iw2_ylm,
                        psi,
-                       psi_idx,
-                       1);
+                       psi_idx);
         }
     }
 }

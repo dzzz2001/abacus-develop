@@ -16,7 +16,6 @@ namespace GintKernel
  * Here, the matrix element of the left matrix is psi, and the matrix
  * element of the right matrix is vlocal * psi * dr^3.
  */
-
 __global__ void get_psi_and_vldr3(const double* const ylmcoef,
                                   const double delta_r,
                                   const int bxyz,
@@ -32,9 +31,8 @@ __global__ void get_psi_and_vldr3(const double* const ylmcoef,
                                   const double* const mcell_pos,
                                   const double* const dr_part,
                                   const double* const vldr3,
-                                  int* atom_num_per_bcell,
                                   const uint8_t* const atoms_type,
-                                  const int* const start_idx_per_bcell,
+                                  const int* const atoms_num_info,
                                   double* psi,
                                   double* psi_vldr3);
 

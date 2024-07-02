@@ -89,8 +89,9 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
 
     Cuda_Mem_Wrapper<double> dr_part(max_atom_per_z * 3, num_streams, true);
     Cuda_Mem_Wrapper<uint8_t> atoms_type(max_atom_per_z, num_streams, true);
-    Cuda_Mem_Wrapper<int> atoms_per_bcell(nbzp, num_streams, true);
-    Cuda_Mem_Wrapper<int> start_idx_per_bcell(nbzp, num_streams, true);
+    // The first number in every group of two represents the number of atoms on that bigcell.
+    // The second number represents the cumulative number of atoms up to that bigcell.
+    Cuda_Mem_Wrapper<int> atoms_num_info(2 * nbzp, num_streams, true);
     Cuda_Mem_Wrapper<double> vldr3(nbzp * gridt.bxyz, num_streams, true);
 
     Cuda_Mem_Wrapper<double> psi(max_phi_per_z, num_streams, false);
@@ -129,8 +130,7 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
                          vfactor,
                          vlocal,
                          atoms_per_z,
-                         atoms_per_bcell.get_host_pointer(sid),
-                         start_idx_per_bcell.get_host_pointer(sid),
+                         atoms_num_info.get_host_pointer(sid),
                          atoms_type.get_host_pointer(sid),
                          dr_part.get_host_pointer(sid),
                          vldr3.get_host_pointer(sid));
@@ -158,8 +158,7 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
             dr_part.copy_host_to_device_async(streams[sid], sid, atoms_per_z * 3);
             atoms_type.copy_host_to_device_async(streams[sid], sid, atoms_per_z);
             vldr3.copy_host_to_device_async(streams[sid], sid);
-            atoms_per_bcell.copy_host_to_device_async(streams[sid], sid);
-            start_idx_per_bcell.copy_host_to_device_async(streams[sid], sid);
+            atoms_num_info.copy_host_to_device_async(streams[sid], sid, 2 * nbzp);
             
             gemm_m.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
             gemm_n.copy_host_to_device_async(streams[sid], sid, atom_pair_num);
@@ -195,9 +194,8 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
                 gridt.mcell_pos_g,
                 dr_part.get_device_pointer(sid),
                 vldr3.get_device_pointer(sid),
-                atoms_per_bcell.get_device_pointer(sid),
                 atoms_type.get_device_pointer(sid),
-                start_idx_per_bcell.get_device_pointer(sid),
+                atoms_num_info.get_device_pointer(sid),
                 psi.get_device_pointer(sid),
                 psi_vldr3.get_device_pointer(sid));
             checkCudaLastError();

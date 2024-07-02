@@ -13,8 +13,7 @@ void gtask_vlocal(const Grid_Technique& gridt,
                   const double vfactor,
                   const double* vlocal_global_value,
                   int& atoms_per_z,
-                  int* atoms_per_bcell,
-                  int* start_idx_per_bcell,
+                  int* atoms_num_info,
                   uint8_t* atoms_type,
                   double* dr_part,
                   double* vldr3)
@@ -25,8 +24,8 @@ void gtask_vlocal(const Grid_Technique& gridt,
         int grid_index = grid_index_ij + z_index;
         int bcell_start_index = gridt.bcell_start[grid_index];
         int na_grid = gridt.how_many_atoms[grid_index];
-        atoms_per_bcell[z_index] = na_grid;
-        start_idx_per_bcell[z_index] = atoms_per_z;
+        atoms_num_info[2 * z_index] = na_grid;
+        atoms_num_info[2 * z_index + 1] = atoms_per_z;
         for (int id = 0; id < na_grid; id++)
         {
             int mcell_index = bcell_start_index + id;

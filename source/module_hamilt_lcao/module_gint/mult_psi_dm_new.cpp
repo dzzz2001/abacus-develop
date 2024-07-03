@@ -49,8 +49,9 @@ void mult_psi_DM_new(
                 }
             }
             const int ib_length = last_ib - first_ib;
-            if (ib_length <= 0)
+            if (ib_length <= 0) {
                 continue;
+            }
 
             int cal_num = 0;
             for (int ib = first_ib; ib < last_ib; ++ib)
@@ -95,8 +96,9 @@ void mult_psi_DM_new(
                 }
             }
 
-            if (!same_flag)
+            if (!same_flag) {
                 continue;
+            }
 
             const int bcell2 = gt.bcell_start[grid_index] + ia2;
             const int iat2 = gt.which_atom[bcell2];
@@ -119,8 +121,9 @@ void mult_psi_DM_new(
                 }
             }
             const int ib_length = last_ib - first_ib;
-            if (ib_length <= 0)
+            if (ib_length <= 0) {
                 continue;
+            }
 
             int cal_pair_num = 0;
             for (int ib = first_ib; ib < last_ib; ++ib)

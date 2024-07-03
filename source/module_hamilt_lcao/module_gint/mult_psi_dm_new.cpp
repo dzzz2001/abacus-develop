@@ -14,20 +14,6 @@ void mult_psi_DM_new(
     double** psi_DM, const hamilt::HContainer<double>* DM,
     const bool if_symm) // 1: density, 2: force
 {
-    bool* all_out_of_range = new bool[na_grid];
-    for (int ia = 0; ia < na_grid; ++ia) // number of atoms
-    {
-        all_out_of_range[ia] = true;
-        for (int ib = 0; ib < gt.bxyz; ++ib) // number of small box in big box
-        {
-            if (cal_flag[ib][ia])
-            {
-                all_out_of_range[ia] = false;
-                // break; //mohan add 2012-07-10
-            }
-        }
-    }
-
     constexpr char side = 'L', uplo = 'U';
     constexpr char transa = 'N', transb = 'N';
     constexpr double alpha_symm = 1, beta = 1;
@@ -36,9 +22,6 @@ void mult_psi_DM_new(
 
     for (int ia1 = 0; ia1 < na_grid; ia1++)
     {
-        if (all_out_of_range[ia1])
-            continue;
-
         const int mcell_index1 = gt.bcell_start[grid_index] + ia1;
         const int iat1 = gt.which_atom[mcell_index1];
         const double* tmp_matrix = DM->find_pair(iat1, iat1)->get_pointer(0);
@@ -99,9 +82,6 @@ void mult_psi_DM_new(
 
         for (int ia2 = start; ia2 < na_grid; ia2++)
         {
-            if (all_out_of_range[ia2])
-                continue;
-
             //---------------------------------------------
             // check if we need to calculate the big cell.
             //---------------------------------------------
@@ -167,6 +147,5 @@ void mult_psi_DM_new(
             }
         } // ia2
     }     // ia1
-    delete[] all_out_of_range;
 }
 }

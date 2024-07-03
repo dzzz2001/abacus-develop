@@ -174,7 +174,7 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
             psi_vldr3.memset_device_async(streams[sid], sid, 0);
 
             dim3 grid_psi(nbzp, gridt.bxyz);
-            dim3 block_psi(128);
+            dim3 block_psi(64);
             get_psi_and_vldr3<<<grid_psi,
                                 block_psi,
                                 0,

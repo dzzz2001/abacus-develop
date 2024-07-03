@@ -151,32 +151,6 @@ __global__ void dot_product_stress(const double* d2psi,
     }
 }
 
-// __global__ void dot_product_stress(const double* d2psi,
-//                                    const double* psi_dm,
-//                                    const int size,
-//                                    double* stress)
-// {
-//     __shared__ double cache[32 * 6];
-//     const int tid = threadIdx.x;
-//     const int stride = blockDim.x * gridDim.x;
-//     double tmp[6] = {0.0};
-//     for(int id = threadIdx.x + blockIdx.x * blockDim.x; id < size; id += stride)
-//     {   
-//         const double psi_dm_2 = psi_dm[id] * 2;
-//         const int id_stress = id * 6;
-//         tmp[0] += d2psi[id_stress] * psi_dm_2;
-//         tmp[1] += d2psi[id_stress + 1] * psi_dm_2;
-//         tmp[2] += d2psi[id_stress + 2] * psi_dm_2;
-//         tmp[3] += d2psi[id_stress + 3] * psi_dm_2;
-//         tmp[4] += d2psi[id_stress + 4] * psi_dm_2;
-//         tmp[5] += d2psi[id_stress + 5] * psi_dm_2;
-//     }
-
-//     for (int i = 0; i < 6; i++)
-//     {
-//         atomicAdd(&stress[i], tmp[i]); // Use atomicAdd() instead of atomic_add().
-//     }
-// }
 
 __global__ void dot_product_force(const int bxyz,
                                   const int nwmax,

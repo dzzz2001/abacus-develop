@@ -122,7 +122,7 @@ class Grid_Technique : public Grid_MeshBall {
                        const int& iat2) const;
 
   private:
-    void cal_max_box_index(void);
+    void cal_max_box_index();
 
     int maxB1;
     int maxB2;
@@ -144,7 +144,7 @@ class Grid_Technique : public Grid_MeshBall {
                             const int& startz_current,
                             const UnitCell& ucell);
     void init_atoms_on_grid2(const int* index2normal, const UnitCell& ucell);
-    void cal_grid_integration_index(void);
+    void cal_grid_integration_index();
     void cal_trace_lo(const UnitCell& ucell);
     void check_bigcell(int* ind_bigcell, char* bigcell_on_processor);
     void get_startind(const int& ny,

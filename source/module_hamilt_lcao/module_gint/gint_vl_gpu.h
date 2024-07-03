@@ -5,7 +5,8 @@
 #include "grid_technique.h"
 #include "kernels/cuda/cuda_tools.cuh"
 
-namespace GintKernel {
+namespace GintKernel
+{
 
 void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
                        const double* vlocal,
@@ -28,24 +29,24 @@ void gtask_vlocal(const Grid_Technique& gridt,
                   double* vldr3);
 
 void alloc_mult_vlocal(const Grid_Technique& gridt,
-                       const UnitCell& ucell,
-                       const int grid_index_ij,
-                       const int max_atom,
-                       double* psi,
-                       double* psi_vldr3,
-                       std::vector<Cuda_Mem_Wrapper<double>>& grid_vlocal_g,
-                       int* mat_m,
-                       int* mat_n,
-                       int* mat_k,
-                       int* mat_lda,
-                       int* mat_ldb,
-                       int* mat_ldc,
-                       double** mat_A,
-                       double** mat_B,
-                       double** mat_C,
-                       int& atom_pair_num,
-                       int& max_m,
-                       int& max_n);
+                        const UnitCell& ucell,
+                        const int grid_index_ij,
+                        const int max_atom,
+                        double* psi,
+                        double* psi_vldr3,
+                        std::vector<Cuda_Mem_Wrapper<double>>& grid_vlocal_g,
+                        int* mat_m,
+                        int* mat_n,
+                        int* mat_k,
+                        int* mat_lda,
+                        int* mat_ldb,
+                        int* mat_ldc,
+                        double** mat_A,
+                        double** mat_B,
+                        double** mat_C,
+                        int& atom_pair_num,
+                        int& max_m,
+                        int& max_n);
 } // namespace GintKernel
 
 #endif

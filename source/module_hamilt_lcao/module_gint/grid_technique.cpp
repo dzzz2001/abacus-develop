@@ -203,6 +203,7 @@ void Grid_Technique::init_atoms_on_grid(const int& ny,
     // (5) record how many atoms on
     // each local grid point (ix,iy,iz)
     int nat_local = 0;
+    this->total_atoms_on_grid = 0;
     for (int iat = 0; iat < ucell.nat; iat++) {
         const int it = ucell.iat2it[iat];
         const double rcut_square = this->rcuts[it] * this->rcuts[it];

@@ -68,7 +68,7 @@ void Grid_Technique::set_pbc_grid(
     this->ucell = &ucell;
     this->dr_uniform = dr_uniform;
 
-    this->nwmax = 0;
+    this->nwmax = ucell.nwmax;
     this->ntype = ucell.ntype;
 
     this->rcuts = rcuts;
@@ -263,7 +263,6 @@ void Grid_Technique::init_atoms_on_grid(const int& ny,
         if (this->in_this_processor[iat])
         {
             ++nat_local;
-            this->nwmax = std::max(this->nwmax, ucell.atoms[it].nw);
         }
     }
 

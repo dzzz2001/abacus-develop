@@ -9,3 +9,4 @@ stru_file           STRU
 basis_type          lcao
 dft_functional      pbe
 ecutwfc			    10
+scf_nmax            10

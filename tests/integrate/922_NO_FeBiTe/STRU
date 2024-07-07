@@ -1,12 +1,12 @@
 ATOMIC_SPECIES
-Ag  107.8682      ../../PP_ORB/Ag_ONCV_PBE-1.0.upf
+Fe  55.845        ../../PP_ORB/Fe_ONCV_PBE-1.0.upf 
 Bi  208.9804      ../../PP_ORB/Bi_ONCV_PBE-1.0.upf
 Te  127.6         ../../PP_ORB/Te_ONCV_PBE-1.0.upf
 
 NUMERICAL_ORBITAL
-../../PP_ORB/Ag_gga_9au_60Ry_4s2p2d1f.orb
-../../PP_ORB/Bi_gga_9au_60Ry_2s2p2d.orb
-../../PP_ORB/Te_gga_9au_60Ry_2s2p2d.orb
+../../PP_ORB/Fe_gga_6au_100Ry_4s2p2d1f.orb
+../../PP_ORB/Bi_gga_9au_100Ry_2s2p2d.orb
+../../PP_ORB/Te_dojo_6au.orb
 
 LATTICE_CONSTANT
 1.8897261258369282 
@@ -19,7 +19,7 @@ LATTICE_VECTORS
 ATOMIC_POSITIONS
 Direct
 
-Ag
+Fe
 0.0000000000
 1
 0.0000000000 0.0000000000 0.0000000000 1 1 1 mag 0.0 

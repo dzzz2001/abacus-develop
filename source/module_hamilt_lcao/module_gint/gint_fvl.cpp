@@ -1,4 +1,5 @@
 #include "gint_k.h"
+#include "gint.h"
 #include "module_base/timer.h"
 #include "module_base/ylm.h"
 #include "module_hamilt_pw/hamilt_pwdft/global.h"
@@ -25,12 +26,10 @@ void Gint::gint_kernel_force(
 
     //evaluate psi and dpsi on grids
 	Gint_Tools::Array_Pool<double> psir_ylm(this->bxyz, LD_pool);
-	Gint_Tools::Array_Pool<double> dpsir_ylm_x(this->bxyz, LD_pool);
-	Gint_Tools::Array_Pool<double> dpsir_ylm_y(this->bxyz, LD_pool);
-	Gint_Tools::Array_Pool<double> dpsir_ylm_z(this->bxyz, LD_pool);
+	Gint_Tools::Array_Pool<double> dpsir_ylm(this->bxyz, 3 * LD_pool);
 
-	Gint_Tools::cal_dpsir_ylm(*this->gridt, this->bxyz, na_grid, grid_index, delta_r,	block_index, block_size, cal_flag,
-		psir_ylm.ptr_2D, dpsir_ylm_x.ptr_2D, dpsir_ylm_y.ptr_2D, dpsir_ylm_z.ptr_2D);
+	Gint_Tools::cal_dpsir_ylm_new(*this->gridt, this->bxyz, na_grid, grid_index, delta_r,	block_index, block_size, cal_flag,
+		psir_ylm.ptr_2D, dpsir_ylm.ptr_2D);
 
     //calculating f_mu(r) = v(r)*psi_mu(r)*dv
 	const Gint_Tools::Array_Pool<double> psir_vlbr3 
@@ -68,9 +67,8 @@ void Gint::gint_kernel_force(
 	if(isforce)
 	{
         //do integration to get force
-		this-> cal_meshball_force(grid_index, na_grid, block_size, block_index,
-			psir_vlbr3_DM.ptr_2D, dpsir_ylm_x.ptr_2D, dpsir_ylm_y.ptr_2D, dpsir_ylm_z.ptr_2D, 
-			fvl_dphi);
+		this-> cal_meshball_force_new(grid_index, na_grid, block_size, block_index,
+			psir_vlbr3_DM.ptr_2D, dpsir_ylm.ptr_2D, fvl_dphi);
 	}
 	if(isstress)
 	{
@@ -81,8 +79,8 @@ void Gint::gint_kernel_force(
 		Gint_Tools::Array_Pool<double> dpsir_ylm_yy(this->bxyz, LD_pool);
 		Gint_Tools::Array_Pool<double> dpsir_ylm_yz(this->bxyz, LD_pool);
 		Gint_Tools::Array_Pool<double> dpsir_ylm_zz(this->bxyz, LD_pool);
-		Gint_Tools::cal_dpsirr_ylm(*this->gridt, this->bxyz, na_grid, grid_index, block_index, block_size, cal_flag,
-			dpsir_ylm_x.ptr_2D, dpsir_ylm_y.ptr_2D, dpsir_ylm_z.ptr_2D,
+		Gint_Tools::cal_dpsirr_ylm_new(*this->gridt, this->bxyz, na_grid, grid_index, block_index, block_size, cal_flag,
+			dpsir_ylm.ptr_2D,
 			dpsir_ylm_xx.ptr_2D, dpsir_ylm_xy.ptr_2D, dpsir_ylm_xz.ptr_2D,
 			dpsir_ylm_yy.ptr_2D, dpsir_ylm_yz.ptr_2D, dpsir_ylm_zz.ptr_2D);
 
@@ -356,6 +354,45 @@ void Gint::cal_meshball_force(
         }
     }
 	
+	return;
+}
+
+void Gint::cal_meshball_force_new(
+    const int grid_index,
+    const int na_grid,  					    // how many atoms on this (i,j,k) grid
+	const int*const block_size, 			    // block_size[na_grid],	number of columns of a band
+	const int*const block_index,		    	// block_index[na_grid+1], count total number of atomis orbitals
+	const double*const*const psir_vlbr3_DMR,	    // psir_vlbr3[this->bxyz][LD_pool]
+    const double*const*const dpsir,
+    ModuleBase::matrix *force)
+{
+    ModuleBase::timer::tick("Gint_Tools", "cal_meshball_force");
+	const int inc=1;
+	const int inc_dpsir=3;
+    for(int ia1=0;ia1<na_grid;ia1++)
+    {
+        const int mcell_index=this->gridt->bcell_start[grid_index] + ia1;
+        const int iat=this->gridt->which_atom[mcell_index]; // index of atom
+
+        for(int ib=0;ib<this->bxyz;ib++)
+        {
+            const double rx = ddot_(&block_size[ia1], 
+                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3], &inc_dpsir);
+
+            force[0](iat,0)+=rx*2.0;
+
+            const double ry = ddot_(&block_size[ia1], 
+                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3], &inc_dpsir);
+
+            force[0](iat,1)+=ry*2.0;
+
+            const double rz = ddot_(&block_size[ia1], 
+                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3], &inc_dpsir);
+
+            force[0](iat,2)+=rz*2.0;          
+        }
+    }
+    ModuleBase::timer::tick("Gint_Tools", "cal_meshball_force");
 	return;
 }
 

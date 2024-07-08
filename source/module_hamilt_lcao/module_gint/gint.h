@@ -192,6 +192,16 @@ class Gint {
         const double* const* const dpsir_y,        // psir_vlbr3[bxyz][LD_pool]
         const double* const* const dpsir_z,        // psir_vlbr3[bxyz][LD_pool]
         ModuleBase::matrix* force);
+        
+    
+    void cal_meshball_force_new(
+        const int grid_index,
+        const int na_grid,  					    // how many atoms on this (i,j,k) grid
+        const int*const block_size, 			    // block_size[na_grid],	number of columns of a band
+        const int*const block_index,		    	// block_index[na_grid+1], count total number of atomis orbitals
+        const double*const*const psir_vlbr3_DMR,	    // psir_vlbr3[this->bxyz][LD_pool]
+        const double*const*const dpsir,
+        ModuleBase::matrix *force);
 
     void cal_meshball_stress(
         const int na_grid,            // how many atoms on this (i,j,k) grid

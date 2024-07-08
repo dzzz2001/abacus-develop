@@ -92,6 +92,16 @@ class Ylm
 			const double& ydr,
 			const double& zdr,
 			std::vector<double> &rly);
+
+	static void grad_rl_sph_harm_new
+	(
+		const int& Lmax, //max momentum of L
+		const double& x,
+		const double& y,
+		const double& z,
+		std::vector<double>& rly,
+		double** grly
+	);
 	
 	/**
 	 * @brief Get the ylm real object (used in getting overlap) 

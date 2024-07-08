@@ -64,8 +64,9 @@ void cal_dpsir_ylm(
 
                 // array to store spherical harmonics and its derivatives
                 std::vector<double> rly;
-                std::vector<std::vector<double>> grly;
-                ModuleBase::Ylm::grad_rl_sph_harm(ucell.atoms[it].nwl, dr[0], dr[1], dr[2], rly, grly);
+                const int lmax = ucell.atoms[it].nwl + 1;
+                Gint_Tools::Array_Pool<double> grly(lmax * lmax, 3);
+                ModuleBase::Ylm::grad_rl_sph_harm_new(ucell.atoms[it].nwl, dr[0], dr[1], dr[2], rly, grly.ptr_2D);
                 if (distance < 1e-9)
                     distance = 1e-9;
 
@@ -122,9 +123,9 @@ void cal_dpsir_ylm(
                     const double tmpdphi_rly = (dtmp - tmp * ll / distance) / rl * rly[idx_lm] / distance;
                     const double tmprl = tmp / rl;
 
-                    p_dpsi_x[iw] = tmpdphi_rly * dr[0] + tmprl * grly[idx_lm][0];
-                    p_dpsi_y[iw] = tmpdphi_rly * dr[1] + tmprl * grly[idx_lm][1];
-                    p_dpsi_z[iw] = tmpdphi_rly * dr[2] + tmprl * grly[idx_lm][2];
+                    p_dpsi_x[iw] = tmpdphi_rly * dr[0] + tmprl * grly.ptr_2D[idx_lm][0];
+                    p_dpsi_y[iw] = tmpdphi_rly * dr[1] + tmprl * grly.ptr_2D[idx_lm][1];
+                    p_dpsi_z[iw] = tmpdphi_rly * dr[2] + tmprl * grly.ptr_2D[idx_lm][2];
                 } // iw
             }     // else
         }

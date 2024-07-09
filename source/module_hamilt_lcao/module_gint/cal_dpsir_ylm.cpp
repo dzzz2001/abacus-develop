@@ -214,7 +214,6 @@ void cal_dpsir_ylm_new(
                 const double x03 = x0 * x3 / 2;
 
                 double tmp, dtmp;
-                ModuleBase::timer::tick("Gint_Tools", "cal_dpsir_ylm_loop");
                 for (int iw = 0; iw < atom->nw; ++iw)
                 {
                     // this is a new 'l', we need 1D orbital wave
@@ -224,11 +223,11 @@ void cal_dpsir_ylm_new(
                         auto psi_uniform = it_psi_uniform[iw];
                         auto dpsi_uniform = it_dpsi_uniform[iw];
                         // if ( iq[id] >= philn.nr_uniform-4)
-                        // if (iq >= it_psi_nr_uniform[iw] - 4)
-                        // {
-                        //     tmp = dtmp = 0.0;
-                        // }
-                        // else
+                        if (iq >= it_psi_nr_uniform[iw] - 4)
+                        {
+                            tmp = dtmp = 0.0;
+                        }
+                        else
                         {
                             // use Polynomia Interpolation method to get the
                             // wave functions
@@ -244,7 +243,7 @@ void cal_dpsir_ylm_new(
                     const int ll = atom->iw2l[iw];
                     const int idx_lm = atom->iw2_ylm[iw];
 
-                    const double rl = pow(distance, ll);
+                    const double rl = pow_int(distance, ll);
 
                     // 3D wave functions
                     p_psi[iw] = tmp * rly[idx_lm] / rl;
@@ -257,7 +256,6 @@ void cal_dpsir_ylm_new(
                     p_dpsi[iw * 3 + 1] = tmpdphi_rly * dr[1] + tmprl * grly.ptr_2D[idx_lm][1];
                     p_dpsi[iw * 3 + 2] = tmpdphi_rly * dr[2] + tmprl * grly.ptr_2D[idx_lm][2];
                 } // iw
-                ModuleBase::timer::tick("Gint_Tools", "cal_dpsir_ylm_loop");
             }     // else
         }
     }

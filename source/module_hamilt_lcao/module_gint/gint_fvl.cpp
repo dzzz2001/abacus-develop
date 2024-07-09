@@ -79,7 +79,7 @@ void Gint::gint_kernel_force(
 			ddpsir_ylm.ptr_2D);
 
         //do integration to get stress
-		this-> cal_meshball_stress_new(na_grid, block_index, psir_vlbr3_DM.ptr_2D, 
+		this->cal_meshball_stress_new(na_grid, block_index, psir_vlbr3_DM.ptr_2D, 
 			ddpsir_ylm.ptr_2D, svl_dphi);
 	}
 
@@ -359,7 +359,6 @@ void Gint::cal_meshball_force_new(
     const double*const*const dpsir,
     ModuleBase::matrix *force)
 {
-    ModuleBase::timer::tick("Gint_Tools", "cal_meshball_force");
 	const int inc=1;
 	const int inc_dpsir=3;
     for(int ia1=0;ia1<na_grid;ia1++)
@@ -385,7 +384,6 @@ void Gint::cal_meshball_force_new(
             force[0](iat,2)+=rz*2.0;          
         }
     }
-    ModuleBase::timer::tick("Gint_Tools", "cal_meshball_force");
 	return;
 }
 
@@ -427,7 +425,6 @@ void Gint::cal_meshball_stress_new(
     const double*const*const ddpsir,
     ModuleBase::matrix *stress)
 {
-    ModuleBase::timer::tick("Gint_Tools", "cal_meshball_stress_new");
     constexpr int inc=1;
 	constexpr int inc_ddpsir=6;
     for(int ib=0; ib<this->bxyz; ++ib)
@@ -445,6 +442,5 @@ void Gint::cal_meshball_stress_new(
         const double rzz = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 5, &inc_ddpsir);
         stress[0](2,2)+=rzz*2.0;
     }
-	ModuleBase::timer::tick("Gint_Tools", "cal_meshball_stress_new");
     return;
 }

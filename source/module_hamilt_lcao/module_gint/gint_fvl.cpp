@@ -73,21 +73,14 @@ void Gint::gint_kernel_force(
 	if(isstress)
 	{
         //calculating g_mu(r)*(r-R) where R is the location of atom
-		Gint_Tools::Array_Pool<double> dpsir_ylm_xx(this->bxyz, LD_pool);
-		Gint_Tools::Array_Pool<double> dpsir_ylm_xy(this->bxyz, LD_pool);
-		Gint_Tools::Array_Pool<double> dpsir_ylm_xz(this->bxyz, LD_pool);
-		Gint_Tools::Array_Pool<double> dpsir_ylm_yy(this->bxyz, LD_pool);
-		Gint_Tools::Array_Pool<double> dpsir_ylm_yz(this->bxyz, LD_pool);
-		Gint_Tools::Array_Pool<double> dpsir_ylm_zz(this->bxyz, LD_pool);
+		Gint_Tools::Array_Pool<double> ddpsir_ylm(this->bxyz, LD_pool * 6);
 		Gint_Tools::cal_dpsirr_ylm_new(*this->gridt, this->bxyz, na_grid, grid_index, block_index, block_size, cal_flag,
 			dpsir_ylm.ptr_2D,
-			dpsir_ylm_xx.ptr_2D, dpsir_ylm_xy.ptr_2D, dpsir_ylm_xz.ptr_2D,
-			dpsir_ylm_yy.ptr_2D, dpsir_ylm_yz.ptr_2D, dpsir_ylm_zz.ptr_2D);
+			ddpsir_ylm.ptr_2D);
 
         //do integration to get stress
-		this-> cal_meshball_stress(na_grid, block_index, psir_vlbr3_DM.ptr_2D, 
-			dpsir_ylm_xx.ptr_2D, dpsir_ylm_xy.ptr_2D, dpsir_ylm_xz.ptr_2D,
-			dpsir_ylm_yy.ptr_2D, dpsir_ylm_yz.ptr_2D, dpsir_ylm_zz.ptr_2D, svl_dphi);
+		this-> cal_meshball_stress_new(na_grid, block_index, psir_vlbr3_DM.ptr_2D, 
+			ddpsir_ylm.ptr_2D, svl_dphi);
 	}
 
     //release memories
@@ -424,5 +417,34 @@ void Gint::cal_meshball_stress(
         const double rzz = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, dpsir_zz[ib], &inc);
         stress[0](2,2)+=rzz*2.0;
     }
+    return;
+}
+
+void Gint::cal_meshball_stress_new(
+    const int na_grid,  					    // how many atoms on this (i,j,k) grid
+	const int*const block_index,		    	// block_index[na_grid+1], count total number of atomis orbitals
+	const double*const*const psir_vlbr3_DMR,
+    const double*const*const ddpsir,
+    ModuleBase::matrix *stress)
+{
+    ModuleBase::timer::tick("Gint_Tools", "cal_meshball_stress_new");
+    constexpr int inc=1;
+	constexpr int inc_ddpsir=6;
+    for(int ib=0; ib<this->bxyz; ++ib)
+    {
+        const double rxx = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib], &inc_ddpsir);
+        stress[0](0,0)+=rxx*2.0;
+        const double rxy = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 1, &inc_ddpsir);
+        stress[0](0,1)+=rxy*2.0;
+        const double rxz = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 2, &inc_ddpsir);
+        stress[0](0,2)+=rxz*2.0;
+        const double ryy = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 3, &inc_ddpsir);
+        stress[0](1,1)+=ryy*2.0;
+        const double ryz = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 4, &inc_ddpsir);
+        stress[0](1,2)+=ryz*2.0;
+        const double rzz = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 5, &inc_ddpsir);
+        stress[0](2,2)+=rzz*2.0;
+    }
+	ModuleBase::timer::tick("Gint_Tools", "cal_meshball_stress_new");
     return;
 }

@@ -216,6 +216,12 @@ class Gint {
         const double* const* const dpsir_zz,
         ModuleBase::matrix* stress);
 
+    void Gint::cal_meshball_stress_new(
+    const int na_grid,  					    // how many atoms on this (i,j,k) grid
+	const int*const block_index,		    	// block_index[na_grid+1], count total number of atomis orbitals
+	const double*const*const psir_vlbr3_DMR,
+    const double*const*const ddpsir,
+    ModuleBase::matrix *stress);
     //------------------------------------------------------
     // in gint_k_rho.cpp
     //------------------------------------------------------

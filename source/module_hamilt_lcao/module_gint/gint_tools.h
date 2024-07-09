@@ -290,8 +290,7 @@ void cal_dpsirr_ylm(
         const int* const block_size,       // block_size[na_grid],	number of columns of a band
         const bool* const* const cal_flag, // cal_flag[bxyz][na_grid],	whether the atom-grid distance is larger than cutoff
         double* const* const dpsir_ylm,
-        double* const* const dpsir_ylm_xx, double* const* const dpsir_ylm_xy, double* const* const dpsir_ylm_xz,
-        double* const* const dpsir_ylm_yy, double* const* const dpsir_ylm_yz, double* const* const dpsir_ylm_zz);
+        double* const* const ddpsir_ylm);
 
 void cal_ddpsir_ylm(
     const Grid_Technique& gt,

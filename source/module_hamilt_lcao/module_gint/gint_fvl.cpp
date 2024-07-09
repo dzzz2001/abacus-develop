@@ -382,12 +382,12 @@ void Gint::cal_meshball_force_new(
             force[0](iat,0)+=rx*2.0;
 
             const double ry = ddot_(&block_size[ia1], 
-                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3], &inc_dpsir);
+                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3 + 1], &inc_dpsir);
 
             force[0](iat,1)+=ry*2.0;
 
             const double rz = ddot_(&block_size[ia1], 
-                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3], &inc_dpsir);
+                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3 + 2], &inc_dpsir);
 
             force[0](iat,2)+=rz*2.0;          
         }

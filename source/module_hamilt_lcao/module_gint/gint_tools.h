@@ -22,7 +22,19 @@ enum class job_type
     dvlocal
 };
 // Hamiltonian, electron density, force, kinetic energy density, Hamiltonian for mGGA
-} // namespace Gint_Tools
+
+// when exp is a small integer, pow_int is far faster than pow
+static inline double pow_int(const double base, const int exp)
+{
+    assert(exp >= 0);
+    double result = 1;
+    for (int i = 0; i < exp; i++)
+    {
+        result *= base;
+    }
+    return result;
+}
+}
 
 // the class is used to pass input/output variables
 // into the unified interface gint

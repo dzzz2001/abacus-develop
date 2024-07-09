@@ -180,10 +180,8 @@ void cal_dpsir_ylm_new(
             double* const p_dpsi = &dpsir_ylm[ib][block_index[id] * 3];
             if (!cal_flag[ib][id])
             {
-                ModuleBase::timer::tick("Gint_Tools", "zeros");
                 ModuleBase::GlobalFunc::ZEROS(p_psi, block_size[id]);
                 ModuleBase::GlobalFunc::ZEROS(p_dpsi, block_size[id] * 3);
-                ModuleBase::timer::tick("Gint_Tools", "zeros");
             }
             else
             {
@@ -196,9 +194,7 @@ void cal_dpsir_ylm_new(
                 std::vector<double> rly;
                 const int lmax = ucell.atoms[it].nwl + 1;
                 Gint_Tools::Array_Pool<double> grly(lmax * lmax, 3);
-                ModuleBase::timer::tick("Gint_Tools", "cal_dpsir_ylm_sph");
                 ModuleBase::Ylm::grad_rl_sph_harm_new(ucell.atoms[it].nwl, dr[0], dr[1], dr[2], rly, grly.ptr_2D);
-                ModuleBase::timer::tick("Gint_Tools", "cal_dpsir_ylm_sph");
                 if (distance < 1e-9)
                     distance = 1e-9;
 

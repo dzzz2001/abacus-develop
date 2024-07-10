@@ -9,7 +9,7 @@ void Gint::gint_kernel_force(
 	const int grid_index,
 	const double delta_r,
 	double* vldr3,
-    const int LD_pool,
+    const int LD_pool_old,
 	const int is,
     const bool isforce,
     const bool isstress,
@@ -25,10 +25,11 @@ void Gint::gint_kernel_force(
 	Gint_Tools::get_block_info(*this->gridt, this->bxyz, na_grid, grid_index, block_iw, block_index, block_size, cal_flag);
 
     //evaluate psi and dpsi on grids
+	int LD_pool = block_index[na_grid];
 	Gint_Tools::Array_Pool<double> psir_ylm(this->bxyz, LD_pool);
 	Gint_Tools::Array_Pool<double> dpsir_ylm(this->bxyz, 3 * LD_pool);
 
-	Gint_Tools::cal_dpsir_ylm_new(*this->gridt, this->bxyz, na_grid, grid_index, delta_r,	block_index, block_size, cal_flag,
+	Gint_Tools::cal_dpsir_ylm_new(*this->gridt, this->bxyz, na_grid, grid_index, delta_r, block_index, block_size, cal_flag,
 		psir_ylm.ptr_2D, dpsir_ylm.ptr_2D);
 
     //calculating f_mu(r) = v(r)*psi_mu(r)*dv
@@ -79,8 +80,8 @@ void Gint::gint_kernel_force(
 			ddpsir_ylm.ptr_2D);
 
         //do integration to get stress
-		this->cal_meshball_stress_new(na_grid, block_index, psir_vlbr3_DM.ptr_2D, 
-			ddpsir_ylm.ptr_2D, svl_dphi);
+		this->cal_meshball_stress_new(na_grid, block_index, psir_vlbr3_DM.ptr_1D, 
+			ddpsir_ylm.ptr_1D, svl_dphi);
 	}
 
     //release memories
@@ -421,26 +422,33 @@ void Gint::cal_meshball_stress(
 void Gint::cal_meshball_stress_new(
     const int na_grid,  					    // how many atoms on this (i,j,k) grid
 	const int*const block_index,		    	// block_index[na_grid+1], count total number of atomis orbitals
-	const double*const*const psir_vlbr3_DMR,
-    const double*const*const ddpsir,
+	const double*const psir_vlbr3_DMR,
+    const double*const ddpsir,
     ModuleBase::matrix *stress)
 {
-    constexpr int inc=1;
-	constexpr int inc_ddpsir=6;
-    for(int ib=0; ib<this->bxyz; ++ib)
+	double rxx = 0;
+	double rxy = 0;
+	double rxz = 0;
+	double ryy = 0;
+	double ryz = 0;
+	double rzz = 0;
+	const int size = block_index[na_grid] * this->bxyz;
+
+    for(int i=0; i<size; ++i)
     {
-        const double rxx = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib], &inc_ddpsir);
-        stress[0](0,0)+=rxx*2.0;
-        const double rxy = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 1, &inc_ddpsir);
-        stress[0](0,1)+=rxy*2.0;
-        const double rxz = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 2, &inc_ddpsir);
-        stress[0](0,2)+=rxz*2.0;
-        const double ryy = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 3, &inc_ddpsir);
-        stress[0](1,1)+=ryy*2.0;
-        const double ryz = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 4, &inc_ddpsir);
-        stress[0](1,2)+=ryz*2.0;
-        const double rzz = ddot_(&block_index[na_grid], psir_vlbr3_DMR[ib], &inc, ddpsir[ib] + 5, &inc_ddpsir);
-        stress[0](2,2)+=rzz*2.0;
+		double psir_vlbr3 = psir_vlbr3_DMR[i];
+		rxx += psir_vlbr3 * ddpsir[i * 6];
+		rxy += psir_vlbr3 * ddpsir[i * 6 + 1];
+		rxz += psir_vlbr3 * ddpsir[i * 6 + 2];
+		ryy += psir_vlbr3 * ddpsir[i * 6 + 3];
+		ryz += psir_vlbr3 * ddpsir[i * 6 + 4];
+		rzz += psir_vlbr3 * ddpsir[i * 6 + 5];
     }
+	stress[0](0,0) += rxx*2;
+    stress[0](0,1) += rxy*2;
+	stress[0](0,2) += rxz*2;
+    stress[0](1,1) += ryy*2;
+    stress[0](1,2) += ryz*2;
+    stress[0](2,2) += rzz*2;
     return;
 }

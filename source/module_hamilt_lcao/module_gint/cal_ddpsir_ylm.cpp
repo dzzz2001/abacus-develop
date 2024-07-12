@@ -112,8 +112,9 @@ void cal_ddpsir_ylm(
                         ModuleBase::Ylm::grad_rl_sph_harm(ucell.atoms[it].nwl, dr1[0], dr1[1], dr1[2], rly, grly.get_ptr_2D());
 
                         double distance1 = std::sqrt(dr1[0] * dr1[0] + dr1[1] * dr1[1] + dr1[2] * dr1[2]);
-                        if (distance1 < 1e-9)
+                        if (distance1 < 1e-9) {
                             distance1 = 1e-9;
+}
 
                         const double position = distance1 / delta_r;
 

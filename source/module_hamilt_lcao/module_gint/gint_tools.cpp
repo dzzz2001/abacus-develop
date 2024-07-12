@@ -7,6 +7,7 @@
 
 #include "module_base/timer.h"
 #include "module_base/ylm.h"
+#include "module_base/array_pool.h"
 #include "module_basis/module_ao/ORB_read.h"
 #include "module_hamilt_pw/hamilt_pwdft/global.h"
 
@@ -233,7 +234,7 @@ void cal_dpsirr_ylm(
 
 	// atomic basis sets
 	// psir_vlbr3[bxyz][LD_pool]
-    Gint_Tools::Array_Pool<double> get_psir_vlbr3(
+    ModuleBase::Array_Pool<double> get_psir_vlbr3(
         const int bxyz,
         const int na_grid,  					    // how many atoms on this (i,j,k) grid
 		const int LD_pool,
@@ -242,7 +243,7 @@ void cal_dpsirr_ylm(
 		const double*const vldr3,			    	// vldr3[bxyz]
 		const double*const*const psir_ylm)		    // psir_ylm[bxyz][LD_pool]
 	{
-		Gint_Tools::Array_Pool<double> psir_vlbr3(bxyz, LD_pool);
+		ModuleBase::Array_Pool<double> psir_vlbr3(bxyz, LD_pool);
 		for(int ib=0; ib<bxyz; ++ib)
 		{
 			for(int ia=0; ia<na_grid; ++ia)
@@ -251,14 +252,14 @@ void cal_dpsirr_ylm(
 				{
 					for(int i=block_index[ia]; i<block_index[ia+1]; ++i)
 					{
-						psir_vlbr3.ptr_2D[ib][i]=psir_ylm[ib][i]*vldr3[ib];
+						psir_vlbr3[ib][i]=psir_ylm[ib][i]*vldr3[ib];
 					}
 				}
 				else
 				{
 					for(int i=block_index[ia]; i<block_index[ia+1]; ++i)
 					{
-						psir_vlbr3.ptr_2D[ib][i]=0;
+						psir_vlbr3[ib][i]=0;
 					}
 				}
 

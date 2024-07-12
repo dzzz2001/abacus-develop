@@ -17,8 +17,8 @@ namespace ModuleBase
     public:
         Array_Pool();
         Array_Pool(const int nr, const int nc);
-        Array_Pool(Array_Pool<T>&& other) = default;
-        Array_Pool& operator=(Array_Pool<T>&& other) = default;
+        Array_Pool(Array_Pool<T>&& other);
+        Array_Pool& operator=(Array_Pool<T>&& other);
         ~Array_Pool();
         Array_Pool(const Array_Pool<T>& other) = delete;
         Array_Pool& operator=(const Array_Pool& other) = delete;
@@ -56,6 +56,38 @@ namespace ModuleBase
     {
         delete[] ptr_2D;
         delete[] ptr_1D;
+    }
+
+    template <typename T>
+    Array_Pool<T>::Array_Pool(Array_Pool<T>&& other)
+    {
+        ptr_2D = other.ptr_2D;
+        ptr_1D = other.ptr_1D;
+        nr = other.nr;
+        nc = other.nc;
+        other.ptr_2D = nullptr;
+        other.ptr_1D = nullptr;
+        other.nr = 0;
+        other.nc = 0;
+    }
+
+    template <typename T>
+    Array_Pool<T>& Array_Pool<T>::operator=(Array_Pool<T>&& other)
+    {
+        if (this != &other)
+        {
+            delete[] ptr_2D;
+            delete[] ptr_1D;
+            ptr_2D = other.ptr_2D;
+            ptr_1D = other.ptr_1D;
+            nr = other.nr;
+            nc = other.nc;
+            other.ptr_2D = nullptr;
+            other.ptr_1D = nullptr;
+            other.nr = 0;
+            other.nc = 0;
+        }
+        return *this;
     }
 
 }

@@ -58,14 +58,17 @@ void Center2_Orb::Orb11::init_radial_table(const std::set<size_t>& radials)
     const size_t rmesh = Center2_Orb::get_rmesh(this->nA.getRcut(), this->nB.getRcut(), dr_);
 
     std::set<size_t> radials_used;
-    for (const size_t& ir: radials)
-        if (ir < rmesh)
+    for (const size_t& ir: radials) {
+        if (ir < rmesh) {
             radials_used.insert(ir);
+}
+}
 
     for (int LAB = std::abs(LA - LB); LAB <= LA + LB; ++LAB)
     {
-        if ((LAB - std::abs(LA - LB)) % 2 == 1) // if LA+LB-LAB == odd, then Gaunt_Coefficients = 0
+        if ((LAB - std::abs(LA - LB)) % 2 == 1) { // if LA+LB-LAB == odd, then Gaunt_Coefficients = 0
             continue;
+}
 
         this->Table_r[LAB].resize(rmesh, 0);
         this->Table_dr[LAB].resize(rmesh, 0);
@@ -94,8 +97,9 @@ double Center2_Orb::Orb11::cal_overlap(const ModuleBase::Vector3<double>& RA,
     const double distance = (distance_true >= tiny1) ? distance_true : distance_true + tiny1;
     const double RcutA = this->nA.getRcut();
     const double RcutB = this->nB.getRcut();
-    if (distance > (RcutA + RcutB))
+    if (distance > (RcutA + RcutB)) {
         return 0.0;
+}
 
     const int LA = this->nA.getL();
     const int LB = this->nB.getL();
@@ -119,12 +123,14 @@ double Center2_Orb::Orb11::cal_overlap(const ModuleBase::Vector3<double>& RA,
             const double Gaunt_real_A_B_AB = this->MGT.Gaunt_Coefficients(this->MGT.get_lm_index(LA, mA),
                                                                           this->MGT.get_lm_index(LB, mB),
                                                                           this->MGT.get_lm_index(LAB, mAB));
-            if (0 == Gaunt_real_A_B_AB)
+            if (0 == Gaunt_real_A_B_AB) {
                 continue;
+}
 
             const double ylm_solid = rly[this->MGT.get_lm_index(LAB, mAB)];
-            if (0 == ylm_solid)
+            if (0 == ylm_solid) {
                 continue;
+}
             const double ylm_real = (distance > tiny2) ? ylm_solid / pow(distance, LAB) : ylm_solid;
 
             const double i_exp = std::pow(-1.0, (LA - LB - LAB) / 2);
@@ -160,8 +166,9 @@ ModuleBase::Vector3<double> Center2_Orb::Orb11::cal_grad_overlap( // caoyu add 2
     const double distance = (distance_true >= tiny1) ? distance_true : distance_true + tiny1;
     const double RcutA = this->nA.getRcut();
     const double RcutB = this->nB.getRcut();
-    if (distance > (RcutA + RcutB))
+    if (distance > (RcutA + RcutB)) {
         return ModuleBase::Vector3<double>(0.0, 0.0, 0.0);
+}
 
     const int LA = this->nA.getL();
     const int LB = this->nB.getL();
@@ -187,8 +194,9 @@ ModuleBase::Vector3<double> Center2_Orb::Orb11::cal_grad_overlap( // caoyu add 2
             const double Gaunt_real_A_B_AB = this->MGT.Gaunt_Coefficients(this->MGT.get_lm_index(LA, mA),
                                                                           this->MGT.get_lm_index(LB, mB),
                                                                           this->MGT.get_lm_index(LAB, mAB));
-            if (0 == Gaunt_real_A_B_AB)
+            if (0 == Gaunt_real_A_B_AB) {
                 continue;
+}
 
             const double ylm_solid = rly[this->MGT.get_lm_index(LAB, mAB)];
             const double ylm_real = (distance > tiny2) ? ylm_solid / pow(distance, LAB) : ylm_solid;

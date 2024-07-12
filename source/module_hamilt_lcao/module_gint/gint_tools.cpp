@@ -153,10 +153,11 @@ void get_block_info(const Grid_Technique& gt, const int bxyz, const int na_grid,
 					gt.meshcell_pos[ib][2] + mt[2]};
 				const double distance = std::sqrt(dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2]);	// distance between atom and grid
 
-            if (distance > gt.rcuts[it] - 1.0e-10)
+            if (distance > gt.rcuts[it] - 1.0e-10) {
                 cal_flag[ib][id] = false;
-            else
+            } else {
                 cal_flag[ib][id] = true;
+}
         } // end ib
     }
 }

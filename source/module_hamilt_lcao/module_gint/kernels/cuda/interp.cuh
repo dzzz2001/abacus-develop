@@ -5,6 +5,32 @@
 
 namespace GintKernel
 {
+static __device__ double pow(double base, int exp)
+{
+    double result = 1.0;
+    switch (exp)
+    {
+    case 0:
+        return 1.0;
+    case 1:
+        return base;
+    case 2:
+        return base * base;
+    case 3:
+        return base * base * base;
+    case 4:
+        return base * base * base * base;
+    case 5:
+        return base * base * base * base * base;
+    default:
+        for (int i = 0; i < exp; i++)
+        {
+            result *= base;
+        }
+        return result;      
+    }
+}
+
 static __device__ void interp_rho(const double dist,
                                   const double delta_r,
                                   const int atype,

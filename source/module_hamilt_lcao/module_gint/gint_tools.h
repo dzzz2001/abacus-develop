@@ -136,6 +136,32 @@ class Gint_inout
 
 namespace Gint_Tools
 {
+
+inline double pow(const double base, const int exp)
+{
+    double result = 1.0;
+    switch (exp)
+    {
+    case 0:
+        return 1.0;
+    case 1:
+        return base;
+    case 2:
+        return base * base;
+    case 3:
+        return base * base * base;
+    case 4:
+        return base * base * base * base;
+    case 5:
+        return base * base * base * base * base;
+    default:
+        for (int i = 0; i < exp; i++)
+        {
+            result *= base;
+        }
+        return result;
+    }
+}
 // vindex[pw.bxyz]
 int* get_vindex(const int bxyz,
                 const int bx,

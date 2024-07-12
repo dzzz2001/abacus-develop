@@ -1,4 +1,5 @@
 #include "grid_meshball.h"
+#include "gint_tools.h"  // for pow(double, int)
 #include "module_base/memory.h"
 
 Grid_MeshBall::Grid_MeshBall()
@@ -127,7 +128,7 @@ double Grid_MeshBall::deal_with_atom_spillage(const double *pos)
 					cell[ip] = i*this->bigcell_vec1[ip] +
 						j*this->bigcell_vec2[ip] +
 						k*this->bigcell_vec3[ip];
-					dx += std::pow(cell[ip] - pos[ip], 2);
+					dx += pow(cell[ip] - pos[ip], 2);
 				}
 				r2 = std::min(dx, r2);
 			}

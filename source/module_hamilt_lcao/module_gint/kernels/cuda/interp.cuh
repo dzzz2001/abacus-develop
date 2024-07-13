@@ -7,7 +7,6 @@ namespace GintKernel
 {
 static __device__ double pow(double base, int exp)
 {
-    double result = 1.0;
     switch (exp)
     {
     case 0:
@@ -23,10 +22,7 @@ static __device__ double pow(double base, int exp)
     case 5:
         return base * base * base * base * base;
     default:
-        for (int i = 0; i < exp; i++)
-        {
-            result *= base;
-        }
+        double result = std::pow(base, exp);
         return result;      
     }
 }

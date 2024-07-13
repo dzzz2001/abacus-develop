@@ -139,7 +139,6 @@ namespace Gint_Tools
 
 inline double pow(const double base, const int exp)
 {
-    double result = 1.0;
     switch (exp)
     {
     case 0:
@@ -155,10 +154,7 @@ inline double pow(const double base, const int exp)
     case 5:
         return base * base * base * base * base;
     default:
-        for (int i = 0; i < exp; i++)
-        {
-            result *= base;
-        }
+        double result = std::pow(base, exp);
         return result;
     }
 }

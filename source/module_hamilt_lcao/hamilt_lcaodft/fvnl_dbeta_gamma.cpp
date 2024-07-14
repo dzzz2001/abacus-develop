@@ -131,7 +131,6 @@ void Force_LCAO<double>::cal_fvnl_dbeta(const elecstate::DensityMatrix<double, d
                         continue;
                     }
                     for (int iw2 = 0; iw2 < ucell.atoms[T2].nw; ++iw2)
-
                     {
                         const int iw2_all = start2 + iw2;
                         const int iw2_local = pv.global2local_col(iw2_all);
@@ -144,15 +143,12 @@ void Force_LCAO<double>::cal_fvnl_dbeta(const elecstate::DensityMatrix<double, d
                         double nlm[3] = {0, 0, 0};
                         double nlm_t[3] = {0, 0, 0}; // transpose
 
-                        std::vector<double> nlm1 = nlm_tot[ad1][iw1][0];
-                        std::vector<std::vector<double>> nlm2;
-                        nlm2.resize(3);
+                        double* nlm1 = nlm_tot[ad1][iw1][0].data();
+                        double* nlm2[3];
                         for (int i = 0; i < 3; i++)
                         {
-                            nlm2[i] = nlm_tot[ad2][iw2][i + 1];
+                            nlm2[i] = nlm_tot[ad2][iw2][i + 1].data();
                         }
-
-                        assert(nlm1.size() == nlm2[0].size());
 
                         const int nproj = ucell.infoNL.nproj[T0];
                         int ib = 0;
@@ -168,17 +164,17 @@ void Force_LCAO<double>::cal_fvnl_dbeta(const elecstate::DensityMatrix<double, d
                                 ib += 1;
                             }
                         }
-                        assert(ib == nlm1.size());
+                        // assert(ib == nlm1.size());
 
                         if (isstress)
                         {
-                            nlm1 = nlm_tot[ad2][iw2][0];
+                            nlm1 = nlm_tot[ad2][iw2][0].data();
                             for (int i = 0; i < 3; i++)
                             {
-                                nlm2[i] = nlm_tot[ad1][iw1][i + 1];
+                                nlm2[i] = nlm_tot[ad1][iw1][i + 1].data();
                             }
 
-                            assert(nlm1.size() == nlm2[0].size());
+                            // assert(nlm1.size() == nlm2[0].size());
 
                             const int nproj = ucell.infoNL.nproj[T0];
                             int ib = 0;
@@ -194,7 +190,7 @@ void Force_LCAO<double>::cal_fvnl_dbeta(const elecstate::DensityMatrix<double, d
                                     ib += 1;
                                 }
                             }
-                            assert(ib == nlm1.size());
+                            // assert(ib == nlm1.size());
                         }
                         // dbeta is minus, that's consistent.
                         // only one projector for each atom force.

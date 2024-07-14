@@ -366,24 +366,24 @@ void Gint::cal_meshball_force_new(
     {
         const int mcell_index=this->gridt->bcell_start[grid_index] + ia1;
         const int iat=this->gridt->which_atom[mcell_index]; // index of atom
-
+		double rx=0;
+		double ry=0;
+		double rz=0;
         for(int ib=0;ib<this->bxyz;ib++)
         {
-            const double rx = ddot_(&block_size[ia1], 
-                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3], &inc_dpsir);
-
-            force[0](iat,0)+=rx*2.0;
-
-            const double ry = ddot_(&block_size[ia1], 
-                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3 + 1], &inc_dpsir);
-
-            force[0](iat,1)+=ry*2.0;
-
-            const double rz = ddot_(&block_size[ia1], 
-                  &psir_vlbr3_DMR[ib][block_index[ia1]], &inc, &dpsir[ib][block_index[ia1] * 3 + 2], &inc_dpsir);
-
-            force[0](iat,2)+=rz*2.0;          
+			const double* p_psir_vlbr3 = &psir_vlbr3_DMR[ib][block_index[ia1]];
+			const double* p_dpsir = &dpsir[ib][block_index[ia1] * 3];
+			for(int i=0; i<block_size[ia1]; ++i)
+            {
+				const double psir_vlbr3 = p_psir_vlbr3[i];
+				rx += psir_vlbr3 * p_dpsir[i * 3];
+				ry += psir_vlbr3 * p_dpsir[i * 3 + 1];
+				rz += psir_vlbr3 * p_dpsir[i * 3 + 2];
+			}
         }
+		    force[0](iat,0)+=rx*2.0;
+            force[0](iat,1)+=ry*2.0;
+            force[0](iat,2)+=rz*2.0;
     }
 	return;
 }

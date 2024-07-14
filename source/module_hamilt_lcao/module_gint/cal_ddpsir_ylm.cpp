@@ -269,7 +269,7 @@ void cal_ddpsir_ylm(
                         const int idx_lm = atom->iw2_ylm[iw];
 
                         const double rl = pow_int(distance, ll);
-                        const double r_lp2 = pow_int(distance, ll + 2);
+                        const double r_lp2 =rl * distance * distance;
 
                         // d/dr (R_l / r^l)
                         const double tmpdphi = (dtmp - tmp * ll / distance) / rl;

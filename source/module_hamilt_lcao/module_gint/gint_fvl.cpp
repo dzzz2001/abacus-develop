@@ -9,7 +9,6 @@ void Gint::gint_kernel_force(
 	const int grid_index,
 	const double delta_r,
 	double* vldr3,
-    const int LD_pool,
 	const int is,
     const bool isforce,
     const bool isstress,
@@ -23,6 +22,7 @@ void Gint::gint_kernel_force(
     int* block_size=nullptr;
 	bool** cal_flag;
 	Gint_Tools::get_block_info(*this->gridt, this->bxyz, na_grid, grid_index, block_iw, block_index, block_size, cal_flag);
+	int LD_pool = block_index[na_grid];
 
     //evaluate psi and dpsi on grids
 	ModuleBase::Array_Pool<double> psir_ylm(this->bxyz, LD_pool);
@@ -62,7 +62,7 @@ void Gint::gint_kernel_force(
 	}
 	else
 	{
-		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, grid_index, na_grid, block_index, block_size, cal_flag, 
+		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, LD_pool, grid_index, na_grid, block_index, block_size, cal_flag, 
             psir_vlbr3.get_ptr_2D(), psir_vlbr3_DM.get_ptr_2D(), this->DMRGint[is], false);
 	}
 
@@ -112,7 +112,6 @@ void Gint::gint_kernel_force_meta(
 	const double delta_r,
 	double* vldr3,
 	double* vkdr3,
-    const int LD_pool,
 	const int is,
     const bool isforce,
     const bool isstress,
@@ -126,6 +125,7 @@ void Gint::gint_kernel_force_meta(
     int* block_size=nullptr;
 	bool** cal_flag;
 	Gint_Tools::get_block_info(*this->gridt, this->bxyz, na_grid, grid_index, block_iw, block_index, block_size, cal_flag);
+	int LD_pool = block_index[na_grid];
 
     //evaluate psi and dpsi on grids
 	ModuleBase::Array_Pool<double> psir_ylm(this->bxyz, LD_pool);
@@ -223,16 +223,16 @@ void Gint::gint_kernel_force_meta(
 	}
 	else
 	{
-		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, grid_index, na_grid, block_index, block_size, cal_flag,
+		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, LD_pool, grid_index, na_grid, block_index, block_size, cal_flag,
             psir_vlbr3.get_ptr_2D(), psir_vlbr3_DM.get_ptr_2D(), this->DMRGint[is], false);
 
-		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, grid_index, na_grid, block_index, block_size, cal_flag, 
+		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, LD_pool, grid_index, na_grid, block_index, block_size, cal_flag, 
             dpsir_x_vlbr3.get_ptr_2D(), dpsirx_v_DM.get_ptr_2D(), this->DMRGint[is], false);
 
-		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, grid_index, na_grid, block_index, block_size, cal_flag, 
+		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, LD_pool, grid_index, na_grid, block_index, block_size, cal_flag, 
             dpsir_y_vlbr3.get_ptr_2D(), dpsiry_v_DM.get_ptr_2D(), this->DMRGint[is], false);
 
-		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, grid_index, na_grid, block_index, block_size, cal_flag,
+		Gint_Tools::mult_psi_DMR(*this->gridt, this->bxyz, LD_pool, grid_index, na_grid, block_index, block_size, cal_flag,
             dpsir_z_vlbr3.get_ptr_2D(), dpsirz_v_DM.get_ptr_2D(), this->DMRGint[is], false);
 	}
 

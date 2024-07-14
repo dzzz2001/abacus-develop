@@ -314,6 +314,7 @@ void mult_psi_DM(
 // sum_nu,R rho_mu,nu(R) psi_nu, for multi-k
 void mult_psi_DMR(const Grid_Technique& gt,
                   const int bxyz,
+                  const int LD_pool,
                   const int& grid_index,
                   const int& na_grid,
                   const int* const block_index,

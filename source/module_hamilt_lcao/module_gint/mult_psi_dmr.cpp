@@ -2,14 +2,13 @@
 #include "module_base/timer.h"
 #include "module_base/ylm.h"
 namespace Gint_Tools{
-void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int& grid_index, const int& na_grid,
+void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int LD_pool, const int& grid_index, const int& na_grid,
                   const int* const block_index, const int* const block_size, bool** cal_flag, double** psi,
                   double** psi_DMR, const hamilt::HContainer<double>* DM, const bool if_symm)
 {
     double *psi2, *psi2_dmr;
     int iwi, iww;
     const UnitCell& ucell = *gt.ucell;
-    const int LD_pool = gt.max_atom * ucell.nwmax;
 
     // parameters for lapack subroutiens
     const char trans = 'N';

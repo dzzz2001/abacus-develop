@@ -136,8 +136,9 @@ class Gint_inout
 
 namespace Gint_Tools
 {
-
-inline double pow(const double base, const int exp)
+// if exponent is an integer between 0 and 5 (the most common cases in gint),
+// pow_int is much faster than std::pow
+inline double pow_int(const double base, const int exp)
 {
     switch (exp)
     {

@@ -115,7 +115,7 @@ void cal_dpsir_ylm(
                     const int ll = atom->iw2l[iw];
                     const int idx_lm = atom->iw2_ylm[iw];
 
-                    const double rl = pow(distance, ll);
+                    const double rl = pow_int(distance, ll);
 
                     // 3D wave functions
                     p_psi[iw] = tmp * rly[idx_lm] / rl;

@@ -157,16 +157,17 @@ void cal_dpsir_ylm_new(
     {
         const int mcell_index = gt.bcell_start[grid_index] + id;
         const int imcell = gt.which_bigcell[mcell_index];
-        int iat = gt.which_atom[mcell_index];
+        const int iat = gt.which_atom[mcell_index];
         const int it = ucell.iat2it[iat];
         const int ia = ucell.iat2ia[iat];
-        Atom* atom = &ucell.atoms[it];
+        const Atom* const atom = &ucell.atoms[it];
+        const int atom_nw = atom->nw;
 
         const double mt[3] = {gt.meshball_positions[imcell][0] - gt.tau_in_bigcell[iat][0],
                               gt.meshball_positions[imcell][1] - gt.tau_in_bigcell[iat][1],
                               gt.meshball_positions[imcell][2] - gt.tau_in_bigcell[iat][2]};
         // preprocess index
-        for (int iw=0; iw< atom->nw; ++iw)
+        for (int iw=0; iw < atom_nw; ++iw)
         {
             if ( atom->iw2_new[iw] )
             {
@@ -193,7 +194,7 @@ void cal_dpsir_ylm_new(
                 double distance = std::sqrt(dr[0] * dr[0] + dr[1] * dr[1] + dr[2] * dr[2]);
 
                 ModuleBase::Ylm::grad_rl_sph_harm_new(ucell.atoms[it].nwl, dr[0], dr[1], dr[2], rly, grly.ptr_2D);
-                
+
                 if (distance < 1e-9)
                     distance = 1e-9;
 
@@ -209,7 +210,7 @@ void cal_dpsir_ylm_new(
                 const double x03 = x0 * x3 / 2;
 
                 double tmp, dtmp;
-                for (int iw = 0; iw < atom->nw; ++iw)
+                for (int iw = 0; iw < atom_nw; ++iw)
                 {
                     // this is a new 'l', we need 1D orbital wave
                     // function from interpolation method.
@@ -238,14 +239,14 @@ void cal_dpsir_ylm_new(
                     const int ll = atom->iw2l[iw];
                     const int idx_lm = atom->iw2_ylm[iw];
 
-                    const double rl = pow_int(distance, ll);
+                    const double rl = 1 / pow_int(distance, ll);
+                    const double tmprl = tmp * rl;
 
                     // 3D wave functions
-                    p_psi[iw] = tmp * rly[idx_lm] / rl;
+                    p_psi[iw] = tmprl * rly[idx_lm];
 
                     // derivative of wave functions with respect to atom positions.
-                    const double tmpdphi_rly = (dtmp - tmp * ll / distance) / rl * rly[idx_lm] / distance;
-                    const double tmprl = tmp / rl;
+                    const double tmpdphi_rly = (dtmp * distance - tmp * ll) * rl * rly[idx_lm] / (distance * distance);
 
                     p_dpsi[iw * 3] = tmpdphi_rly * dr[0] + tmprl * grly.ptr_2D[idx_lm][0];
                     p_dpsi[iw * 3 + 1] = tmpdphi_rly * dr[1] + tmprl * grly.ptr_2D[idx_lm][1];

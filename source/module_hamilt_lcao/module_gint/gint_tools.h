@@ -27,12 +27,23 @@ enum class job_type
 static inline double pow_int(const double base, const int exp)
 {
     assert(exp >= 0);
-    double result = 1;
-    for (int i = 0; i < exp; i++)
+    switch(exp)
     {
-        result *= base;
+        case 0:
+            return 1.0;
+        case 1:
+            return base;
+        case 2:
+            return base * base;
+        case 3:
+            return base * base * base;
+        case 4:
+            return base * base * base * base;
+        case 5:
+            return base * base * base * base * base;
+        default:
+            return std::pow(base, exp);
     }
-    return result;
 }
 }
 

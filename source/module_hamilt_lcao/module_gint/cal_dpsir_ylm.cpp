@@ -18,6 +18,8 @@ void cal_dpsir_ylm(
     std::vector<const double*> it_psi_uniform(gt.nwmax);
     std::vector<const double*> it_dpsi_uniform(gt.nwmax);
     std::vector<int> it_psi_nr_uniform(gt.nwmax);
+    std::vector<double> rly(36);
+    Gint_Tools::Array_Pool<double> grly(36, 3);
 
     for (int id = 0; id < na_grid; id++)
     {
@@ -63,9 +65,7 @@ void cal_dpsir_ylm(
                 double distance = std::sqrt(dr[0] * dr[0] + dr[1] * dr[1] + dr[2] * dr[2]);
 
                 // array to store spherical harmonics and its derivatives
-                std::vector<double> rly;
                 const int lmax = ucell.atoms[it].nwl + 1;
-                Gint_Tools::Array_Pool<double> grly(lmax * lmax, 3);
                 ModuleBase::Ylm::grad_rl_sph_harm_new(ucell.atoms[it].nwl, dr[0], dr[1], dr[2], rly, grly.ptr_2D);
                 if (distance < 1e-9)
                     distance = 1e-9;
@@ -150,6 +150,8 @@ void cal_dpsir_ylm_new(
     std::vector<const double*> it_psi_uniform(gt.nwmax);
     std::vector<const double*> it_dpsi_uniform(gt.nwmax);
     std::vector<int> it_psi_nr_uniform(gt.nwmax);
+    std::vector<double> rly(36);
+    Gint_Tools::Array_Pool<double> grly(36, 3);
 
     for (int id = 0; id < na_grid; id++)
     {
@@ -190,11 +192,8 @@ void cal_dpsir_ylm_new(
                        gt.meshcell_pos[ib][0] + mt[0], gt.meshcell_pos[ib][1] + mt[1], gt.meshcell_pos[ib][2] + mt[2]};
                 double distance = std::sqrt(dr[0] * dr[0] + dr[1] * dr[1] + dr[2] * dr[2]);
 
-                // array to store spherical harmonics and its derivatives
-                std::vector<double> rly;
-                const int lmax = ucell.atoms[it].nwl + 1;
-                Gint_Tools::Array_Pool<double> grly(lmax * lmax, 3);
                 ModuleBase::Ylm::grad_rl_sph_harm_new(ucell.atoms[it].nwl, dr[0], dr[1], dr[2], rly, grly.ptr_2D);
+                
                 if (distance < 1e-9)
                     distance = 1e-9;
 

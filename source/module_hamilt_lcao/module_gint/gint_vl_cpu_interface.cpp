@@ -253,6 +253,7 @@ void Gint::cpu_vlocal_meta_interface(Gint_inout* inout) {
                                           pvpR_thread.data(),
                                           ucell,
                                           hRGint_thread);
+            delete hRGint_thread;
 #else
         if (GlobalV::GAMMA_ONLY_LOCAL) {
             this->gint_kernel_vlocal_meta(na_grid,
@@ -299,7 +300,6 @@ void Gint::cpu_vlocal_meta_interface(Gint_inout* inout) {
                                 pvpR_reduced[inout->ispin],
                                 1);
         }
-        delete hRGint_thread;
     }
 #endif
     ModuleBase::TITLE("Gint_interface", "cal_gint_vlocal_meta");

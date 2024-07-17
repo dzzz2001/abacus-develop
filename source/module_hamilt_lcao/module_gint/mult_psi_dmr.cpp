@@ -119,8 +119,9 @@ void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int LD_pool, c
                 }
             }
 
-            if (!same_flag)
+            if (!same_flag) {
                 continue;
+}
 
             const int bcell2 = gt.bcell_start[grid_index] + ia2;
             const int T2 = ucell.iat2it[gt.which_atom[bcell2]];
@@ -174,8 +175,9 @@ void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int LD_pool, c
             int cal_num = 0;
             for (int ib = 0; ib < bxyz; ++ib)
             {
-                if (cal_flag[ib][ia1] && cal_flag[ib][ia2])
+                if (cal_flag[ib][ia1] && cal_flag[ib][ia2]) {
                     ++cal_num;
+}
             }
 
             // const int DM_start = gt.nlocstartg[iat]+ gt.find_R2st[iat][offset];

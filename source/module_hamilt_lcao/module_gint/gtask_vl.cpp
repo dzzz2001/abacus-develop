@@ -157,4 +157,94 @@ void alloc_mult_vlocal(const Grid_Technique& gridt,
     }
 }
 
+void alloc_mult_vlocal_k(const Grid_Technique& gridt,
+                        const UnitCell& ucell,
+                        const int grid_index_ij,
+                        const int max_atom,
+                        double* psi,
+                        double* psi_vldr3,
+                        Cuda_Mem_Wrapper<double>& grid_vlocal_g,
+                        int* mat_m,
+                        int* mat_n,
+                        int* mat_k,
+                        int* mat_lda,
+                        int* mat_ldb,
+                        int* mat_ldc,
+                        double** mat_A,
+                        double** mat_B,
+                        double** mat_C,
+                        int& atom_pair_num,
+                        int& max_m,
+                        int& max_n)
+{
+    atom_pair_num = 0;
+    max_m = 0;
+    max_n = 0;
+    const int nwmax = ucell.nwmax;
+    for (int z_index = 0; z_index < gridt.nbzp; z_index++)
+    {
+        const int grid_index = grid_index_ij + z_index;
+        const int atom_num = gridt.how_many_atoms[grid_index];
+        const int vldr3_index = z_index * max_atom * nwmax * gridt.bxyz;
+        const int bcell_start_index = gridt.bcell_start[grid_index];
+        for (int atom1 = 0; atom1 < atom_num; atom1++)
+        {
+            const int iat1 = gridt.which_atom[bcell_start_index + atom1];
+            const int it1 = ucell.iat2it[iat1];
+            const int id1 = gridt.which_unitcell[bcell_start_index + atom1];
+            const int lo1
+                = gridt.trace_lo[ucell.itiaiw2iwt(it1, ucell.iat2ia[iat1], 0)];
+            const int DM_start = gridt.nlocstartg[iat1];
+            for (int atom2 = 0; atom2 < atom_num; atom2++)
+            {
+                const int iat2 = gridt.which_atom[bcell_start_index + atom2];
+                const int it2 = ucell.iat2it[iat2];
+                const int id2 = gridt.which_unitcell[bcell_start_index + atom2];
+                const int lo2 = gridt.trace_lo[ucell.itiaiw2iwt(it2,
+                                                          ucell.iat2ia[iat2],
+                                                          0)];
+                if (lo1 <= lo2)
+                {
+                    const int atom_pair_nw
+                        = ucell.atoms[it1].nw * ucell.atoms[it2].nw;
+                    const int offset = gridt.find_offset(id1, id2, iat1, iat2);
+                    if (offset == -1)
+                    {
+                        continue;
+                    }
+                    
+                    const int iatw = DM_start + gridt.find_R2st[iat1][offset];
+
+                    const int calc_index1 = vldr3_index + atom1 * nwmax * gridt.bxyz;
+                    const int calc_index2 = vldr3_index + atom2 * nwmax * gridt.bxyz;
+
+                    mat_A[atom_pair_num]
+                        = psi + calc_index1;
+                    mat_B[atom_pair_num]
+                        = psi_vldr3 + calc_index2;
+                    mat_C[atom_pair_num]
+                        = grid_vlocal_g.get_device_pointer() + iatw;;
+
+                    mat_lda[atom_pair_num] = gridt.bxyz;
+                    mat_ldb[atom_pair_num] = gridt.bxyz;
+                    mat_ldc[atom_pair_num] = ucell.atoms[it2].nw;
+
+                    mat_m[atom_pair_num] = ucell.atoms[it1].nw;
+                    mat_n[atom_pair_num] = ucell.atoms[it2].nw;
+                    mat_k[atom_pair_num] = gridt.bxyz;
+                    
+                    if (mat_m[atom_pair_num] > max_m)
+                    {
+                        max_m = mat_m[atom_pair_num];
+                    }
+                    if (mat_n[atom_pair_num] > max_n)
+                    {
+                        max_n = mat_n[atom_pair_num];
+                    }
+                    atom_pair_num++;
+                }
+            }
+        }
+    }
+}
 } // namespace GintKernel

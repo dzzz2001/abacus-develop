@@ -45,7 +45,7 @@ void Gint::cal_gint(Gint_inout* inout) {
     }
     if (max_size > 0) {
 #ifdef __CUDA
-        if (GlobalV::device_flag == "gpu" && GlobalV::GAMMA_ONLY_LOCAL
+        if (GlobalV::device_flag == "gpu"
             && (inout->job == Gint_Tools::job_type::vlocal
                 || inout->job == Gint_Tools::job_type::rho
                 || inout->job == Gint_Tools::job_type::force)) {

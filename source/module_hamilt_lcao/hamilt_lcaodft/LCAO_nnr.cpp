@@ -289,3 +289,23 @@ int Grid_Technique::binary_search_find_R2_offset(int val, int iat) const
     }
     return -1;
 }
+
+int Grid_Technique::find_offset(const int id1, const int id2, const int iat1, const int iat2) const
+{
+	const int R1x=ucell_index2x[id1];
+	const int R2x=ucell_index2x[id2];
+	const int dRx=R1x-R2x;
+	const int R1y=ucell_index2y[id1];
+	const int R2y=ucell_index2y[id2];
+	const int dRy=R1y-R2y;
+	const int R1z=ucell_index2z[id1];
+	const int R2z=ucell_index2z[id2];
+	const int dRz=R1z-R2z;
+
+	const int index=cal_RindexAtom(dRx, dRy, dRz, iat2);
+
+	const int offset = binary_search_find_R2_offset(index, iat1);
+
+	assert(offset < nad[iat1]);
+	return offset;
+}

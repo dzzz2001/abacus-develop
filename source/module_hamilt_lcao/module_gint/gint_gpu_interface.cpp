@@ -17,14 +17,25 @@ void Gint::gamma_gpu_vlocal_interface(Gint_inout* inout) {
         ylmcoef[i] = ModuleBase::Ylm::ylmcoef[i];
     }
 
-    GintKernel::gint_gamma_vl_gpu(this->hRGint,
-                                  inout->vl,
-                                  ylmcoef,
-                                  dr,
-                                  this->gridt->rcuts.data(),
-                                  *this->gridt,
-                                  ucell);
-
+    if(GlobalV::GAMMA_ONLY_LOCAL)
+    {
+        GintKernel::gint_gamma_vl_gpu(this->hRGint,
+                                    inout->vl,
+                                    ylmcoef,
+                                    dr,
+                                    this->gridt->rcuts.data(),
+                                    *this->gridt,
+                                    ucell);
+    }
+    else{
+        GintKernel::gint_k_vl_gpu(this->pvpR_reduced[inout->ispin],
+                                inout->vl,
+                                ylmcoef,
+                                dr,
+                                this->gridt->rcuts.data(),
+                                *this->gridt,
+                                ucell);
+    }
     ModuleBase::TITLE("Gint_interface", "cal_gint_vlocal");
     ModuleBase::timer::tick("Gint_interface", "cal_gint_vlocal");
 }
@@ -43,13 +54,26 @@ void Gint::gamma_gpu_rho_interface(Gint_inout* inout) {
     int nrxx = this->gridt->ncx * this->gridt->ncy * this->nplane;
     for (int is = 0; is < GlobalV::NSPIN; ++is) {
         ModuleBase::GlobalFunc::ZEROS(inout->rho[is], nrxx);
-        GintKernel::gint_gamma_rho_gpu(this->DMRGint[is],
+        if(GlobalV::GAMMA_ONLY_LOCAL)
+        {
+           GintKernel::gint_gamma_rho_gpu(this->DMRGint[is],
                                        ylmcoef,
                                        dr,
                                        this->gridt->rcuts.data(),
                                        *this->gridt,
                                        ucell,
                                        inout->rho[is]);
+        }
+        else{
+            GintKernel::gint_k_rho_gpu(this->DMRGint[is],
+                                    ylmcoef,
+                                    dr,
+                                    this->gridt->rcuts.data(),
+                                    *this->gridt,
+                                    ucell,
+                                    inout->rho[is]);
+        }
+        
     }
     ModuleBase::TITLE("Gint_interface", "cal_gint_rho");
     ModuleBase::timer::tick("Gint_interface", "cal_gint_rho");
@@ -74,16 +98,31 @@ void Gint::gamma_gpu_force_interface(Gint_inout* inout) {
     if (isforce || isstress) {
         std::vector<double> force(nat * 3, 0.0);
         std::vector<double> stress(6, 0.0);
-        GintKernel::gint_fvl_gamma_gpu(this->DMRGint[inout->ispin],
-                                       inout->vl,
-                                       force.data(),
-                                       stress.data(),
-                                       dr,
-                                       this->gridt->rcuts.data(),
-                                       isforce,
-                                       isstress,
-                                       *this->gridt,
-                                       ucell);
+        if(GlobalV::GAMMA_ONLY_LOCAL)
+        {
+            GintKernel::gint_fvl_gamma_gpu(this->DMRGint[inout->ispin],
+                                        inout->vl,
+                                        force.data(),
+                                        stress.data(),
+                                        dr,
+                                        this->gridt->rcuts.data(),
+                                        isforce,
+                                        isstress,
+                                        *this->gridt,
+                                        ucell);
+        }
+        else{
+            GintKernel::gint_fvl_gamma_gpu_k(this->DMRGint[inout->ispin],
+                                        inout->vl,
+                                        force.data(),
+                                        stress.data(),
+                                        dr,
+                                        this->gridt->rcuts.data(),
+                                        isforce,
+                                        isstress,
+                                        *this->gridt,
+                                        ucell);
+        }
         if (inout->isforce) {
             for (int iat = 0; iat < nat; iat++) {
                 inout->fvl_dphi[0](iat, 0) += force[iat * 3];

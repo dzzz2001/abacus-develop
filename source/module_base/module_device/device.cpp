@@ -176,11 +176,6 @@ std::string get_device_flag(const std::string &device,
           "The GPU currently does not support the basis type \"lcao_in_pw\"!";
       ModuleBase::WARNING_QUIT("device", msg);
       return "unknown";
-    } else if (basis_type == "lcao" && gamma_only == false) {
-      std::string msg = "The GPU currently does not support the basis type "
-                        "\"lcao\" with \"gamma_only\" set to \"0\"!";
-      ModuleBase::WARNING_QUIT("device", msg);
-      return "unknow";
     } else {
       return "gpu";
     }

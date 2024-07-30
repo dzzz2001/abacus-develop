@@ -43,7 +43,7 @@ void Gint::gpu_rho_interface(Gint_inout* inout) {
     int nrxx = this->gridt->ncx * this->gridt->ncy * this->nplane;
     for (int is = 0; is < GlobalV::NSPIN; ++is) {
         ModuleBase::GlobalFunc::ZEROS(inout->rho[is], nrxx);
-        GintKernel::gint_gamma_rho_gpu(this->DMRGint[is],
+        GintKernel::gint_rho_gpu(this->DMRGint[is],
                                        ylmcoef,
                                        dr,
                                        this->gridt->rcuts.data(),
@@ -74,7 +74,7 @@ void Gint::gpu_force_interface(Gint_inout* inout) {
     if (isforce || isstress) {
         std::vector<double> force(nat * 3, 0.0);
         std::vector<double> stress(6, 0.0);
-        GintKernel::gint_fvl_gamma_gpu(this->DMRGint[inout->ispin],
+        GintKernel::gint_fvl_gpu(this->DMRGint[inout->ispin],
                                        inout->vl,
                                        force.data(),
                                        stress.data(),

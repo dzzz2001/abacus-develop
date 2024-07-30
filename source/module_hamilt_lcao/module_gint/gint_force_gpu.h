@@ -5,7 +5,7 @@
 #include "module_hamilt_lcao/module_gint/grid_technique.h"
 namespace GintKernel
 {
-void gint_fvl_gamma_gpu(const hamilt::HContainer<double>* dm,
+void gint_fvl_gpu(const hamilt::HContainer<double>* dm,
                         const double* vlocal,
                         double* force_in,
                         double* stress_in,

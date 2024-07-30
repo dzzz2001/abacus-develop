@@ -20,7 +20,7 @@ namespace GintKernel
  * 6. force dot on the GPU.
  * 7. Copy the results back to the host.
  */
-void gint_fvl_gamma_gpu(const hamilt::HContainer<double>* dm,
+void gint_fvl_gpu(const hamilt::HContainer<double>* dm,
                         const double* vlocal,
                         double* force_in,
                         double* stress_in,

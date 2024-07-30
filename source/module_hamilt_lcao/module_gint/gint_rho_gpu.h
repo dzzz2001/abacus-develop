@@ -21,7 +21,7 @@ namespace GintKernel
  * @param ucell UnitCell.
  * @param rho rho.
  */
-void gint_gamma_rho_gpu(const hamilt::HContainer<double>* dm,
+void gint_rho_gpu(const hamilt::HContainer<double>* dm,
                         const double* ylmcoef_now,
                         const double dr,
                         const double* rcut,

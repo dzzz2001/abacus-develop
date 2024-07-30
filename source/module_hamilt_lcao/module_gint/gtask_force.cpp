@@ -64,7 +64,8 @@ void gtask_force(const Grid_Technique& gridt,
     }
 }
 
-void alloc_mult_force(const Grid_Technique& gridt,
+void alloc_mult_force(const hamilt::HContainer<double>* dm,
+                      const Grid_Technique& gridt,
                       const UnitCell& ucell,
                       const int grid_index_ij,
                       const int max_atom,
@@ -100,6 +101,10 @@ void alloc_mult_force(const Grid_Technique& gridt,
         {
             const int mcell_index1 = bcell_start_index + atom1;
             int iat1 = gridt.which_atom[mcell_index1];
+            int uc1 = gridt.which_unitcell[mcell_index1];
+            int rx1 = gridt.ucell_index2x[uc1];
+            int ry1 = gridt.ucell_index2y[uc1];
+            int rz1 = gridt.ucell_index2z[uc1];
             int it1 = ucell.iat2it[iat1];
             int lo1
                 = gridt.trace_lo[ucell.itiaiw2iwt(it1, ucell.iat2ia[iat1], 0)];
@@ -109,23 +114,31 @@ void alloc_mult_force(const Grid_Technique& gridt,
             {
                 const int mcell_index2 = bcell_start_index + atom2;
                 int iat2 = gridt.which_atom[mcell_index2];
+                int uc2 = gridt.which_unitcell[mcell_index2];
+                int rx2 = gridt.ucell_index2x[uc2];
+                int ry2 = gridt.ucell_index2y[uc2];
+                int rz2 = gridt.ucell_index2z[uc2];
                 int it2 = ucell.iat2it[iat2];
+                int offset = dm->find_matrix_offset(iat1, iat2, rx1-rx2, ry1-ry2, rz1-rz2);
+                if (offset == -1)
+                {
+                    continue;
+                }
                 int lo2 = gridt.trace_lo[ucell.itiaiw2iwt(it2,
                                                             ucell.iat2ia[iat2],
                                                             0)];
                 int nw2 = ucell.atoms[it2].nw;
 
                 int mat_A_idx = (pre_atoms + atom2) * nwmax * gridt.bxyz;
-                int mat_B_idx = lgd * lo1 + lo2;
                 int mat_C_idx = (pre_atoms + atom1) * nwmax * gridt.bxyz;
                 mat_m[tid] = gridt.bxyz;
                 mat_n[tid] = nw1;
                 mat_k[tid] = nw2;
                 mat_lda[tid] = nwmax;
-                mat_ldb[tid] = lgd;
+                mat_ldb[tid] = nw2;
                 mat_ldc[tid] = nwmax;
                 mat_A[tid] = psi_g + mat_A_idx;
-                mat_B[tid] = dm_matrix_g + mat_B_idx;
+                mat_B[tid] = dm_matrix_g + offset;
                 mat_C[tid] = psi_dm_g + mat_C_idx;
 
                 if (mat_m[tid] > max_m)

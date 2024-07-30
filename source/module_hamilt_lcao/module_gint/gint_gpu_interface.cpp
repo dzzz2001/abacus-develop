@@ -17,7 +17,7 @@ void Gint::gpu_vlocal_interface(Gint_inout* inout) {
         ylmcoef[i] = ModuleBase::Ylm::ylmcoef[i];
     }
 
-    GintKernel::gint_gamma_vl_gpu(this->hRGint,
+    GintKernel::gint_vl_gpu(this->hRGint,
                                   inout->vl,
                                   ylmcoef,
                                   dr,

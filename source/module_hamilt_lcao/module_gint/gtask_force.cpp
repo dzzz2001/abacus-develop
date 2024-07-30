@@ -118,12 +118,12 @@ void alloc_mult_force(const hamilt::HContainer<double>* dm,
                 int rx2 = gridt.ucell_index2x[uc2];
                 int ry2 = gridt.ucell_index2y[uc2];
                 int rz2 = gridt.ucell_index2z[uc2];
-                int it2 = ucell.iat2it[iat2];
                 int offset = dm->find_matrix_offset(iat1, iat2, rx1-rx2, ry1-ry2, rz1-rz2);
                 if (offset == -1)
                 {
                     continue;
                 }
+                int it2 = ucell.iat2it[iat2];
                 int lo2 = gridt.trace_lo[ucell.itiaiw2iwt(it2,
                                                             ucell.iat2ia[iat2],
                                                             0)];

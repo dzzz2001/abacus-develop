@@ -28,7 +28,7 @@ namespace GintKernel
  * 4. Perform matrix multiplication on the GPU.
  * 5. Copy the results back to the host.
  */
-void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
+void gint_vl_gpu(hamilt::HContainer<double>* hRGint,
                        const double* vlocal,
                        const double* ylmcoef_now,
                        const double dr,
@@ -55,37 +55,8 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
         checkCuda(cudaStreamCreate(&streams[i]));
     }
 
-    std::vector<Cuda_Mem_Wrapper<double>> grid_vlocal_g(ucell.nat * ucell.nat);
-    for (int iat1 = 0; iat1 < ucell.nat; iat1++)
-    {
-        for (int iat2 = 0; iat2 < ucell.nat; iat2++)
-        {
-            const int it1 = ucell.iat2it[iat1];
-            const int lo1 = gridt.trace_lo[ucell.itiaiw2iwt(it1,
-                                                        ucell.iat2ia[iat1],
-                                                        0)];
-
-            const int it2 = ucell.iat2it[iat2];
-            const int lo2 = gridt.trace_lo[ucell.itiaiw2iwt(it2,
-                                                        ucell.iat2ia[iat2],
-                                                        0)];
-
-            if (lo1 <= lo2)
-            {
-                const hamilt::AtomPair<double>* tmp_ap
-                    = hRGint->find_pair(iat1, iat2);
-                if (tmp_ap == nullptr)
-                {
-                    continue;
-                }
-                const int atom_pair_nw
-                    = ucell.atoms[it1].nw * ucell.atoms[it2].nw;
-                grid_vlocal_g[iat1 * ucell.nat + iat2] = 
-                    Cuda_Mem_Wrapper<double>(atom_pair_nw, 1, false);
-                grid_vlocal_g[iat1 * ucell.nat + iat2].memset_device_sync();
-            }
-        }
-    }
+    Cuda_Mem_Wrapper<double> grid_vlocal_g(hRGint->get_nnr(), 1, false);
+    grid_vlocal_g.memset_device_sync();
 
     Cuda_Mem_Wrapper<double> dr_part(max_atom_per_z * 3, num_streams, true);
     Cuda_Mem_Wrapper<uint8_t> atoms_type(max_atom_per_z, num_streams, true);
@@ -135,13 +106,14 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
                          dr_part.get_host_pointer(sid),
                          vldr3.get_host_pointer(sid));
         
-            alloc_mult_vlocal(gridt,
+            alloc_mult_vlocal(hRGint,
+                              gridt,
                               ucell,
                               grid_index_ij,
                               max_atom,
                               psi.get_device_pointer(sid),
                               psi_vldr3.get_device_pointer(sid),
-                              grid_vlocal_g,
+                              grid_vlocal_g.get_device_pointer(),
                               gemm_m.get_host_pointer(sid),
                               gemm_n.get_host_pointer(sid),
                               gemm_k.get_host_pointer(sid),
@@ -219,43 +191,11 @@ void gint_gamma_vl_gpu(hamilt::HContainer<double>* hRGint,
         }
     }
 
-    {
-        int iter_num = 0;
-        for (int iat1 = 0; iat1 < ucell.nat; iat1++)
-        {
-            for (int iat2 = 0; iat2 < ucell.nat; iat2++)
-            {
-                const int sid = iter_num % num_streams;
-                const int it1 = ucell.iat2it[iat1];
-                const int lo1 = gridt.trace_lo[ucell.itiaiw2iwt(it1,
-                                                          ucell.iat2ia[iat1],
-                                                          0)];
-
-                const int it2 = ucell.iat2it[iat2];
-                const int lo2 = gridt.trace_lo[ucell.itiaiw2iwt(it2,
-                                                          ucell.iat2ia[iat2],
-                                                          0)];
-                if (lo1 <= lo2)
-                {
-                    const int atom_pair_nw
-                        = ucell.atoms[it1].nw * ucell.atoms[it2].nw;
-                    hamilt::AtomPair<double>* tmp_ap
-                        = hRGint->find_pair(iat1, iat2);
-                    if (tmp_ap == nullptr)
-                    {
-                        continue;
-                    }
-                    checkCuda(cudaMemcpyAsync(
-                        tmp_ap->get_pointer(0),
-                        grid_vlocal_g[iat1 * ucell.nat + iat2].get_device_pointer(),
-                        atom_pair_nw * sizeof(double),
-                        cudaMemcpyDeviceToHost,
-                        streams[sid]));
-                    iter_num++;
-                }
-            }
-        }
-    }
+    checkCuda(cudaMemcpy(
+        hRGint->get_wrapper(),
+        grid_vlocal_g.get_device_pointer(),
+        hRGint->get_nnr() * sizeof(double),
+        cudaMemcpyDeviceToHost));
     for (int i = 0; i < num_streams; i++)
     {
         checkCuda(cudaStreamDestroy(streams[i]));

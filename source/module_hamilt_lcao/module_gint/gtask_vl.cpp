@@ -62,25 +62,26 @@ void gtask_vlocal(const Grid_Technique& gridt,
     }
 }
 
-void alloc_mult_vlocal(const Grid_Technique& gridt,
-                        const UnitCell& ucell,
-                        const int grid_index_ij,
-                        const int max_atom,
-                        double* psi,
-                        double* psi_vldr3,
-                        std::vector<Cuda_Mem_Wrapper<double>>& grid_vlocal_g,
-                        int* mat_m,
-                        int* mat_n,
-                        int* mat_k,
-                        int* mat_lda,
-                        int* mat_ldb,
-                        int* mat_ldc,
-                        double** mat_A,
-                        double** mat_B,
-                        double** mat_C,
-                        int& atom_pair_num,
-                        int& max_m,
-                        int& max_n)
+void alloc_mult_vlocal(const hamilt::HContainer<double>* hRGint,
+                       const Grid_Technique& gridt,
+                       const UnitCell& ucell,
+                       const int grid_index_ij,
+                       const int max_atom,
+                       double* const psi,
+                       double* const psi_vldr3,
+                       double* const grid_vlocal_g,
+                       int* mat_m,
+                       int* mat_n,
+                       int* mat_k,
+                       int* mat_lda,
+                       int* mat_ldb,
+                       int* mat_ldc,
+                       double** mat_A,
+                       double** mat_B,
+                       double** mat_C,
+                       int& atom_pair_num,
+                       int& max_m,
+                       int& max_n)
 {
     atom_pair_num = 0;
     max_m = 0;
@@ -95,12 +96,25 @@ void alloc_mult_vlocal(const Grid_Technique& gridt,
         for (int atom1 = 0; atom1 < atom_num; atom1++)
         {
             int iat1 = gridt.which_atom[bcell_start_index + atom1];
+            int uc1 = gridt.which_unitcell[bcell_start_index + atom1];
+            int rx1 = gridt.ucell_index2x[uc1];
+            int ry1 = gridt.ucell_index2y[uc1];
+            int rz1 = gridt.ucell_index2z[uc1];
             int it1 = ucell.iat2it[iat1];
             int lo1
                 = gridt.trace_lo[ucell.itiaiw2iwt(it1, ucell.iat2ia[iat1], 0)];
             for (int atom2 = 0; atom2 < atom_num; atom2++)
             {
                 int iat2 = gridt.which_atom[bcell_start_index + atom2];
+                int uc2 = gridt.which_unitcell[bcell_start_index + atom2];
+                int rx2 = gridt.ucell_index2x[uc2];
+                int ry2 = gridt.ucell_index2y[uc2];
+                int rz2 = gridt.ucell_index2z[uc2];
+                int offset = hRGint->find_matrix_offset(iat1, iat2, rx1-rx2, ry1-ry2, rz1-rz2);
+                if (offset == -1)
+                {
+                    continue;
+                } 
                 int it2 = ucell.iat2it[iat2];
                 int lo2 = gridt.trace_lo[ucell.itiaiw2iwt(it2,
                                                           ucell.iat2ia[iat2],
@@ -109,20 +123,6 @@ void alloc_mult_vlocal(const Grid_Technique& gridt,
                 {
                     int atom_pair_nw
                         = ucell.atoms[it1].nw * ucell.atoms[it2].nw;
-                    if (grid_vlocal_g[iat1 * ucell.nat + iat2].get_device_pointer() == nullptr)
-                    {
-                        // Note that this situation occurs here because the
-                        // logic in hcontainer and
-                        //  grid integration is different.
-                        //  In hcontainer, it is iat1<=iat2, and in grid
-                        //  integral, it is lo1<=lo2. This is not entirely
-                        //  equivalent in practice. We need to investigate
-                        //  what's going on later.
-                        //  TODO
-                        continue;
-                        // std::cout << "Error: GridVlocal did not malloc" <<
-                        // std::endl;
-                    }
 
                     int calc_index1 = vldr3_index + atom1 * nwmax * gridt.bxyz;
                     int calc_index2 = vldr3_index + atom2 * nwmax * gridt.bxyz;
@@ -132,7 +132,7 @@ void alloc_mult_vlocal(const Grid_Technique& gridt,
                     mat_B[atom_pair_num]
                         = psi_vldr3 + calc_index2;
                     mat_C[atom_pair_num]
-                        = grid_vlocal_g[iat1 * ucell.nat + iat2].get_device_pointer();
+                        = grid_vlocal_g + offset;
 
                     mat_lda[atom_pair_num] = gridt.bxyz;
                     mat_ldb[atom_pair_num] = gridt.bxyz;

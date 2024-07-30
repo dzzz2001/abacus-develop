@@ -181,10 +181,6 @@ if (basis_type == "lcao_in_pw") {
   error_message +=
       "The GPU currently does not support the basis type \"lcao_in_pw\"!";
 }
-if (basis_type == "lcao" && gamma_only == false) {
-  error_message += "The GPU currently does not support the basis type "
-                    "\"lcao\" with \"gamma_only\" set to \"0\"!";
-}
 if(error_message.empty())
 {
   return "gpu"; // possibly automatically set to GPU

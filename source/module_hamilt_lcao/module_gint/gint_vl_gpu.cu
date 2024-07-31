@@ -11,15 +11,6 @@ namespace GintKernel
 /**
  * Computes the gamma component of the VL (Vlocal) integral on the GPU.
  *
- * @param hRGint Pointer to the HContainer<double> object to store the computed
- * integrals.
- * @param vlocal Pointer to the Vlocal array.
- * @param ylmcoef_now Pointer to the Ylm coefficients array.
- * @param dr The grid spacing.
- * @param rcut Pointer to the cutoff radius array.
- * @param gridt The Grid_Technique object containing grid information.
- * @param ucell The UnitCell object containing unit cell information.
- *
  * @note The grid integration on the GPU is mainly divided into the following
  * steps:
  * 1. Use the CPU to divide the grid integration into subtasks.
@@ -29,12 +20,14 @@ namespace GintKernel
  * 5. Copy the results back to the host.
  */
 void gint_vl_gpu(hamilt::HContainer<double>* hRGint,
-                       const double* vlocal,
-                       const double* ylmcoef_now,
-                       const double dr,
-                       const double* rcut,
-                       const Grid_Technique& gridt,
-                       const UnitCell& ucell)
+                 const double* vlocal,
+                 const double* ylmcoef_now,
+                 const double dr,
+                 const double* rcut,
+                 const Grid_Technique& gridt,
+                 const UnitCell& ucell,
+                 double* pvpR,
+                 const bool is_gamma_only)
 {
     int dev_id = base_device::information::set_device_by_rank();
     // checkCuda(cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync));
@@ -106,7 +99,8 @@ void gint_vl_gpu(hamilt::HContainer<double>* hRGint,
                          dr_part.get_host_pointer(sid),
                          vldr3.get_host_pointer(sid));
         
-            alloc_mult_vlocal(hRGint,
+            alloc_mult_vlocal(is_gamma_only,
+                              hRGint,
                               gridt,
                               ucell,
                               grid_index_ij,
@@ -191,11 +185,22 @@ void gint_vl_gpu(hamilt::HContainer<double>* hRGint,
         }
     }
 
-    checkCuda(cudaMemcpy(
-        hRGint->get_wrapper(),
-        grid_vlocal_g.get_device_pointer(),
-        hRGint->get_nnr() * sizeof(double),
-        cudaMemcpyDeviceToHost));
+    if(is_gamma_only)
+    {
+        checkCuda(cudaMemcpy(
+            hRGint->get_wrapper(),
+            grid_vlocal_g.get_device_pointer(),
+            hRGint->get_nnr() * sizeof(double),
+            cudaMemcpyDeviceToHost));
+    }
+    else
+    {
+        checkCuda(cudaMemcpy(
+            pvpR,
+            grid_vlocal_g.get_device_pointer(),
+            hRGint->get_nnr() * sizeof(double),
+            cudaMemcpyDeviceToHost));
+    }
     for (int i = 0; i < num_streams; i++)
     {
         checkCuda(cudaStreamDestroy(streams[i]));

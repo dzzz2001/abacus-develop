@@ -62,7 +62,8 @@ void gtask_vlocal(const Grid_Technique& gridt,
     }
 }
 
-void alloc_mult_vlocal(const hamilt::HContainer<double>* hRGint,
+void alloc_mult_vlocal(const bool is_gamma_only,
+                       const hamilt::HContainer<double>* hRGint,
                        const Grid_Technique& gridt,
                        const UnitCell& ucell,
                        const int grid_index_ij,
@@ -103,6 +104,7 @@ void alloc_mult_vlocal(const hamilt::HContainer<double>* hRGint,
             int it1 = ucell.iat2it[iat1];
             int lo1
                 = gridt.trace_lo[ucell.itiaiw2iwt(it1, ucell.iat2ia[iat1], 0)];
+            int vl_start = is_gamma_only? 0 : gridt.nlocstartg[iat1];
             for (int atom2 = 0; atom2 < atom_num; atom2++)
             {
                 int iat2 = gridt.which_atom[bcell_start_index + atom2];
@@ -110,11 +112,17 @@ void alloc_mult_vlocal(const hamilt::HContainer<double>* hRGint,
                 int rx2 = gridt.ucell_index2x[uc2];
                 int ry2 = gridt.ucell_index2y[uc2];
                 int rz2 = gridt.ucell_index2z[uc2];
-                int offset = hRGint->find_matrix_offset(iat1, iat2, rx1-rx2, ry1-ry2, rz1-rz2);
+                int offset = 0;
+                if(is_gamma_only){
+                    offset = hRGint->find_matrix_offset(iat1, iat2, rx1-rx2, ry1-ry2, rz1-rz2);
+                } else {
+                    offset = vl_start +
+                    gridt.find_R2st[iat1][gridt.find_offset(uc1, uc2, iat1, iat2)];
+                }
                 if (offset == -1)
                 {
                     continue;
-                } 
+                }
                 int it2 = ucell.iat2it[iat2];
                 int lo2 = gridt.trace_lo[ucell.itiaiw2iwt(it2,
                                                           ucell.iat2ia[iat2],

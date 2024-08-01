@@ -31,7 +31,7 @@ Check the [Advanced Installation Options](https://abacus-rtd.readthedocs.io/en/l
 
 ## Run with the GPU support by editing the INPUT script:
 
-In `INPUT` file we need to set the value keyword [device](../input_files/input-main.md#device) to be `gpu`.
+In `INPUT` file we need to set the input parameter [device](../input_files/input-main.md#device) to `gpu`. If this parameter is not set, ABACUS will try to determine if there are available GPUs.
 - **ks_solver**: The setting of keyword [ks_solver](../input_files/input-main.md#ks_solver) differs between PW basis and LCAO basis. For the PW basis, ks_solver is set by default to `cg`, but you can also manually set it to `bpcg`, `dav`, or `dav_subspace`. For the LCAO basis set, ks_solver defaults to `scalapack` (if ELPA is not compiled and mpi is enabled). Note that regardless of whether device is set to `cpu` or `gpu`, ks_solver is always defaulted to `scalapack`. If you wish to use `cusolver` for solving, you can manually set ks_solver to `cusolver`.
 - **multi-card**: ABACUS allows for multi-GPU acceleration. If you have multiple GPU cards, you can run ABACUS with several MPI processes, and each process will utilize one GPU card. For example, the command `mpirun -n 2 abacus` will by default launch two GPUs for computation. If you only have one card, this command will only start one GPU.
 

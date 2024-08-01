@@ -6,7 +6,7 @@ In ABACUS, we provide the option to use GPU devices to accelerate performance. T
 
 - **Electronic state data**: (e.g. electronic density) are moved from the GPU to the CPU(s) every scf step.
 
-- **Acclerated by the NVIDIA libraries**: `cuBLAS` for common linear algebra calculations, `cuSolver` for eigen values/vectors, and `cuFFT` for the conversions between the real and recip spaces.
+- **Accelerated by the NVIDIA libraries**: `cuBLAS` for common linear algebra calculations, `cuSolver` for eigen values/vectors, and `cuFFT` for the conversions between the real and recip spaces.
 
 - **Multi GPU supprted**: Using multiple MPI tasks will often give the best performance. Note each MPI task will be bind to a GPU device with automatically computing load balancing.
 

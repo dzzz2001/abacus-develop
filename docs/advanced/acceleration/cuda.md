@@ -31,13 +31,14 @@ Check the [Advanced Installation Options](https://abacus-rtd.readthedocs.io/en/l
 
 ## Run with the GPU support by editing the INPUT script:
 
-In `INPUT` file we need to set the value keyword [device](../input_files/input-main.md#device) to be `gpu`. If you want to use cuSOLVER to solve eigenvalues, you need to set `ks_solver` to `cusolver`; by default, `ks_solver` is set to `scalapack`. ABACUS allows for multi-GPU acceleration. If you have multiple GPU cards, you can run ABACUS with several MPI processes, and each process will utilize one GPU card. For example, the command `mpirun -n 2 abacus` will by default launch two GPUs for computation. If you only have one card, this command will only start one GPU.
+In `INPUT` file we need to set the value keyword [device](../input_files/input-main.md#device) to be `gpu`.
+- **ks_solver**: The settings for ks_solver differ between the PW basis and LCAO basis. For the PW basis, ks_solver is set by default to 'cg', but you can also manually set it to 'bpcg', 'dav', or 'dav_subspace'. For the LCAO basis set, ks_solver defaults to 'scalapack' (if ELPA is not compiled). Note that regardless of whether device is set to 'cpu' or 'gpu', ks_solver is always defaulted to 'scalapack'. If you wish to use 'cusolver' for solving, you can manually set ks_solver to 'cusolver'.
+- **multi-card**: ABACUS allows for multi-GPU acceleration. If you have multiple GPU cards, you can run ABACUS with several MPI processes, and each process will utilize one GPU card. For example, the command `mpirun -n 2 abacus` will by default launch two GPUs for computation. If you only have one card, this command will only start one GPU.
 
 ## Examples
 We provides [examples](https://github.com/deepmodeling/abacus-develop/tree/develop/examples/gpu) of gpu calculations.
 
 ## Known limitations
 PW basis:
-- CG, BPCG and Davidson methods are supported, so the input keyword `ks_solver` can take the values `cg`, `bpcg` or `dav`.
 - Only k point parallelization is supported, so the input keyword `kpar` will be set to match the number of MPI tasks automatically.
 - By default, CUDA architectures 60, 70, 75, 80, 86, and 89 are compiled (if supported). It can be overriden using the CMake variable [`CMAKE_CUDA_ARCHITECTURES`](https://cmake.org/cmake/help/latest/variable/CMAKE_CUDA_ARCHITECTURES.html) or the environmental variable [`CUDAARCHS`](https://cmake.org/cmake/help/latest/envvar/CUDAARCHS.html).

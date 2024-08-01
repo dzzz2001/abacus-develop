@@ -4,7 +4,7 @@ In ABACUS, we provide the option to use GPU devices to accelerate performance. T
 
 - **Full gpu implementations**: During the SCF progress, `Psi`, `Hamilt`, `Hsolver`, `DiagCG`, and `DiagoDavid` classes are stored or calculated by the GPU devices.
 
-- **Electronic state data**: (e.g. electronic density) are moved from the GPU `to the CPU(s) every scf step.
+- **Electronic state data**: (e.g. electronic density) are moved from the GPU to the CPU(s) every scf step.
 
 - **Acclerated by the NVIDIA libraries**: `cuBLAS` for common linear algebra calculations, `cuSolver` for eigen values/vectors, and `cuFFT` for the conversions between the real and recip spaces.
 

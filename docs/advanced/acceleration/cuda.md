@@ -4,7 +4,7 @@ In ABACUS, we provide the option to use GPU devices to accelerate performance. T
 
 - **Full gpu implementations**: During the SCF progress, `Psi`, `Hamilt`, `Hsolver`, `DiagCG`, and `DiagoDavid` classes are stored or calculated by the GPU devices.
 
-- **Electronic state data**: (e.g. electronic density) are moved from the GPU to the CPU(s) every scf step.
+- **Electronic state data**: (e.g. electronic density) are moved from the GPU `to the CPU(s) every scf step.
 
 - **Acclerated by the NVIDIA libraries**: `cuBLAS` for common linear algebra calculations, `cuSolver` for eigen values/vectors, and `cuFFT` for the conversions between the real and recip spaces.
 
@@ -32,7 +32,7 @@ Check the [Advanced Installation Options](https://abacus-rtd.readthedocs.io/en/l
 ## Run with the GPU support by editing the INPUT script:
 
 In `INPUT` file we need to set the value keyword [device](../input_files/input-main.md#device) to be `gpu`.
-- **ks_solver**: The settings for ks_solver differ between the PW basis and LCAO basis. For the PW basis, ks_solver is set by default to 'cg', but you can also manually set it to 'bpcg', 'dav', or 'dav_subspace'. For the LCAO basis set, ks_solver defaults to 'scalapack' (if ELPA is not compiled). Note that regardless of whether device is set to 'cpu' or 'gpu', ks_solver is always defaulted to 'scalapack'. If you wish to use 'cusolver' for solving, you can manually set ks_solver to 'cusolver'.
+- **ks_solver**: The setting of keyword [ks_solver](../input_files/input-main.md#ks_solver) differs between PW basis and LCAO basis. For the PW basis, ks_solver is set by default to `cg`, but you can also manually set it to `bpcg`, `dav`, or `dav_subspace`. For the LCAO basis set, ks_solver defaults to `scalapack` (if ELPA is not compiled and mpi is enabled). Note that regardless of whether device is set to `cpu` or `gpu`, ks_solver is always defaulted to `scalapack`. If you wish to use `cusolver` for solving, you can manually set ks_solver to `cusolver`.
 - **multi-card**: ABACUS allows for multi-GPU acceleration. If you have multiple GPU cards, you can run ABACUS with several MPI processes, and each process will utilize one GPU card. For example, the command `mpirun -n 2 abacus` will by default launch two GPUs for computation. If you only have one card, this command will only start one GPU.
 
 ## Examples

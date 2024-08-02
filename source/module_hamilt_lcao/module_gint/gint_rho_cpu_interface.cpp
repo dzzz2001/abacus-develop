@@ -59,7 +59,7 @@ void Gint::gint_kernel_rho(Gint_inout* inout) {
             ModuleBase::GlobalFunc::ZEROS(psir_DM.get_ptr_1D(), this->bxyz * LD_pool);
             if (GlobalV::GAMMA_ONLY_LOCAL)
             {
-                Gint_Tools::mult_psi_DM_new(*this->gridt,
+                Gint_Tools::mult_psi_DM(*this->gridt,
                                             this->bxyz,
                                             grid_index,
                                             na_grid,
@@ -160,21 +160,21 @@ void Gint::gint_kernel_tau(Gint_inout* inout) {
             //calculating g_i,mu(r) = sum_nu rho_mu,nu d/dx_i psi_nu(r), x_i=x,y,z
             if(GlobalV::GAMMA_ONLY_LOCAL)
             {
-                Gint_Tools::mult_psi_DM_new(
+                Gint_Tools::mult_psi_DM(
                     *this->gridt,this->bxyz, grid_index, na_grid, LD_pool,
                     block_iw.data(), block_size.data(),
                     block_index.data(), cal_flag.get_ptr_2D(),
                     dpsir_ylm_x.get_ptr_2D(),
                     dpsix_DM.get_ptr_2D(),
                     this->DMRGint[is], true);
-                Gint_Tools::mult_psi_DM_new(
+                Gint_Tools::mult_psi_DM(
                     *this->gridt, this->bxyz, grid_index, na_grid, LD_pool,
                     block_iw.data(), block_size.data(),
                     block_index.data(), cal_flag.get_ptr_2D(),
                     dpsir_ylm_y.get_ptr_2D(),
                     dpsiy_DM.get_ptr_2D(),
                     this->DMRGint[is], true);	
-                Gint_Tools::mult_psi_DM_new(
+                Gint_Tools::mult_psi_DM(
                     *this->gridt, this->bxyz, grid_index, na_grid, LD_pool,
                     block_iw.data(), block_size.data(),
                     block_index.data(), cal_flag.get_ptr_2D(),

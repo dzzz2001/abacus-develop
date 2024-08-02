@@ -73,7 +73,7 @@ void Gint::gint_kernel_force(Gint_inout* inout) {
 	//calculating g_mu(r) = sum_nu rho_mu,nu f_nu(r)
         if(GlobalV::GAMMA_ONLY_LOCAL)
         {
-            Gint_Tools::mult_psi_DM_new(
+            Gint_Tools::mult_psi_DM(
                     *this->gridt, 
                     this->bxyz, 
                     grid_index, 
@@ -241,19 +241,19 @@ void Gint::gint_kernel_force_meta(Gint_inout* inout) {
 	//calculating g_mu(r) = sum_nu rho_mu,nu f_nu(r)
         if(GlobalV::GAMMA_ONLY_LOCAL)
         {
-            Gint_Tools::mult_psi_DM_new(*this->gridt, this->bxyz, grid_index, 
+            Gint_Tools::mult_psi_DM(*this->gridt, this->bxyz, grid_index, 
                 na_grid, LD_pool, block_iw.data(), block_size.data(),	block_index.data(), cal_flag.get_ptr_2D(),
                 psir_vlbr3.get_ptr_2D(), psir_vlbr3_DM.get_ptr_2D(), this->DMRGint[inout->ispin], false);
 
-            Gint_Tools::mult_psi_DM_new(*this->gridt, this->bxyz, grid_index, 
+            Gint_Tools::mult_psi_DM(*this->gridt, this->bxyz, grid_index, 
                 na_grid, LD_pool, block_iw.data(), block_size.data(),	block_index.data(), cal_flag.get_ptr_2D(),
                 dpsir_x_vlbr3.get_ptr_2D(), dpsirx_v_DM.get_ptr_2D(), this->DMRGint[inout->ispin], false);
 
-            Gint_Tools::mult_psi_DM_new(*this->gridt, this->bxyz, grid_index,
+            Gint_Tools::mult_psi_DM(*this->gridt, this->bxyz, grid_index,
                 na_grid, LD_pool, block_iw.data(), block_size.data(), block_index.data(), cal_flag.get_ptr_2D(),
                 dpsir_y_vlbr3.get_ptr_2D(), dpsiry_v_DM.get_ptr_2D(), this->DMRGint[inout->ispin], false);
 
-            Gint_Tools::mult_psi_DM_new(*this->gridt, this->bxyz, grid_index, 
+            Gint_Tools::mult_psi_DM(*this->gridt, this->bxyz, grid_index, 
                 na_grid, LD_pool, block_iw.data(), block_size.data(),	block_index.data(), cal_flag.get_ptr_2D(),
                 dpsir_z_vlbr3.get_ptr_2D(), dpsirz_v_DM.get_ptr_2D(), this->DMRGint[inout->ispin], false);
         }

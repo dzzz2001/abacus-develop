@@ -8,7 +8,7 @@ void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int LD_pool, c
 {
     const UnitCell& ucell = *gt.ucell;
 
-    // parameters for lapack subroutiens
+    // parameters for lapack subroutines
     constexpr char side = 'L', uplo = 'U';
     const char trans = 'N';
     const double alpha = 1.0, beta = 1.0;

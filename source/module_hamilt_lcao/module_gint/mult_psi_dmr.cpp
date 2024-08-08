@@ -22,7 +22,7 @@ void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int LD_pool, c
         const int I1 = ucell.iat2ia[iat1];
 
         //~~~~~~~~~~~~~~~~
-        // get cell R1.
+        // get cell R1, this step is redundant in gamma_only case.
         //~~~~~~~~~~~~~~~~
         const int id1 = gt.which_unitcell[bcell1];
         const int R1x = gt.ucell_index2x[id1];
@@ -62,7 +62,7 @@ void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int LD_pool, c
             const int id2 = gt.which_unitcell[bcell2];
 
             //---------------
-            // get cell R2.
+            // get cell R2, this step is redundant in gamma_only case.
             //---------------
             const int R2x = gt.ucell_index2x[id2];
             const int R2y = gt.ucell_index2y[id2];
@@ -70,7 +70,7 @@ void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int LD_pool, c
 
             //------------------------------------------------
             // calculate the 'offset': R2 position relative
-            // to R1 atom.
+            // to R1 atom, this step is redundant in gamma_only case.
             //------------------------------------------------
             const int dRx = R1x - R2x;
             const int dRy = R1y - R2y;

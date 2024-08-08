@@ -9,6 +9,7 @@
 #include "module_base/array_pool.h"
 
 #include <cstdlib>
+#include <utility> // for std::pair
 
 namespace Gint_Tools
 {
@@ -318,5 +319,13 @@ void mult_psi_DM(
     const hamilt::HContainer<double>* DM,
     const bool if_symm);
 
+// pair.first is the first index of the meshcell which is inside atoms ia1 and ia2.
+// pair.second is the number of meshcells which should be calculated in the following gemm.
+// If no meshcell is inside both ia1 and ia2, return [bxyz, 0].
+std::pair<int, int> cal_info(const int bxyz, 
+			                 const int ia1,
+			                 const int ia2,
+			                 const bool* const* const cal_flag);
+            
 } // namespace Gint_Tools
 #endif

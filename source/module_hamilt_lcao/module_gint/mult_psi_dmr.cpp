@@ -38,14 +38,14 @@ void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int LD_pool, c
             {
                 continue;
             }
-            auto cal_info = Gint_Tools::cal_info(bxyz, ia1, ia1, cal_flag);
+            const auto cal_info = Gint_Tools::cal_info(bxyz, ia1, ia1, cal_flag);
             const int ib_start = cal_info.first;
             const int ib_len = cal_info.second;
             if(ib_len == 0)
             {
                 continue;
             }
-            auto tmp_matrix_ptr = tmp_matrix->get_pointer();
+            const auto tmp_matrix_ptr = tmp_matrix->get_pointer();
             const int idx1 = block_index[ia1];
             dsymm_(&side, &uplo, &block_size[ia1], &ib_len, &alpha, tmp_matrix_ptr, &block_size[ia1],
                     &psi[ib_start][idx1], &LD_pool, &beta, &psi_DMR[ib_start][idx1], &LD_pool);
@@ -77,14 +77,14 @@ void mult_psi_DMR(const Grid_Technique& gt, const int bxyz, const int LD_pool, c
             const int dRz = R1z - R2z;
 
             // get AtomPair
-            auto tmp_matrix = DM->find_matrix(iat1, iat2, dRx, dRy, dRz);
+            const auto tmp_matrix = DM->find_matrix(iat1, iat2, dRx, dRy, dRz);
             if (tmp_matrix == nullptr)
             {
                 continue;
             }
-            auto tmp_matrix_ptr = tmp_matrix->get_pointer();
+            const auto tmp_matrix_ptr = tmp_matrix->get_pointer();
             
-            auto cal_info = Gint_Tools::cal_info(bxyz, ia1, ia1, cal_flag);
+            const auto cal_info = Gint_Tools::cal_info(bxyz, ia1, ia1, cal_flag);
             const int ib_start = cal_info.first;
             const int ib_len = cal_info.second;
             if(ib_len == 0)

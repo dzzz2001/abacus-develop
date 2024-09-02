@@ -172,17 +172,17 @@ void hamilt::TDNonlocal<hamilt::OperatorLCAO<TK, TR>>::calculate_HR()
                     // snap_psibeta_half_tddft() are used to calculate <psi|exp(-iAr)|beta>
                     // and <psi|rexp(-iAr)|beta> as well if current are needed
                     module_tddft::snap_psibeta_half_tddft(orb,
-                                                            this->ucell->infoNL,
-                                                            nlm,
-                                                            tau1 * this->ucell->lat0,
-                                                            T1,
-                                                            atom1->iw2l[iw1],
-                                                            atom1->iw2m[iw1],
-                                                            atom1->iw2n[iw1],
-                                                            tau0 * this->ucell->lat0,
-                                                            T0,
-                                                            cart_At,
-                                                            TD_Velocity::out_current);
+                                                          this->ucell->infoNL,
+                                                          nlm,
+                                                          tau1 * this->ucell->lat0,
+                                                          T1,
+                                                          atom1->iw2l[iw1],
+                                                          atom1->iw2m[iw1],
+                                                          atom1->iw2n[iw1],
+                                                          tau0 * this->ucell->lat0,
+                                                          T0,
+                                                          cart_At,
+                                                          TD_Velocity::out_current);
                     for (int dir = 0; dir < nlm_dim; dir++)
                     {
                         nlm_tot[ad][dir].insert({all_indexes[iw1l], nlm[dir]});
@@ -238,8 +238,8 @@ void hamilt::TDNonlocal<hamilt::OperatorLCAO<TK, TR>>::calculate_HR()
                     const int iat2 = ucell->itia2iat(T2, I2);
                     const ModuleBase::Vector3<int>& R_index2 = adjs.box[ad2];
                     const ModuleBase::Vector3<int> R_vector(R_index2[0] - R_index1[0],
-                                                        R_index2[1] - R_index1[1],
-                                                        R_index2[2] - R_index1[2]);
+                                                            R_index2[1] - R_index1[1],
+                                                            R_index2[2] - R_index1[2]);
                     hamilt::BaseMatrix<std::complex<double>>* tmp
                         = this->hR_tmp->find_matrix(iat1, iat2, R_vector[0], R_vector[1], R_vector[2]);
                     // if not found , skip this pair of atoms
@@ -255,24 +255,24 @@ void hamilt::TDNonlocal<hamilt::OperatorLCAO<TK, TR>>::calculate_HR()
                                                 ->get_pointer();
                             }
                             this->cal_HR_IJR(iat1,
-                                                iat2,
-                                                T0,
-                                                paraV,
-                                                nlm_tot[ad1],
-                                                nlm_tot[ad2],
-                                                tmp->get_pointer(),
-                                                tmp_c);
+                                             iat2,
+                                             T0,
+                                             paraV,
+                                             nlm_tot[ad1],
+                                             nlm_tot[ad2],
+                                             tmp->get_pointer(),
+                                             tmp_c);
                         }
                         else
                         {
                             this->cal_HR_IJR(iat1,
-                                                iat2,
-                                                T0,
-                                                paraV,
-                                                nlm_tot[ad1],
-                                                nlm_tot[ad2],
-                                                tmp->get_pointer(),
-                                                nullptr);
+                                             iat2,
+                                             T0,
+                                             paraV,
+                                             nlm_tot[ad1],
+                                             nlm_tot[ad2],
+                                             tmp->get_pointer(),
+                                             nullptr);
                         }
                     }
                 }

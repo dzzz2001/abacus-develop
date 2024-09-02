@@ -184,23 +184,16 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
                 const double temp_interpolation_value = ModuleBase::PolyInt::Polynomial_Interpolation(psi_1, mesh_r1, dk_1, tmp_r_coor_norm);
                 for (int m0 = 0; m0 < 2 * L0 + 1; m0++)
                 {
-                    result_angular[m0] += exp_iAr * rly0[L0 * L0 + m0] * rly1[L1 * L1 + m1]
-                                          * temp_interpolation_value
-                                          * weights_angular;
+                    std::complex<double> temp = exp_iAr * rly0[L0 * L0 + m0] * rly1[L1 * L1 + m1]
+                                                * temp_interpolation_value
+                                                * weights_angular;
+                    result_angular[m0] += temp;
 
                     if (calc_r)
                     {
-                        result_angular_r_commu_x[m0] += exp_iAr * tmp_r_coor_r_commu.x * rly0[L0*L0+m0] * rly1[L1*L1+m1]
-                                                        * temp_interpolation_value
-                                                        * weights_angular;
-                        
-                        result_angular_r_commu_y[m0] += exp_iAr * tmp_r_coor_r_commu.y * rly0[L0*L0+m0] * rly1[L1*L1+m1]
-                                                        * temp_interpolation_value
-                                                        * weights_angular;
-                        
-                        result_angular_r_commu_z[m0] += exp_iAr * tmp_r_coor_r_commu.z * rly0[L0*L0+m0] * rly1[L1*L1+m1]
-                                                        * temp_interpolation_value
-                                                        * weights_angular;
+                        result_angular_r_commu_x[m0] += temp * tmp_r_coor_r_commu.x;
+                        result_angular_r_commu_y[m0] += temp * tmp_r_coor_r_commu.y;
+                        result_angular_r_commu_z[m0] += temp * tmp_r_coor_r_commu.z;
                     }
                 }
             }

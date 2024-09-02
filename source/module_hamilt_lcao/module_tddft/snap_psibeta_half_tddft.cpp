@@ -183,6 +183,8 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
         double A_phase = A * R0;
         std::complex<double> exp_iAR0 = std::exp(ModuleBase::IMAG_UNIT * A_phase);
 
+        std::vector<double> rly0(L0);
+        std::vector<double> rly1(L1);
         for (int ir = 0; ir < ridial_grid_num; ir++)
         {
             std::vector<std::complex<double>> result_angular(2 * L0 + 1, 0.0);
@@ -217,10 +219,8 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
                     continue;
                 }
 
-                std::vector<double> rly0;
                 ModuleBase::Ylm::rl_sph_harm(L0, x, y, z, rly0);
 
-                std::vector<double> rly1;
                 ModuleBase::Ylm::rl_sph_harm(L1, tmp_r_unit.x, tmp_r_unit.y, tmp_r_unit.z, rly1);
 
                 double phase = A * r_coor;

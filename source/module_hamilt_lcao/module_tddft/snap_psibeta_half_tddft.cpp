@@ -2,6 +2,7 @@
 
 #include "module_base/constants.h"
 #include "module_base/math_integral.h"
+#include "module_base/math_polyint.h"
 #include "module_base/timer.h"
 #include "module_base/ylm.h"
 
@@ -104,55 +105,9 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
         return;
     }
 
-    auto Polynomial_Interpolation
-        = [](const int& mesh_r, const double* psi_r, const double* r_radial, const double& x) -> double {
-        int left = 0;
-        int right = mesh_r - 1;
-        while (left <= right)
-        {
-            int mid = left + (right - left) / 2;
-            if (r_radial[mid] == x)
-            {
-                left = mid;
-                right = mid;
-                return psi_r[mid];
-            }
-            else if (r_radial[mid] < x)
-            {
-                left = mid + 1;
-            }
-            else
-            {
-                right = mid - 1;
-            }
-        }
-
-        double y = 0.0;
-        if (right > mesh_r - 4) {
-            return y;
-        }
-
-        double x0 = r_radial[right];
-        double x1 = r_radial[right + 1];
-        double x2 = r_radial[right + 2];
-        double x3 = r_radial[right + 3];
-
-        double y0 = psi_r[right];
-        double y1 = psi_r[right + 1];
-        double y2 = psi_r[right + 2];
-        double y3 = psi_r[right + 3];
-
-        y = (x - x1) * (x - x2) * (x - x3) / (x0 - x1) / (x0 - x2) / (x0 - x3) * y0
-            + (x - x0) * (x - x2) * (x - x3) / (x1 - x0) / (x1 - x2) / (x1 - x3) * y1
-            + (x - x0) * (x - x1) * (x - x3) / (x2 - x0) / (x2 - x1) / (x2 - x3) * y2
-            + (x - x0) * (x - x1) * (x - x2) / (x3 - x0) / (x3 - x1) / (x3 - x2) * y3;
-
-        return y;
-    };
-
     const int mesh_r1 = orb.Phi[T1].PhiLN(L1, N1).getNr();
     const double* psi_1 = orb.Phi[T1].PhiLN(L1, N1).getPsi();
-    const double* radial1 = orb.Phi[T1].PhiLN(L1, N1).getRadial();
+    const double dk_1 = orb.Phi[T1].PhiLN(L1, N1).getDk();
 
     int ridial_grid_num = 140;
     int angular_grid_num = 110;
@@ -172,6 +127,7 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
         const int mesh_r0 = infoNL_.Beta[T0].Proj[nb].getNr();
         const double* beta_r = infoNL_.Beta[T0].Proj[nb].getBeta_r();
         const double* radial0 = infoNL_.Beta[T0].Proj[nb].getRadial();
+        const double dk_0 = infoNL_.Beta[T0].Proj[nb].getDk();
 
         double Rcut0 = infoNL_.Beta[T0].Proj[nb].getRcut();
         ModuleBase::Integral::Gauss_Legendre_grid_and_weight(radial0[0],
@@ -230,7 +186,7 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
 
                 for (int m0 = 0; m0 < 2 * L0 + 1; m0++)
                 {
-                    double temp_interpolation_value = Polynomial_Interpolation(mesh_r1, psi_1, radial1, tmp_r_coor_norm);
+                    double temp_interpolation_value = ModuleBase::PolyInt::Polynomial_Interpolation(psi_1, mesh_r1, dk_1, tmp_r_coor_norm);
 
                     result_angular[m0] += exp_iAr * rly0[L0 * L0 + m0] * rly1[L1 * L1 + m1]
                                           * temp_interpolation_value
@@ -254,7 +210,7 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
             }
 
             int index_tmp = index;
-            double temp = Polynomial_Interpolation(mesh_r0, beta_r, radial0, r_ridial[ir]) * r_ridial[ir] * weights_ridial[ir];
+            double temp = ModuleBase::PolyInt::Polynomial_Interpolation(beta_r, mesh_r0, dk_0, r_ridial[ir]) * r_ridial[ir] * weights_ridial[ir];
             if (!calc_r)
             {
                 for (int m0 = 0; m0 < 2 * L0 + 1; m0++)

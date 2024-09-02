@@ -109,8 +109,8 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
 
     const int ridial_grid_num = 140;
     const int angular_grid_num = 110;
-    double* r_ridial = new double[ridial_grid_num];
-    double* weights_ridial = new double[ridial_grid_num];
+    std::vector<double> r_ridial(ridial_grid_num);
+    std::vector<double> weights_ridial(ridial_grid_num);
 
     int index = 0;
     for (int nb = 0; nb < nproj; nb++)
@@ -131,8 +131,8 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
         ModuleBase::Integral::Gauss_Legendre_grid_and_weight(radial0[0],
                                                              radial0[mesh_r0 - 1],
                                                              ridial_grid_num,
-                                                             r_ridial,
-                                                             weights_ridial);
+                                                             r_ridial.data(),
+                                                             weights_ridial.data());
 
         const double A_phase = A * R0;
         const std::complex<double> exp_iAR0 = std::exp(ModuleBase::IMAG_UNIT * A_phase);
@@ -234,8 +234,6 @@ void snap_psibeta_half_tddft(const LCAO_Orbitals& orb,
         }
     }
 
-    delete[] r_ridial;
-    delete[] weights_ridial;
     assert(index == natomwfc);
     ModuleBase::timer::tick("module_tddft", "snap_psibeta_half_tddft");
 

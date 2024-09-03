@@ -190,7 +190,7 @@ void hamilt::TDNonlocal<hamilt::OperatorLCAO<TK, TR>>::calculate_HR()
                 }
             }
 
-            #ifdef _OPENMP
+#ifdef _OPENMP
             // record the iat number of the adjacent atoms
             std::set<int> ad_atom_set;
             for (int ad = 0; ad < adjs.adj_num + 1; ++ad)
@@ -214,7 +214,7 @@ void hamilt::TDNonlocal<hamilt::OperatorLCAO<TK, TR>>::calculate_HR()
                 }
                 i++;
             }
-            #endif
+#endif
 
             // 2. calculate <psi_I|beta>D<beta|psi_{J,R}> for each pair of <IJR> atoms
             for (int ad1 = 0; ad1 < adjs.adj_num + 1; ++ad1)
@@ -223,12 +223,12 @@ void hamilt::TDNonlocal<hamilt::OperatorLCAO<TK, TR>>::calculate_HR()
                 const int I1 = adjs.natom[ad1];
                 const int iat1 = ucell->itia2iat(T1, I1);
 
-                #ifdef _OPENMP
+#ifdef _OPENMP
                 if (ad_atom_set_thread.find(iat1) == ad_atom_set_thread.end())
                 {
                     continue;
                 }
-                #endif
+#endif
                 
                 const ModuleBase::Vector3<int>& R_index1 = adjs.box[ad1];
                 for (int ad2 = 0; ad2 < adjs.adj_num + 1; ++ad2)

@@ -132,7 +132,7 @@ double PolyInt::Polynomial_Interpolation
 //	if(iq >= table_length-4)
 //		std::cout << "\n iq = " << iq << " table_length = " << table_length;
   
-    if(iq >= table_length-4)
+    if(iq > table_length-4)
     {
          return 0.0;
     }

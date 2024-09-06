@@ -63,7 +63,7 @@ namespace ModuleESolver
 //! mohan add 2024-05-11
 //------------------------------------------------------------------------------
 template <typename TK, typename TR>
-ESolver_KS_LCAO<TK, TR>::ESolver_KS_LCAO()
+ESolver_KS_LCAO<TK, TR>::ESolver_KS_LCAO(): orb_(GlobalC::ORB)
 {
     this->classname = "ESolver_KS_LCAO";
     this->basisname = "LCAO";
@@ -240,7 +240,7 @@ void ESolver_KS_LCAO<TK, TR>::before_all_runners(const Input_para& inp, UnitCell
         // load the DeePKS model from deep neural network
         GlobalC::ld.load_model(PARAM.inp.deepks_model);
         // read pdm from file for NSCF or SCF-restart, do it only once in whole calculation
-        GlobalC::ld.read_projected_DM((GlobalV::init_chg == "file"), GlobalV::deepks_equiv, *GlobalC::ORB.Alpha);
+        GlobalC::ld.read_projected_DM((GlobalV::init_chg == "file"), GlobalV::deepks_equiv, *orb_.Alpha);
     }
 #endif
 
@@ -977,6 +977,10 @@ void ESolver_KS_LCAO<TK, TR>::iter_finish(int& iter)
 
     if (GlobalC::exx_info.info_global.cal_exx && this->conv_elec)
     {
+        // Kerker mixing does not work for the density matrix.
+        // In the separate loop case, it can still work in the subsequent inner loops where Hexx(DM) is fixed.
+        // In the non-separate loop case where Hexx(DM) is updated in every iteration of the 2nd loop, it should be closed.
+        if (!GlobalC::exx_info.info_global.separate_loop) { this->p_chgmix->close_kerker_gg0(); }
         if (GlobalC::exx_info.info_ri.real_number)
         {
             this->conv_elec = this->exd->exx_after_converge(
@@ -1149,7 +1153,7 @@ void ESolver_KS_LCAO<TK, TR>::after_scf(const int istep)
                           this->pelec->ekb,
                           this->pelec->klist->kvec_d,
                           GlobalC::ucell,
-                          GlobalC::ORB,
+                          orb_,
                           GlobalC::GridD,
                           &(this->pv),
                           *(this->psi),

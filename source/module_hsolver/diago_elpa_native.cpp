@@ -57,6 +57,7 @@ void DiagoElpaNative<T>::diag_pool(hamilt::MatrixBlock<T>& h_mat,
                                    MPI_Comm& comm)
 {
     std::vector<Real> eigen(GlobalV::NLOCAL, 0.0);
+    std::vector<T> eigenvectors(narows * nacols);
 
     ModuleBase::timer::tick("DiagoElpaNative", "elpa_solve");
 
@@ -108,7 +109,7 @@ void DiagoElpaNative<T>::diag_pool(hamilt::MatrixBlock<T>& h_mat,
                                   h_mat.p,
                                   s_mat.p,
                                   eigen.data(),
-                                  psi.get_pointer(),
+                                  eigenvectors.data(),
                                   this->DecomposedState,
                                   &success);
     elpa_deallocate(handle, &success);
@@ -128,6 +129,8 @@ void DiagoElpaNative<T>::diag_pool(hamilt::MatrixBlock<T>& h_mat,
 
     const int inc = 1;
     BlasConnector::copy(GlobalV::NBANDS, eigen.data(), inc, eigenvalue_in, inc);
+    const int size = psi.get_nbands() * psi.get_nbasis();
+    BlasConnector::copy(size, eigenvectors.data(), inc, psi.get_pointer(), inc);
 }
 #endif
 

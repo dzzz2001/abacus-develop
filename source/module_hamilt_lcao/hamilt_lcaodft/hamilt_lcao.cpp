@@ -39,6 +39,8 @@
 #include "operator_lcao/td_nonlocal_lcao.h"
 #include "operator_lcao/veff_lcao.h"
 
+#include "module_hamilt_lcao/module_gint/new_grid_tech/gint_info.h"
+#include <memory>
 namespace hamilt
 {
 
@@ -67,6 +69,7 @@ HamiltLCAO<TK, TR>::HamiltLCAO(const Parallel_Orbitals* paraV, const K_Vectors& 
 template <typename TK, typename TR>
 HamiltLCAO<TK, TR>::HamiltLCAO(Gint_Gamma* GG_in,
     Gint_k* GK_in,
+    std::shared_ptr<ModuleGint::GintInfo> gint_info_in,
     const Parallel_Orbitals* paraV,
     elecstate::Potential* pot_in,
     const K_Vectors& kv_in,
@@ -87,6 +90,8 @@ HamiltLCAO<TK, TR>::HamiltLCAO(Gint_Gamma* GG_in,
     this->hR = new HContainer<TR>(paraV);
     this->sR = new HContainer<TR>(paraV);
     this->hsk = new HS_Matrix_K<TK>(paraV);
+
+    this->gint_info = gint_info_in;
 
     // Effective potential term (\sum_r <psi(r)|Veff(r)|psi(r)>) is registered without template
     std::vector<std::string> pot_register_in;
@@ -176,6 +181,7 @@ HamiltLCAO<TK, TR>::HamiltLCAO(Gint_Gamma* GG_in,
                 pot_in->pot_register(pot_register_in);
                 // effective potential term
                 Operator<TK>* veff = new Veff<OperatorLCAO<TK, TR>>(GG_in,
+                    this->gint_info,
                     this->hsk,
                     this->kv->kvec_d,
                     pot_in,

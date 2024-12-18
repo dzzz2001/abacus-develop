@@ -4,10 +4,12 @@
 #include "module_elecstate/potentials/potential_new.h"
 #include "module_hamilt_lcao/module_gint/gint_gamma.h"
 #include "module_hamilt_lcao/module_gint/gint_k.h"
+#include "module_hamilt_lcao/module_gint/new_grid_tech/gint_info.h"
 #include "operator_lcao.h"
 #include "module_cell/module_neighbor/sltk_grid_driver.h"
 #include "module_cell/unitcell.h"
 #include <vector>
+#include <memory>
 
 namespace hamilt
 {
@@ -44,7 +46,7 @@ class Veff<OperatorLCAO<TK, TR>> : public OperatorLCAO<TK, TR>
         const std::vector<double>& orb_cutoff,
         Grid_Driver* GridD_in,
         const int& nspin)
-        : GK(GK_in), orb_cutoff_(orb_cutoff), pot(pot_in), ucell(ucell_in),
+        : GK(GK_in),orb_cutoff_(orb_cutoff), pot(pot_in), ucell(ucell_in),
           gd(GridD_in), OperatorLCAO<TK, TR>(hsk_in, kvec_d_in, hR_in)
     {
         this->cal_type = calculation_type::lcao_gint;
@@ -57,6 +59,7 @@ class Veff<OperatorLCAO<TK, TR>> : public OperatorLCAO<TK, TR>
      * @param GG_in: the pointer of Gint_Gamma object, used for grid integration
     */
     Veff<OperatorLCAO<TK, TR>>(Gint_Gamma* GG_in,
+        std::shared_ptr<ModuleGint::GintInfo> gint_info_in,
         HS_Matrix_K<TK>* hsk_in,
         const std::vector<ModuleBase::Vector3<double>>& kvec_d_in,
         elecstate::Potential* pot_in,
@@ -65,7 +68,7 @@ class Veff<OperatorLCAO<TK, TR>> : public OperatorLCAO<TK, TR>
         const std::vector<double>& orb_cutoff,
         Grid_Driver* GridD_in,
         const int& nspin)
-        : GG(GG_in), orb_cutoff_(orb_cutoff), pot(pot_in), OperatorLCAO<TK, TR>(hsk_in, kvec_d_in, hR_in)
+        : GG(GG_in), gint_info(gint_info_in), orb_cutoff_(orb_cutoff), pot(pot_in), OperatorLCAO<TK, TR>(hsk_in, kvec_d_in, hR_in)
     {
         this->cal_type = calculation_type::lcao_gint;
         this->initialize_HR(ucell_in, GridD_in);
@@ -91,6 +94,8 @@ class Veff<OperatorLCAO<TK, TR>> : public OperatorLCAO<TK, TR>
 
     // used for gamma only algorithms.
     Gint_Gamma* GG = nullptr;
+
+    std::shared_ptr<ModuleGint::GintInfo> gint_info;
 
     std::vector<double> orb_cutoff_;
 

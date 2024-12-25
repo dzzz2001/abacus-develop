@@ -175,10 +175,6 @@ void ESolver_KS_LCAO_TDDFT::update_pot(UnitCell& ucell, const int istep, const i
     // print Hamiltonian and Overlap matrix
     if (this->conv_esolver)
     {
-        if (!PARAM.globalv.gamma_only_local)
-        {
-            this->GK.renew(true);
-        }
         for (int ik = 0; ik < kv.get_nks(); ++ik)
         {
             if (PARAM.inp.out_mat_hs[0])

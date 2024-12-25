@@ -648,11 +648,6 @@ void ESolver_KS_LCAO<TK, TR>::iter_init(UnitCell& ucell, const int istep, const 
 
     if (PARAM.inp.vl_in_h)
     {
-        // update Gint_K
-        if (!PARAM.globalv.gamma_only_local)
-        {
-            this->GK.renew();
-        }
         // update real space Hamiltonian
         this->p_hamilt->refresh();
     }
@@ -757,10 +752,6 @@ void ESolver_KS_LCAO<TK, TR>::update_pot(UnitCell& ucell, const int istep, const
     // 1) print Hamiltonian and Overlap matrix
     if (this->conv_esolver || iter == PARAM.inp.scf_nmax)
     {
-        if (!PARAM.globalv.gamma_only_local && (PARAM.inp.out_mat_hs[0] || PARAM.inp.deepks_v_delta))
-        {
-            this->GK.renew(true);
-        }
         for (int ik = 0; ik < this->kv.get_nks(); ++ik)
         {
             if (PARAM.inp.out_mat_hs[0] || PARAM.inp.deepks_v_delta)

@@ -6,6 +6,7 @@
 #include "module_hamilt_lcao/module_gint/gint_gamma.h"
 #include "module_hamilt_lcao/module_gint/gint_k.h"
 #include "module_hamilt_lcao/module_gint/new_grid_tech/gint_info.h"
+#include "module_hamilt_lcao/module_gint/new_grid_tech/gint.h"
 #ifdef __EXX
 #include "module_ri/Exx_LRI_interface.h"
 #include "module_ri/Mix_DMk_2D.h"
@@ -66,8 +67,6 @@ class ESolver_KS_LCAO : public ESolver_KS<TK> {
     Gint_Gamma GG;
 
     Grid_Technique GridT;
-
-    std::shared_ptr<ModuleGint::GintInfo> gint_info;
 
     TwoCenterBundle two_center_bundle_;
 

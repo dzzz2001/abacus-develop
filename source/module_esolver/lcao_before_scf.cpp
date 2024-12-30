@@ -117,7 +117,7 @@ void ESolver_KS_LCAO<TK, TR>::before_scf(UnitCell& ucell, const int istep)
                              d2psi_u,
                              PARAM.inp.nstream);
 
-    this->gint_info = std::make_shared<ModuleGint::GintInfo>(
+    auto gint_info = std::make_shared<ModuleGint::GintInfo>(
         this->pw_big->nbx,
         this->pw_big->nby,
         this->pw_big->nbz,
@@ -133,6 +133,7 @@ void ESolver_KS_LCAO<TK, TR>::before_scf(UnitCell& ucell, const int istep)
         orb_.Phi,
         ucell,
         GlobalC::GridD);
+    ModuleGint::Gint::set_gint_info(gint_info);
         
     psi_u.clear();
     psi_u.shrink_to_fit();
@@ -205,7 +206,6 @@ void ESolver_KS_LCAO<TK, TR>::before_scf(UnitCell& ucell, const int istep)
         this->p_hamilt = new hamilt::HamiltLCAO<TK, TR>(
             PARAM.globalv.gamma_only_local ? &(this->GG) : nullptr,
             PARAM.globalv.gamma_only_local ? nullptr : &(this->GK),
-            this->gint_info,
             &this->pv,
             this->pelec->pot,
             this->kv,

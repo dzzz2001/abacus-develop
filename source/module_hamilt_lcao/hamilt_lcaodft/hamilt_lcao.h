@@ -15,7 +15,6 @@
 #include "module_ri/Exx_LRI.h"
 #endif
 #include <memory>
-#include "module_hamilt_lcao/module_gint/new_grid_tech/gint_info.h"
 namespace hamilt
 {
 
@@ -32,7 +31,6 @@ class HamiltLCAO : public Hamilt<TK>
       using TAC = std::pair<int, std::array<int, 3>>;
       HamiltLCAO(Gint_Gamma* GG_in,
           Gint_k* GK_in,
-          std::shared_ptr<ModuleGint::GintInfo> gint_info_in,
           const Parallel_Orbitals* paraV,
           elecstate::Potential* pot_in,
           const K_Vectors& kv_in,
@@ -110,8 +108,6 @@ class HamiltLCAO : public Hamilt<TK>
     int current_spin = 0;
 
     const int istep = 0;
-
-    std::shared_ptr<ModuleGint::GintInfo> gint_info;
 
     // sk and hk will be refactored to HamiltLCAO later
     // std::vector<TK> sk;

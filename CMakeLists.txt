@@ -717,14 +717,19 @@ if(BUILD_TESTING)
 endif()
 
   if(USE_ROPTLIB)
-    # find_package(roptlib REQUIRED)
-    # if(roptlib_FOUND)
-    #   include_directories(${roptlib_INCLUDE_DIRS})
+
+# ROPTLIB
+configure_file(cmake/roptlib.cmake roptlib-download/CMakeLists.txt)
+execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/roptlib-download")
+execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/roptlib-download")
+add_subdirectory("${CMAKE_BINARY_DIR}/roptlib-src"
+        "${CMAKE_BINARY_DIR}/roptlib-build")
+        
       target_link_libraries(${ABACUS_BIN_NAME} roptlib)
-      # add_compile_definitions(__ROPTLIB)
-    # else()
-    #   message(FATAL_ERROR "roptlib not found.")
     endif()
+
 
 add_subdirectory(source)
 

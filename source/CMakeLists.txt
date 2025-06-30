@@ -21,9 +21,9 @@ add_subdirectory(module_lr)
 # add by jghan
 add_subdirectory(module_rdmft)
 
-if(USE_ROPTLIB)
-  add_subdirectory(source_roptlib)
-endif()
+# if(USE_ROPTLIB)
+#   add_subdirectory(source_roptlib)
+# endif()
 
 
 add_library(

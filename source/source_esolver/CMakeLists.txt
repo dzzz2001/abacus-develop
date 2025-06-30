@@ -27,6 +27,8 @@ if(ENABLE_LCAO)
   )
 endif()
 
+
+
 add_library(
     esolver
     OBJECT
@@ -34,6 +36,26 @@ add_library(
         ../source_pw/hamilt_pwdft/module_exx_helper/exx_helper.cpp
         ../source_pw/hamilt_pwdft/module_exx_helper/exx_helper.h
 )
+
+if(USE_ROPTLIB)
+target_include_directories(esolver
+    PUBLIC
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/..
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Manifolds
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Others
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Others/SparseBLAS
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Others/fftw
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Others/wavelet
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Problems
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Solvers
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/cwrapper
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/cwrapper/blas
+      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/cwrapper/lapack
+      # ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/test
+)
+endif()
+
 
 if(ENABLE_COVERAGE)
   add_coverage(esolver)

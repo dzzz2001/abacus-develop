@@ -1,6 +1,5 @@
 #include "esolver_rdmft_lcao.h"
 
-
 namespace ModuleESolver
 {
 

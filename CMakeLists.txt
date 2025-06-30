@@ -51,6 +51,8 @@ option(ENABLE_RAPIDJSON "Enable rapid-json usage" OFF)
 option(ENABLE_CNPY "Enable cnpy usage" OFF)
 option(ENABLE_CUSOLVERMP "Enable cusolvermp" OFF)
 
+option(USE_ROPTLIB "Use roptlib" ON)
+
 # enable json support
 if(ENABLE_RAPIDJSON)
   find_package(RapidJSON)
@@ -713,6 +715,16 @@ if(BUILD_TESTING)
       WORKING_DIRECTORY $<TARGET_FILE_DIR:${UT_TARGET}>)
   endfunction(AddTest)
 endif()
+
+  if(USE_ROPTLIB)
+    # find_package(roptlib REQUIRED)
+    # if(roptlib_FOUND)
+    #   include_directories(${roptlib_INCLUDE_DIRS})
+      target_link_libraries(${ABACUS_BIN_NAME} roptlib)
+      # add_compile_definitions(__ROPTLIB)
+    # else()
+    #   message(FATAL_ERROR "roptlib not found.")
+    endif()
 
 add_subdirectory(source)
 

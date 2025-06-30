@@ -1,0 +1,1114 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7A230D6D24340A7B002185CC /* RTRNewton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A230D6B24340A7A002185CC /* RTRNewton.cpp */; };
+		7A230D7024340BB2002185CC /* RTRSR1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A230D6F24340BB2002185CC /* RTRSR1.cpp */; };
+		7A230D73243412AB002185CC /* LRTRSR1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A230D72243412AA002185CC /* LRTRSR1.cpp */; };
+		7A230D84243B18D0002185CC /* TestStieBrockett.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A230D82243B18CF002185CC /* TestStieBrockett.cpp */; };
+		7A2CDEE924EF7A690053F3DE /* FixedRankE3F.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A2CDEE824EF7A680053F3DE /* FixedRankE3F.cpp */; };
+		7A2CDEEC24F0BC0D0053F3DE /* FRankE3FMatCompletion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A2CDEEA24F0BC0C0053F3DE /* FRankE3FMatCompletion.cpp */; };
+		7A2CDEEF24F11D200053F3DE /* TestFRankE3FMatCompletion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A2CDEED24F11D200053F3DE /* TestFRankE3FMatCompletion.cpp */; };
+		7A3061FD242F990300722D9D /* SolversSM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A3061FB242F990200722D9D /* SolversSM.cpp */; };
+		7A30620024301B0900722D9D /* SolversNSM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A3061FE24301B0800722D9D /* SolversNSM.cpp */; };
+		7A30620324302B2800722D9D /* SolversSMLS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A30620124302B2800722D9D /* SolversSMLS.cpp */; };
+		7A3062062430B76000722D9D /* TestElement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A3062042430B75F00722D9D /* TestElement.cpp */; };
+		7A32A5A222A48891001B35FC /* Manifold.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A3EA22A48890001B35FC /* Manifold.cpp */; };
+		7A32A5A322A48891001B35FC /* SmartSpace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A3EB22A48890001B35FC /* SmartSpace.cpp */; };
+		7A32A5DF22A48891001B35FC /* randgen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A47722A48890001B35FC /* randgen.cpp */; };
+		7A32A5E022A48891001B35FC /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A47922A48890001B35FC /* Timer.cpp */; };
+		7A32A5E122A48891001B35FC /* ForDebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A47A22A48890001B35FC /* ForDebug.cpp */; };
+		7A32A5E222A48891001B35FC /* nist_spblas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A47E22A48890001B35FC /* nist_spblas.cpp */; };
+		7A32A5E422A48891001B35FC /* BlasLapackCppWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A48A22A48890001B35FC /* BlasLapackCppWrapper.cpp */; };
+		7A32A5E522A48891001B35FC /* Spline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A48D22A48890001B35FC /* Spline.cpp */; };
+		7A32A5E722A48891001B35FC /* wavelet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A49122A48890001B35FC /* wavelet.cpp */; };
+		7A32A61122A48891001B35FC /* DriverCpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A4E422A48891001B35FC /* DriverCpp.cpp */; };
+		7A32A61922A48891001B35FC /* DriverMexProb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A4F522A48891001B35FC /* DriverMexProb.cpp */; };
+		7A32A62B22A48891001B35FC /* Solvers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A51622A48891001B35FC /* Solvers.cpp */; };
+		7A32A63022A48891001B35FC /* RSD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A32A52122A48891001B35FC /* RSD.cpp */; };
+		7A32A66422A4BFFA001B35FC /* libfftw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A32A66322A4BFFA001B35FC /* libfftw3.a */; };
+		7A6080962CB26AF100839B5B /* LRBroydenFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080942CB26AF100839B5B /* LRBroydenFamily.cpp */; };
+		7A6080A12CB3837700839B5B /* SolversSMSVRG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A60809D2CB3837600839B5B /* SolversSMSVRG.cpp */; };
+		7A6080A22CB3837700839B5B /* RSVRG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A60809F2CB3837700839B5B /* RSVRG.cpp */; };
+		7A6080A52CB38A8600839B5B /* TestGrassMatCompletion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080A32CB38A8600839B5B /* TestGrassMatCompletion.cpp */; };
+		7A6080A82CB38B3800839B5B /* GrassMatCompletion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080A72CB38B3800839B5B /* GrassMatCompletion.cpp */; };
+		7A6080AD2CB4A95900839B5B /* SVRLRBFGS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080AA2CB4A95900839B5B /* SVRLRBFGS.cpp */; };
+		7A6080AE2CB4A95900839B5B /* SVRLRBroydenFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080AB2CB4A95900839B5B /* SVRLRBroydenFamily.cpp */; };
+		7A6080B12CB51F3A00839B5B /* RSGD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080AF2CB51F3900839B5B /* RSGD.cpp */; };
+		7A6080B72CB65D0E00839B5B /* RADAMSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080B52CB65D0E00839B5B /* RADAMSP.cpp */; };
+		7A6080BA2CB6726700839B5B /* RADAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080B82CB6726700839B5B /* RADAM.cpp */; };
+		7A6080BD2CB679F700839B5B /* RAMSGRAD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080BC2CB679F700839B5B /* RAMSGRAD.cpp */; };
+		7A6080C02CB8CCFF00839B5B /* RAMSGRADSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080BF2CB8CCFE00839B5B /* RAMSGRADSP.cpp */; };
+		7A6080C32CB945D100839B5B /* PoincareBall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080C12CB945D100839B5B /* PoincareBall.cpp */; };
+		7A6080C62CB945DE00839B5B /* PoincareEmbeddings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080C52CB945DE00839B5B /* PoincareEmbeddings.cpp */; };
+		7A6080C92CB945EE00839B5B /* TestPoincareEmbeddings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6080C72CB945EE00839B5B /* TestPoincareEmbeddings.cpp */; };
+		7A6D8DCC2454936E007C9589 /* Element.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A6D8DCA2454936D007C9589 /* Element.cpp */; };
+		7A8D39C724C93ABB00B9D6CD /* Grassmann.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8D39C624C93ABB00B9D6CD /* Grassmann.cpp */; };
+		7A8D39CA24C96A1F00B9D6CD /* GrassRQ.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8D39C924C96A1F00B9D6CD /* GrassRQ.cpp */; };
+		7A8D39CD24C96C7000B9D6CD /* TestGrassRQ.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8D39CB24C96C6F00B9D6CD /* TestGrassRQ.cpp */; };
+		7A8D39D324C9734700B9D6CD /* SPDManifold.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8D39D124C9734600B9D6CD /* SPDManifold.cpp */; };
+		7A8D39D624C98FC700B9D6CD /* SPDKarcherMean.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8D39D424C98FC600B9D6CD /* SPDKarcherMean.cpp */; };
+		7A8D39DC24C9B74A00B9D6CD /* TestSPDKarcherMean.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8D39DB24C9B74A00B9D6CD /* TestSPDKarcherMean.cpp */; };
+		7A9B8F6B238291D900427DD5 /* Problem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A9B8EF2238291D900427DD5 /* Problem.cpp */; };
+		7A9B8F7E238291DA00427DD5 /* mexProblem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A9B8F29238291D900427DD5 /* mexProblem.cpp */; };
+		7A9BFCF925305A3700662DCA /* FRankETextureInpainting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A9BFCF725305A3700662DCA /* FRankETextureInpainting.cpp */; };
+		7A9BFCFC2531356F00662DCA /* TestFRankETextureInpainting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A9BFCFA2531356F00662DCA /* TestFRankETextureInpainting.cpp */; };
+		7AA4132E2447F29A0078E3AC /* SolversNSMSub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AA4132D2447F29A0078E3AC /* SolversNSMSub.cpp */; };
+		7AA413312447FA100078E3AC /* RGS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AA4132F2447FA0F0078E3AC /* RGS.cpp */; };
+		7AA4134524489D4F0078E3AC /* SolversNSMSubLS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AA4134324489D4E0078E3AC /* SolversNSMSubLS.cpp */; };
+		7AA41348244BD4680078E3AC /* LRBFGSSub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AA41346244BD4670078E3AC /* LRBFGSSub.cpp */; };
+		7AA41351244C38060078E3AC /* SolversNSMPGLS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AA41350244C38060078E3AC /* SolversNSMPGLS.cpp */; };
+		7AA41365244E630E0078E3AC /* RBFGSSub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AA41363244E630D0078E3AC /* RBFGSSub.cpp */; };
+		7AACEBF326CB3256009C75FC /* ObliqueSPCA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AACEBF126CB3256009C75FC /* ObliqueSPCA.cpp */; };
+		7AACEBF626CB40DD009C75FC /* TestObliqueSPCA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AACEBF526CB40DD009C75FC /* TestObliqueSPCA.cpp */; };
+		7AACEBF926CB5D2E009C75FC /* GrassSVPCA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AACEBF826CB5D2E009C75FC /* GrassSVPCA.cpp */; };
+		7AACEBFC26CB8FC7009C75FC /* TestGrassSVPCA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AACEBFB26CB8FC6009C75FC /* TestGrassSVPCA.cpp */; };
+		7AACEC0126CC837E009C75FC /* IARPG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AACEBFD26CC837D009C75FC /* IARPG.cpp */; };
+		7AACEC0226CC837E009C75FC /* IRPG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AACEBFF26CC837E009C75FC /* IRPG.cpp */; };
+		7ABD1BCE24C08E1A00323130 /* CSFRQPhaseRetrieval.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BCC24C08E1A00323130 /* CSFRQPhaseRetrieval.cpp */; };
+		7ABD1BE224C08E3A00323130 /* FRankESparseApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BD124C08E3A00323130 /* FRankESparseApprox.cpp */; };
+		7ABD1BE324C08E3A00323130 /* ProdStieSumBrockett.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BD224C08E3A00323130 /* ProdStieSumBrockett.cpp */; };
+		7ABD1BE424C08E3A00323130 /* FRankQ2FMatCompletion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BD424C08E3A00323130 /* FRankQ2FMatCompletion.cpp */; };
+		7ABD1BE524C08E3A00323130 /* StieSPCA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BD724C08E3A00323130 /* StieSPCA.cpp */; };
+		7ABD1BE624C08E3A00323130 /* CFRankQ2FBlindDecon2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BD824C08E3A00323130 /* CFRankQ2FBlindDecon2D.cpp */; };
+		7ABD1BE724C08E3A00323130 /* FRankEWeightApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BDA24C08E3A00323130 /* FRankEWeightApprox.cpp */; };
+		7ABD1BE824C08E3A00323130 /* SFRQLyapunov.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BDB24C08E3A00323130 /* SFRQLyapunov.cpp */; };
+		7ABD1BE924C08E3A00323130 /* SphereConvexHull.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BDC24C08E3A00323130 /* SphereConvexHull.cpp */; };
+		7ABD1BEA24C08E3A00323130 /* SphereSparsestVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BDF24C08E3A00323130 /* SphereSparsestVector.cpp */; };
+		7ABD1BEB24C08E3A00323130 /* EucQuadratic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BE124C08E3A00323130 /* EucQuadratic.cpp */; };
+		7ABD1BFC24C08E5100323130 /* CSymFixedRankQ.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BEC24C08E5000323130 /* CSymFixedRankQ.cpp */; };
+		7ABD1BFD24C08E5100323130 /* SymFixedRankQ.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BF124C08E5100323130 /* SymFixedRankQ.cpp */; };
+		7ABD1BFE24C08E5100323130 /* FixedRankQ2F.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BF224C08E5100323130 /* FixedRankQ2F.cpp */; };
+		7ABD1BFF24C08E5100323130 /* FixedRankE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BF324C08E5100323130 /* FixedRankE.cpp */; };
+		7ABD1C0024C08E5100323130 /* MultiManifolds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BF524C08E5100323130 /* MultiManifolds.cpp */; };
+		7ABD1C0124C08E5100323130 /* CFixedRankQ2F.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BF724C08E5100323130 /* CFixedRankQ2F.cpp */; };
+		7ABD1C0224C08E5100323130 /* Euclidean.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BF824C08E5100323130 /* Euclidean.cpp */; };
+		7ABD1C0324C08E5100323130 /* Sphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1BFB24C08E5100323130 /* Sphere.cpp */; };
+		7ABD1C0624C08E6100323130 /* MinPNormConHull.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C0424C08E6100323130 /* MinPNormConHull.cpp */; };
+		7ABD1C1B24C08E8000323130 /* TestFRankEWeightApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C0824C08E8000323130 /* TestFRankEWeightApprox.cpp */; };
+		7ABD1C1C24C08E8000323130 /* TestSFRQLyapunov.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C0C24C08E8000323130 /* TestSFRQLyapunov.cpp */; };
+		7ABD1C1D24C08E8000323130 /* TestSphereSparsestVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C0D24C08E8000323130 /* TestSphereSparsestVector.cpp */; };
+		7ABD1C1E24C08E8000323130 /* TestStieSPCA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C0E24C08E8000323130 /* TestStieSPCA.cpp */; };
+		7ABD1C1F24C08E8000323130 /* TestProdStieSumBrockett.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C1024C08E8000323130 /* TestProdStieSumBrockett.cpp */; };
+		7ABD1C2024C08E8000323130 /* TestEucQuadratic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C1424C08E8000323130 /* TestEucQuadratic.cpp */; };
+		7ABD1C2124C08E8000323130 /* TestFRankQ2FMatCompletion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C1524C08E8000323130 /* TestFRankQ2FMatCompletion.cpp */; };
+		7ABD1C2224C08E8000323130 /* TestCSFRQPhaseRetrieval.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C1724C08E8000323130 /* TestCSFRQPhaseRetrieval.cpp */; };
+		7ABD1C2324C08E8000323130 /* TestCFRankQ2FBlindDecon2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C1924C08E8000323130 /* TestCFRankQ2FBlindDecon2D.cpp */; };
+		7ABD1C2424C08E8000323130 /* TestFRankESparseApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ABD1C1A24C08E8000323130 /* TestFRankESparseApprox.cpp */; };
+		7AC3249B2CDEF3DC00D3232F /* SolversSMSto.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AC324992CDEF3DC00D3232F /* SolversSMSto.cpp */; };
+		7ACF9E922CDCEB7100D43D59 /* GrassPCA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ACF9E912CDCEB7100D43D59 /* GrassPCA.cpp */; };
+		7ACF9E952CDCEEC000D43D59 /* TestGrassPCA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7ACF9E942CDCEEC000D43D59 /* TestGrassPCA.cpp */; };
+		7AD5FBFC2432193100C3FCF3 /* RCG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AD5FBFB2432193100C3FCF3 /* RCG.cpp */; };
+		7AD5FBFF24322D9A00C3FCF3 /* RNewton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AD5FBFD24322D9900C3FCF3 /* RNewton.cpp */; };
+		7AD5FC022432C7CE00C3FCF3 /* RBroydenFamily.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AD5FC002432C7CE00C3FCF3 /* RBroydenFamily.cpp */; };
+		7AD5FC052432D20900C3FCF3 /* RWRBFGS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AD5FC032432D20900C3FCF3 /* RWRBFGS.cpp */; };
+		7AD5FC082432D78100C3FCF3 /* RBFGS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AD5FC072432D78000C3FCF3 /* RBFGS.cpp */; };
+		7AD5FC0B2432DC8700C3FCF3 /* LRBFGS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AD5FC0A2432DC8700C3FCF3 /* LRBFGS.cpp */; };
+		7AD5FC0E2432EAAC00C3FCF3 /* SolversSMTR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AD5FC0D2432EAAC00C3FCF3 /* SolversSMTR.cpp */; };
+		7AD5FC112432F5F200C3FCF3 /* RTRSD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AD5FC102432F5F200C3FCF3 /* RTRSD.cpp */; };
+		7ADBA03A2478E8FE00BA8FF0 /* libblas.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AFEAA422478CFCD0087B502 /* libblas.a */; };
+		7ADBA03B2478E8FE00BA8FF0 /* liblapack.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AFEAA412478CFCD0087B502 /* liblapack.a */; };
+		7ADBA0412479039200BA8FF0 /* libgfortran.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7ADBA0372478E72E00BA8FF0 /* libgfortran.a */; };
+		7AEA7E2924D79A110071731D /* CStiefel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AEA7E2824D79A110071731D /* CStiefel.cpp */; };
+		7AEA7E2C24DCDEA00071731D /* CStieBrockett.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AEA7E2B24DCDEA00071731D /* CStieBrockett.cpp */; };
+		7AEA7E2F24DCE8DC0071731D /* TestCStieBrockett.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AEA7E2D24DCE8DB0071731D /* TestCStieBrockett.cpp */; };
+		7AEA7E3224DE4F110071731D /* juliaProblem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AEA7E3124DE4F110071731D /* juliaProblem.cpp */; };
+		7AEA7E3524DE4F8A0071731D /* DriverJuliaProb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AEA7E3324DE4F8A0071731D /* DriverJuliaProb.cpp */; };
+		7AF4949224F3CBE3002DEAF2 /* StieSoftICA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AF4949124F3CBE3002DEAF2 /* StieSoftICA.cpp */; };
+		7AF4949524F3E8E3002DEAF2 /* TestStieSoftICA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AF4949424F3E8E3002DEAF2 /* TestStieSoftICA.cpp */; };
+		7AF4949824FD20CF002DEAF2 /* LRTRSR1woR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AF4949624FD20CD002DEAF2 /* LRTRSR1woR.cpp */; };
+		7AF560812456B2EB00656428 /* SphereTx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AF560792456B2EA00656428 /* SphereTx.cpp */; };
+		7AF560822456B2EB00656428 /* Stiefel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AF5607B2456B2EA00656428 /* Stiefel.cpp */; };
+		7AF560932456B39800656428 /* SphereTxRQ.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AF560862456B39500656428 /* SphereTxRQ.cpp */; };
+		7AF560982456B39800656428 /* StieBrockett.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AF560902456B39700656428 /* StieBrockett.cpp */; };
+		7AFE70AD245F896D009E1D37 /* SparseMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7AFE70AB245F896D009E1D37 /* SparseMatrix.cpp */; };
+		7AFEAA4024780D580087B502 /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AFEAA3F24780D570087B502 /* libfftw3f.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7A32A3DA22A48847001B35FC /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		7A230D6B24340A7A002185CC /* RTRNewton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RTRNewton.cpp; sourceTree = "<group>"; };
+		7A230D6C24340A7A002185CC /* RTRNewton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTRNewton.h; sourceTree = "<group>"; };
+		7A230D6E24340BB1002185CC /* RTRSR1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTRSR1.h; sourceTree = "<group>"; };
+		7A230D6F24340BB2002185CC /* RTRSR1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RTRSR1.cpp; sourceTree = "<group>"; };
+		7A230D71243412AA002185CC /* LRTRSR1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LRTRSR1.h; sourceTree = "<group>"; };
+		7A230D72243412AA002185CC /* LRTRSR1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LRTRSR1.cpp; sourceTree = "<group>"; };
+		7A230D82243B18CF002185CC /* TestStieBrockett.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestStieBrockett.cpp; sourceTree = "<group>"; };
+		7A230D83243B18D0002185CC /* TestStieBrockett.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestStieBrockett.h; sourceTree = "<group>"; };
+		7A2CDEE724EF7A680053F3DE /* FixedRankE3F.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FixedRankE3F.h; sourceTree = "<group>"; };
+		7A2CDEE824EF7A680053F3DE /* FixedRankE3F.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FixedRankE3F.cpp; sourceTree = "<group>"; };
+		7A2CDEEA24F0BC0C0053F3DE /* FRankE3FMatCompletion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FRankE3FMatCompletion.cpp; sourceTree = "<group>"; };
+		7A2CDEEB24F0BC0D0053F3DE /* FRankE3FMatCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FRankE3FMatCompletion.h; sourceTree = "<group>"; };
+		7A2CDEED24F11D200053F3DE /* TestFRankE3FMatCompletion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestFRankE3FMatCompletion.cpp; sourceTree = "<group>"; };
+		7A2CDEEE24F11D200053F3DE /* TestFRankE3FMatCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFRankE3FMatCompletion.h; sourceTree = "<group>"; };
+		7A3061FB242F990200722D9D /* SolversSM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolversSM.cpp; sourceTree = "<group>"; };
+		7A3061FC242F990300722D9D /* SolversSM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolversSM.h; sourceTree = "<group>"; };
+		7A3061FE24301B0800722D9D /* SolversNSM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolversNSM.cpp; sourceTree = "<group>"; };
+		7A3061FF24301B0900722D9D /* SolversNSM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolversNSM.h; sourceTree = "<group>"; };
+		7A30620124302B2800722D9D /* SolversSMLS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolversSMLS.cpp; sourceTree = "<group>"; };
+		7A30620224302B2800722D9D /* SolversSMLS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolversSMLS.h; sourceTree = "<group>"; };
+		7A3062042430B75F00722D9D /* TestElement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestElement.cpp; sourceTree = "<group>"; };
+		7A3062052430B75F00722D9D /* TestElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestElement.h; sourceTree = "<group>"; };
+		7A32A3DC22A48847001B35FC /* ROPTLIB_mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ROPTLIB_mac; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A32A3EA22A48890001B35FC /* Manifold.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Manifold.cpp; sourceTree = "<group>"; };
+		7A32A3EB22A48890001B35FC /* SmartSpace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SmartSpace.cpp; sourceTree = "<group>"; };
+		7A32A45322A48890001B35FC /* Manifold.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Manifold.h; sourceTree = "<group>"; };
+		7A32A45D22A48890001B35FC /* SmartSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmartSpace.h; sourceTree = "<group>"; };
+		7A32A47722A48890001B35FC /* randgen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = randgen.cpp; sourceTree = "<group>"; };
+		7A32A47822A48890001B35FC /* Spline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Spline.h; sourceTree = "<group>"; };
+		7A32A47922A48890001B35FC /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
+		7A32A47A22A48890001B35FC /* ForDebug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ForDebug.cpp; sourceTree = "<group>"; };
+		7A32A47C22A48890001B35FC /* blas_enum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = blas_enum.h; sourceTree = "<group>"; };
+		7A32A47D22A48890001B35FC /* blas_sparse_proto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = blas_sparse_proto.h; sourceTree = "<group>"; };
+		7A32A47E22A48890001B35FC /* nist_spblas.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nist_spblas.cpp; sourceTree = "<group>"; };
+		7A32A47F22A48890001B35FC /* blas_sparse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = blas_sparse.h; sourceTree = "<group>"; };
+		7A32A48022A48890001B35FC /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
+		7A32A48122A48890001B35FC /* BlasLapackCppWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlasLapackCppWrapper.h; sourceTree = "<group>"; };
+		7A32A48322A48890001B35FC /* ForDebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ForDebug.h; sourceTree = "<group>"; };
+		7A32A48422A48890001B35FC /* randgen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = randgen.h; sourceTree = "<group>"; };
+		7A32A48622A48890001B35FC /* Readme.txt.bak */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Readme.txt.bak; sourceTree = "<group>"; };
+		7A32A48722A48890001B35FC /* Readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
+		7A32A48922A48890001B35FC /* def.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = def.h; sourceTree = "<group>"; };
+		7A32A48A22A48890001B35FC /* BlasLapackCppWrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BlasLapackCppWrapper.cpp; sourceTree = "<group>"; };
+		7A32A48C22A48890001B35FC /* fftw3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fftw3.h; sourceTree = "<group>"; };
+		7A32A48D22A48890001B35FC /* Spline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Spline.cpp; sourceTree = "<group>"; };
+		7A32A49022A48890001B35FC /* wavelet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wavelet.h; sourceTree = "<group>"; };
+		7A32A49122A48890001B35FC /* wavelet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wavelet.cpp; sourceTree = "<group>"; };
+		7A32A49E22A48891001B35FC /* DriverCpp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DriverCpp.h; sourceTree = "<group>"; };
+		7A32A4AC22A48891001B35FC /* DriverMexProb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DriverMexProb.h; sourceTree = "<group>"; };
+		7A32A4E422A48891001B35FC /* DriverCpp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DriverCpp.cpp; sourceTree = "<group>"; };
+		7A32A4F522A48891001B35FC /* DriverMexProb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DriverMexProb.cpp; sourceTree = "<group>"; };
+		7A32A4FC22A48891001B35FC /* RSD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSD.h; sourceTree = "<group>"; };
+		7A32A50922A48891001B35FC /* Solvers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Solvers.h; sourceTree = "<group>"; };
+		7A32A51622A48891001B35FC /* Solvers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Solvers.cpp; sourceTree = "<group>"; };
+		7A32A52122A48891001B35FC /* RSD.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RSD.cpp; sourceTree = "<group>"; };
+		7A32A65F22A48B9E001B35FC /* libblas.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libblas.tbd; path = usr/lib/libblas.tbd; sourceTree = SDKROOT; };
+		7A32A66122A48BA6001B35FC /* liblapack.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = liblapack.tbd; path = usr/lib/liblapack.tbd; sourceTree = SDKROOT; };
+		7A32A66322A4BFFA001B35FC /* libfftw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfftw3.a; path = ../../../../../../usr/local/lib/libfftw3.a; sourceTree = "<group>"; };
+		7A32A66522A4C063001B35FC /* libfftw3.la */ = {isa = PBXFileReference; lastKnownFileType = text; name = libfftw3.la; path = ../../../../../../usr/local/lib/libfftw3.la; sourceTree = "<group>"; };
+		7A6080942CB26AF100839B5B /* LRBroydenFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LRBroydenFamily.cpp; sourceTree = "<group>"; };
+		7A6080952CB26AF100839B5B /* LRBroydenFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LRBroydenFamily.h; sourceTree = "<group>"; };
+		7A60809D2CB3837600839B5B /* SolversSMSVRG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolversSMSVRG.cpp; sourceTree = "<group>"; };
+		7A60809E2CB3837700839B5B /* RSVRG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSVRG.h; sourceTree = "<group>"; };
+		7A60809F2CB3837700839B5B /* RSVRG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RSVRG.cpp; sourceTree = "<group>"; };
+		7A6080A02CB3837700839B5B /* SolversSMSVRG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolversSMSVRG.h; sourceTree = "<group>"; };
+		7A6080A32CB38A8600839B5B /* TestGrassMatCompletion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestGrassMatCompletion.cpp; sourceTree = "<group>"; };
+		7A6080A42CB38A8600839B5B /* TestGrassMatCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestGrassMatCompletion.h; sourceTree = "<group>"; };
+		7A6080A62CB38B3800839B5B /* GrassMatCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GrassMatCompletion.h; sourceTree = "<group>"; };
+		7A6080A72CB38B3800839B5B /* GrassMatCompletion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GrassMatCompletion.cpp; sourceTree = "<group>"; };
+		7A6080A92CB4A95800839B5B /* SVRLRBFGS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVRLRBFGS.h; sourceTree = "<group>"; };
+		7A6080AA2CB4A95900839B5B /* SVRLRBFGS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SVRLRBFGS.cpp; sourceTree = "<group>"; };
+		7A6080AB2CB4A95900839B5B /* SVRLRBroydenFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SVRLRBroydenFamily.cpp; sourceTree = "<group>"; };
+		7A6080AC2CB4A95900839B5B /* SVRLRBroydenFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVRLRBroydenFamily.h; sourceTree = "<group>"; };
+		7A6080AF2CB51F3900839B5B /* RSGD.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RSGD.cpp; sourceTree = "<group>"; };
+		7A6080B02CB51F3A00839B5B /* RSGD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSGD.h; sourceTree = "<group>"; };
+		7A6080B52CB65D0E00839B5B /* RADAMSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RADAMSP.cpp; sourceTree = "<group>"; };
+		7A6080B62CB65D0E00839B5B /* RADAMSP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RADAMSP.h; sourceTree = "<group>"; };
+		7A6080B82CB6726700839B5B /* RADAM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RADAM.cpp; sourceTree = "<group>"; };
+		7A6080B92CB6726700839B5B /* RADAM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RADAM.h; sourceTree = "<group>"; };
+		7A6080BB2CB679F600839B5B /* RAMSGRAD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RAMSGRAD.h; sourceTree = "<group>"; };
+		7A6080BC2CB679F700839B5B /* RAMSGRAD.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RAMSGRAD.cpp; sourceTree = "<group>"; };
+		7A6080BE2CB8CCFE00839B5B /* RAMSGRADSP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RAMSGRADSP.h; sourceTree = "<group>"; };
+		7A6080BF2CB8CCFE00839B5B /* RAMSGRADSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RAMSGRADSP.cpp; sourceTree = "<group>"; };
+		7A6080C12CB945D100839B5B /* PoincareBall.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PoincareBall.cpp; sourceTree = "<group>"; };
+		7A6080C22CB945D100839B5B /* PoincareBall.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PoincareBall.h; sourceTree = "<group>"; };
+		7A6080C42CB945DD00839B5B /* PoincareEmbeddings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PoincareEmbeddings.h; sourceTree = "<group>"; };
+		7A6080C52CB945DE00839B5B /* PoincareEmbeddings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PoincareEmbeddings.cpp; sourceTree = "<group>"; };
+		7A6080C72CB945EE00839B5B /* TestPoincareEmbeddings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestPoincareEmbeddings.cpp; sourceTree = "<group>"; };
+		7A6080C82CB945EE00839B5B /* TestPoincareEmbeddings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestPoincareEmbeddings.h; sourceTree = "<group>"; };
+		7A6D8DCA2454936D007C9589 /* Element.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Element.cpp; sourceTree = "<group>"; };
+		7A6D8DCB2454936E007C9589 /* Element.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Element.h; sourceTree = "<group>"; };
+		7A8D39C524C93ABB00B9D6CD /* Grassmann.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Grassmann.h; sourceTree = "<group>"; };
+		7A8D39C624C93ABB00B9D6CD /* Grassmann.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Grassmann.cpp; sourceTree = "<group>"; };
+		7A8D39C824C96A1F00B9D6CD /* GrassRQ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GrassRQ.h; sourceTree = "<group>"; };
+		7A8D39C924C96A1F00B9D6CD /* GrassRQ.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GrassRQ.cpp; sourceTree = "<group>"; };
+		7A8D39CB24C96C6F00B9D6CD /* TestGrassRQ.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestGrassRQ.cpp; sourceTree = "<group>"; };
+		7A8D39CC24C96C6F00B9D6CD /* TestGrassRQ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestGrassRQ.h; sourceTree = "<group>"; };
+		7A8D39D124C9734600B9D6CD /* SPDManifold.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SPDManifold.cpp; sourceTree = "<group>"; };
+		7A8D39D224C9734600B9D6CD /* SPDManifold.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDManifold.h; sourceTree = "<group>"; };
+		7A8D39D424C98FC600B9D6CD /* SPDKarcherMean.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SPDKarcherMean.cpp; sourceTree = "<group>"; };
+		7A8D39D524C98FC700B9D6CD /* SPDKarcherMean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDKarcherMean.h; sourceTree = "<group>"; };
+		7A8D39DA24C9B74A00B9D6CD /* TestSPDKarcherMean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSPDKarcherMean.h; sourceTree = "<group>"; };
+		7A8D39DB24C9B74A00B9D6CD /* TestSPDKarcherMean.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSPDKarcherMean.cpp; sourceTree = "<group>"; };
+		7A9B8EF2238291D900427DD5 /* Problem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Problem.cpp; sourceTree = "<group>"; };
+		7A9B8F29238291D900427DD5 /* mexProblem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mexProblem.cpp; sourceTree = "<group>"; };
+		7A9B8F3E238291D900427DD5 /* Problem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Problem.h; sourceTree = "<group>"; };
+		7A9B8F65238291D900427DD5 /* mexProblem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mexProblem.h; sourceTree = "<group>"; };
+		7A9BFCF725305A3700662DCA /* FRankETextureInpainting.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FRankETextureInpainting.cpp; sourceTree = "<group>"; };
+		7A9BFCF825305A3700662DCA /* FRankETextureInpainting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FRankETextureInpainting.h; sourceTree = "<group>"; };
+		7A9BFCFA2531356F00662DCA /* TestFRankETextureInpainting.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestFRankETextureInpainting.cpp; sourceTree = "<group>"; };
+		7A9BFCFB2531356F00662DCA /* TestFRankETextureInpainting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFRankETextureInpainting.h; sourceTree = "<group>"; };
+		7AA4132C2447F29A0078E3AC /* SolversNSMSub.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolversNSMSub.h; sourceTree = "<group>"; };
+		7AA4132D2447F29A0078E3AC /* SolversNSMSub.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolversNSMSub.cpp; sourceTree = "<group>"; };
+		7AA4132F2447FA0F0078E3AC /* RGS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RGS.cpp; sourceTree = "<group>"; };
+		7AA413302447FA0F0078E3AC /* RGS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RGS.h; sourceTree = "<group>"; };
+		7AA4134324489D4E0078E3AC /* SolversNSMSubLS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolversNSMSubLS.cpp; sourceTree = "<group>"; };
+		7AA4134424489D4F0078E3AC /* SolversNSMSubLS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolversNSMSubLS.h; sourceTree = "<group>"; };
+		7AA41346244BD4670078E3AC /* LRBFGSSub.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LRBFGSSub.cpp; sourceTree = "<group>"; };
+		7AA41347244BD4670078E3AC /* LRBFGSSub.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LRBFGSSub.h; sourceTree = "<group>"; };
+		7AA4134F244C38050078E3AC /* SolversNSMPGLS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolversNSMPGLS.h; sourceTree = "<group>"; };
+		7AA41350244C38060078E3AC /* SolversNSMPGLS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolversNSMPGLS.cpp; sourceTree = "<group>"; };
+		7AA41363244E630D0078E3AC /* RBFGSSub.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RBFGSSub.cpp; sourceTree = "<group>"; };
+		7AA41364244E630D0078E3AC /* RBFGSSub.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBFGSSub.h; sourceTree = "<group>"; };
+		7AACEBF126CB3256009C75FC /* ObliqueSPCA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObliqueSPCA.cpp; sourceTree = "<group>"; };
+		7AACEBF226CB3256009C75FC /* ObliqueSPCA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObliqueSPCA.h; sourceTree = "<group>"; };
+		7AACEBF426CB40DC009C75FC /* TestObliqueSPCA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestObliqueSPCA.h; sourceTree = "<group>"; };
+		7AACEBF526CB40DD009C75FC /* TestObliqueSPCA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestObliqueSPCA.cpp; sourceTree = "<group>"; };
+		7AACEBF726CB5D2D009C75FC /* GrassSVPCA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GrassSVPCA.h; sourceTree = "<group>"; };
+		7AACEBF826CB5D2E009C75FC /* GrassSVPCA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GrassSVPCA.cpp; sourceTree = "<group>"; };
+		7AACEBFA26CB8FC6009C75FC /* TestGrassSVPCA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestGrassSVPCA.h; sourceTree = "<group>"; };
+		7AACEBFB26CB8FC6009C75FC /* TestGrassSVPCA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestGrassSVPCA.cpp; sourceTree = "<group>"; };
+		7AACEBFD26CC837D009C75FC /* IARPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IARPG.cpp; sourceTree = "<group>"; };
+		7AACEBFE26CC837E009C75FC /* IRPG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IRPG.h; sourceTree = "<group>"; };
+		7AACEBFF26CC837E009C75FC /* IRPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IRPG.cpp; sourceTree = "<group>"; };
+		7AACEC0026CC837E009C75FC /* IARPG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IARPG.h; sourceTree = "<group>"; };
+		7ABD1BCB24C08E1900323130 /* CSFRQPhaseRetrieval.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSFRQPhaseRetrieval.h; sourceTree = "<group>"; };
+		7ABD1BCC24C08E1A00323130 /* CSFRQPhaseRetrieval.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CSFRQPhaseRetrieval.cpp; sourceTree = "<group>"; };
+		7ABD1BCD24C08E1A00323130 /* CFRankQ2FBlindDecon2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFRankQ2FBlindDecon2D.h; sourceTree = "<group>"; };
+		7ABD1BCF24C08E3900323130 /* ProdStieSumBrockett.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProdStieSumBrockett.h; sourceTree = "<group>"; };
+		7ABD1BD024C08E3900323130 /* FRankESparseApprox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FRankESparseApprox.h; sourceTree = "<group>"; };
+		7ABD1BD124C08E3A00323130 /* FRankESparseApprox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FRankESparseApprox.cpp; sourceTree = "<group>"; };
+		7ABD1BD224C08E3A00323130 /* ProdStieSumBrockett.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProdStieSumBrockett.cpp; sourceTree = "<group>"; };
+		7ABD1BD324C08E3A00323130 /* SphereConvexHull.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SphereConvexHull.h; sourceTree = "<group>"; };
+		7ABD1BD424C08E3A00323130 /* FRankQ2FMatCompletion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FRankQ2FMatCompletion.cpp; sourceTree = "<group>"; };
+		7ABD1BD524C08E3A00323130 /* FRankEWeightApprox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FRankEWeightApprox.h; sourceTree = "<group>"; };
+		7ABD1BD624C08E3A00323130 /* FRankQ2FMatCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FRankQ2FMatCompletion.h; sourceTree = "<group>"; };
+		7ABD1BD724C08E3A00323130 /* StieSPCA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StieSPCA.cpp; sourceTree = "<group>"; };
+		7ABD1BD824C08E3A00323130 /* CFRankQ2FBlindDecon2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CFRankQ2FBlindDecon2D.cpp; sourceTree = "<group>"; };
+		7ABD1BD924C08E3A00323130 /* StieSPCA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StieSPCA.h; sourceTree = "<group>"; };
+		7ABD1BDA24C08E3A00323130 /* FRankEWeightApprox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FRankEWeightApprox.cpp; sourceTree = "<group>"; };
+		7ABD1BDB24C08E3A00323130 /* SFRQLyapunov.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SFRQLyapunov.cpp; sourceTree = "<group>"; };
+		7ABD1BDC24C08E3A00323130 /* SphereConvexHull.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SphereConvexHull.cpp; sourceTree = "<group>"; };
+		7ABD1BDD24C08E3A00323130 /* EucQuadratic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EucQuadratic.h; sourceTree = "<group>"; };
+		7ABD1BDE24C08E3A00323130 /* SFRQLyapunov.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SFRQLyapunov.h; sourceTree = "<group>"; };
+		7ABD1BDF24C08E3A00323130 /* SphereSparsestVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SphereSparsestVector.cpp; sourceTree = "<group>"; };
+		7ABD1BE024C08E3A00323130 /* SphereSparsestVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SphereSparsestVector.h; sourceTree = "<group>"; };
+		7ABD1BE124C08E3A00323130 /* EucQuadratic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EucQuadratic.cpp; sourceTree = "<group>"; };
+		7ABD1BEC24C08E5000323130 /* CSymFixedRankQ.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CSymFixedRankQ.cpp; sourceTree = "<group>"; };
+		7ABD1BED24C08E5000323130 /* CSymFixedRankQ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSymFixedRankQ.h; sourceTree = "<group>"; };
+		7ABD1BEE24C08E5000323130 /* Euclidean.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Euclidean.h; sourceTree = "<group>"; };
+		7ABD1BEF24C08E5100323130 /* SymFixedRankQ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SymFixedRankQ.h; sourceTree = "<group>"; };
+		7ABD1BF024C08E5100323130 /* Sphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sphere.h; sourceTree = "<group>"; };
+		7ABD1BF124C08E5100323130 /* SymFixedRankQ.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymFixedRankQ.cpp; sourceTree = "<group>"; };
+		7ABD1BF224C08E5100323130 /* FixedRankQ2F.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FixedRankQ2F.cpp; sourceTree = "<group>"; };
+		7ABD1BF324C08E5100323130 /* FixedRankE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FixedRankE.cpp; sourceTree = "<group>"; };
+		7ABD1BF424C08E5100323130 /* FixedRankQ2F.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FixedRankQ2F.h; sourceTree = "<group>"; };
+		7ABD1BF524C08E5100323130 /* MultiManifolds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MultiManifolds.cpp; sourceTree = "<group>"; };
+		7ABD1BF624C08E5100323130 /* FixedRankE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FixedRankE.h; sourceTree = "<group>"; };
+		7ABD1BF724C08E5100323130 /* CFixedRankQ2F.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CFixedRankQ2F.cpp; sourceTree = "<group>"; };
+		7ABD1BF824C08E5100323130 /* Euclidean.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Euclidean.cpp; sourceTree = "<group>"; };
+		7ABD1BF924C08E5100323130 /* MultiManifolds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultiManifolds.h; sourceTree = "<group>"; };
+		7ABD1BFA24C08E5100323130 /* CFixedRankQ2F.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CFixedRankQ2F.h; sourceTree = "<group>"; };
+		7ABD1BFB24C08E5100323130 /* Sphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sphere.cpp; sourceTree = "<group>"; };
+		7ABD1C0424C08E6100323130 /* MinPNormConHull.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MinPNormConHull.cpp; sourceTree = "<group>"; };
+		7ABD1C0524C08E6100323130 /* MinPNormConHull.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MinPNormConHull.h; sourceTree = "<group>"; };
+		7ABD1C0724C08E7F00323130 /* TestCFRankQ2FBlindDecon2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestCFRankQ2FBlindDecon2D.h; sourceTree = "<group>"; };
+		7ABD1C0824C08E8000323130 /* TestFRankEWeightApprox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestFRankEWeightApprox.cpp; sourceTree = "<group>"; };
+		7ABD1C0924C08E8000323130 /* TestEucQuadratic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestEucQuadratic.h; sourceTree = "<group>"; };
+		7ABD1C0A24C08E8000323130 /* TestCSFRQPhaseRetrieval.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestCSFRQPhaseRetrieval.h; sourceTree = "<group>"; };
+		7ABD1C0B24C08E8000323130 /* TestFRankESparseApprox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFRankESparseApprox.h; sourceTree = "<group>"; };
+		7ABD1C0C24C08E8000323130 /* TestSFRQLyapunov.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSFRQLyapunov.cpp; sourceTree = "<group>"; };
+		7ABD1C0D24C08E8000323130 /* TestSphereSparsestVector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSphereSparsestVector.cpp; sourceTree = "<group>"; };
+		7ABD1C0E24C08E8000323130 /* TestStieSPCA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestStieSPCA.cpp; sourceTree = "<group>"; };
+		7ABD1C0F24C08E8000323130 /* TestSFRQLyapunov.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSFRQLyapunov.h; sourceTree = "<group>"; };
+		7ABD1C1024C08E8000323130 /* TestProdStieSumBrockett.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestProdStieSumBrockett.cpp; sourceTree = "<group>"; };
+		7ABD1C1124C08E8000323130 /* TestFRankEWeightApprox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFRankEWeightApprox.h; sourceTree = "<group>"; };
+		7ABD1C1224C08E8000323130 /* TestFRankQ2FMatCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFRankQ2FMatCompletion.h; sourceTree = "<group>"; };
+		7ABD1C1324C08E8000323130 /* TestStieSPCA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestStieSPCA.h; sourceTree = "<group>"; };
+		7ABD1C1424C08E8000323130 /* TestEucQuadratic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestEucQuadratic.cpp; sourceTree = "<group>"; };
+		7ABD1C1524C08E8000323130 /* TestFRankQ2FMatCompletion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestFRankQ2FMatCompletion.cpp; sourceTree = "<group>"; };
+		7ABD1C1624C08E8000323130 /* TestSphereSparsestVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSphereSparsestVector.h; sourceTree = "<group>"; };
+		7ABD1C1724C08E8000323130 /* TestCSFRQPhaseRetrieval.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestCSFRQPhaseRetrieval.cpp; sourceTree = "<group>"; };
+		7ABD1C1824C08E8000323130 /* TestProdStieSumBrockett.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestProdStieSumBrockett.h; sourceTree = "<group>"; };
+		7ABD1C1924C08E8000323130 /* TestCFRankQ2FBlindDecon2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestCFRankQ2FBlindDecon2D.cpp; sourceTree = "<group>"; };
+		7ABD1C1A24C08E8000323130 /* TestFRankESparseApprox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestFRankESparseApprox.cpp; sourceTree = "<group>"; };
+		7AC324992CDEF3DC00D3232F /* SolversSMSto.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolversSMSto.cpp; sourceTree = "<group>"; };
+		7AC3249A2CDEF3DC00D3232F /* SolversSMSto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolversSMSto.h; sourceTree = "<group>"; };
+		7ACF9E902CDCEB7100D43D59 /* GrassPCA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GrassPCA.h; sourceTree = "<group>"; };
+		7ACF9E912CDCEB7100D43D59 /* GrassPCA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GrassPCA.cpp; sourceTree = "<group>"; };
+		7ACF9E932CDCEEC000D43D59 /* TestGrassPCA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestGrassPCA.h; sourceTree = "<group>"; };
+		7ACF9E942CDCEEC000D43D59 /* TestGrassPCA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestGrassPCA.cpp; sourceTree = "<group>"; };
+		7AD5FBFA2432193100C3FCF3 /* RCG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCG.h; sourceTree = "<group>"; };
+		7AD5FBFB2432193100C3FCF3 /* RCG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RCG.cpp; sourceTree = "<group>"; };
+		7AD5FBFD24322D9900C3FCF3 /* RNewton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RNewton.cpp; sourceTree = "<group>"; };
+		7AD5FBFE24322D9A00C3FCF3 /* RNewton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNewton.h; sourceTree = "<group>"; };
+		7AD5FC002432C7CE00C3FCF3 /* RBroydenFamily.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RBroydenFamily.cpp; sourceTree = "<group>"; };
+		7AD5FC012432C7CE00C3FCF3 /* RBroydenFamily.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBroydenFamily.h; sourceTree = "<group>"; };
+		7AD5FC032432D20900C3FCF3 /* RWRBFGS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RWRBFGS.cpp; sourceTree = "<group>"; };
+		7AD5FC042432D20900C3FCF3 /* RWRBFGS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RWRBFGS.h; sourceTree = "<group>"; };
+		7AD5FC062432D78000C3FCF3 /* RBFGS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBFGS.h; sourceTree = "<group>"; };
+		7AD5FC072432D78000C3FCF3 /* RBFGS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RBFGS.cpp; sourceTree = "<group>"; };
+		7AD5FC092432DC8700C3FCF3 /* LRBFGS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LRBFGS.h; sourceTree = "<group>"; };
+		7AD5FC0A2432DC8700C3FCF3 /* LRBFGS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LRBFGS.cpp; sourceTree = "<group>"; };
+		7AD5FC0C2432EAAB00C3FCF3 /* SolversSMTR.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SolversSMTR.h; sourceTree = "<group>"; };
+		7AD5FC0D2432EAAC00C3FCF3 /* SolversSMTR.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SolversSMTR.cpp; sourceTree = "<group>"; };
+		7AD5FC0F2432F5F200C3FCF3 /* RTRSD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTRSD.h; sourceTree = "<group>"; };
+		7AD5FC102432F5F200C3FCF3 /* RTRSD.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RTRSD.cpp; sourceTree = "<group>"; };
+		7ADBA0372478E72E00BA8FF0 /* libgfortran.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgfortran.a; path = ../../../../../../../usr/local/gfortran/lib/libgfortran.a; sourceTree = "<group>"; };
+		7ADBA03D2478F8C200BA8FF0 /* libclapack.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libclapack.tbd; path = usr/lib/libclapack.tbd; sourceTree = SDKROOT; };
+		7ADBA03F2478F8CA00BA8FF0 /* libcblas.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcblas.tbd; path = usr/lib/libcblas.tbd; sourceTree = SDKROOT; };
+		7AEA7E2724D79A110071731D /* CStiefel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CStiefel.h; sourceTree = "<group>"; };
+		7AEA7E2824D79A110071731D /* CStiefel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CStiefel.cpp; sourceTree = "<group>"; };
+		7AEA7E2A24DCDE9F0071731D /* CStieBrockett.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CStieBrockett.h; sourceTree = "<group>"; };
+		7AEA7E2B24DCDEA00071731D /* CStieBrockett.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CStieBrockett.cpp; sourceTree = "<group>"; };
+		7AEA7E2D24DCE8DB0071731D /* TestCStieBrockett.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestCStieBrockett.cpp; sourceTree = "<group>"; };
+		7AEA7E2E24DCE8DB0071731D /* TestCStieBrockett.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestCStieBrockett.h; sourceTree = "<group>"; };
+		7AEA7E3024DE4F110071731D /* juliaProblem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = juliaProblem.h; sourceTree = "<group>"; };
+		7AEA7E3124DE4F110071731D /* juliaProblem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = juliaProblem.cpp; sourceTree = "<group>"; };
+		7AEA7E3324DE4F8A0071731D /* DriverJuliaProb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DriverJuliaProb.cpp; sourceTree = "<group>"; };
+		7AEA7E3424DE4F8A0071731D /* DriverJuliaProb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DriverJuliaProb.h; sourceTree = "<group>"; };
+		7AF4949024F3CBE2002DEAF2 /* StieSoftICA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StieSoftICA.h; sourceTree = "<group>"; };
+		7AF4949124F3CBE3002DEAF2 /* StieSoftICA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StieSoftICA.cpp; sourceTree = "<group>"; };
+		7AF4949324F3E8E2002DEAF2 /* TestStieSoftICA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestStieSoftICA.h; sourceTree = "<group>"; };
+		7AF4949424F3E8E3002DEAF2 /* TestStieSoftICA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestStieSoftICA.cpp; sourceTree = "<group>"; };
+		7AF4949624FD20CD002DEAF2 /* LRTRSR1woR.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LRTRSR1woR.cpp; sourceTree = "<group>"; };
+		7AF4949724FD20CE002DEAF2 /* LRTRSR1woR.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LRTRSR1woR.h; sourceTree = "<group>"; };
+		7AF560742456B2E900656428 /* Stiefel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stiefel.h; sourceTree = "<group>"; };
+		7AF560792456B2EA00656428 /* SphereTx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SphereTx.cpp; sourceTree = "<group>"; };
+		7AF5607A2456B2EA00656428 /* SphereTx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SphereTx.h; sourceTree = "<group>"; };
+		7AF5607B2456B2EA00656428 /* Stiefel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stiefel.cpp; sourceTree = "<group>"; };
+		7AF560862456B39500656428 /* SphereTxRQ.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SphereTxRQ.cpp; sourceTree = "<group>"; };
+		7AF5608C2456B39600656428 /* SphereTxRQ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SphereTxRQ.h; sourceTree = "<group>"; };
+		7AF5608D2456B39600656428 /* StieBrockett.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StieBrockett.h; sourceTree = "<group>"; };
+		7AF560902456B39700656428 /* StieBrockett.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StieBrockett.cpp; sourceTree = "<group>"; };
+		7AFE70AB245F896D009E1D37 /* SparseMatrix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SparseMatrix.cpp; sourceTree = "<group>"; };
+		7AFE70AC245F896D009E1D37 /* SparseMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SparseMatrix.h; sourceTree = "<group>"; };
+		7AFE70AE2460E6B6009E1D37 /* nist_spblas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nist_spblas.h; sourceTree = "<group>"; };
+		7AFEAA3F24780D570087B502 /* libfftw3f.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfftw3f.a; path = ../../../../../../../usr/local/lib/libfftw3f.a; sourceTree = "<group>"; };
+		7AFEAA412478CFCD0087B502 /* liblapack.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblapack.a; path = BinaryFiles/liblapack.a; sourceTree = "<group>"; };
+		7AFEAA422478CFCD0087B502 /* libblas.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libblas.a; path = BinaryFiles/libblas.a; sourceTree = "<group>"; };
+		7AFEAA452478D0830087B502 /* libtmglib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtmglib.a; path = BinaryFiles/libtmglib.a; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7A32A3D922A48847001B35FC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7ADBA0412479039200BA8FF0 /* libgfortran.a in Frameworks */,
+				7AFEAA4024780D580087B502 /* libfftw3f.a in Frameworks */,
+				7ADBA03A2478E8FE00BA8FF0 /* libblas.a in Frameworks */,
+				7A32A66422A4BFFA001B35FC /* libfftw3.a in Frameworks */,
+				7ADBA03B2478E8FE00BA8FF0 /* liblapack.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7A32A3D322A48847001B35FC = {
+			isa = PBXGroup;
+			children = (
+				7A32A3DE22A48847001B35FC /* ROPTLIB_mac */,
+				7A32A3DD22A48847001B35FC /* Products */,
+				7A32A65E22A48B9D001B35FC /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		7A32A3DD22A48847001B35FC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7A32A3DC22A48847001B35FC /* ROPTLIB_mac */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7A32A3DE22A48847001B35FC /* ROPTLIB_mac */ = {
+			isa = PBXGroup;
+			children = (
+				7A9B8EEB238291D900427DD5 /* Problems */,
+				7A32A3E622A48890001B35FC /* Manifolds */,
+				7A32A47622A48890001B35FC /* Others */,
+				7A32A4FB22A48891001B35FC /* Solvers */,
+				7A32A49222A48891001B35FC /* test */,
+			);
+			path = ROPTLIB_mac;
+			sourceTree = "<group>";
+		};
+		7A32A3E622A48890001B35FC /* Manifolds */ = {
+			isa = PBXGroup;
+			children = (
+				7A6080C12CB945D100839B5B /* PoincareBall.cpp */,
+				7A6080C22CB945D100839B5B /* PoincareBall.h */,
+				7A2CDEE824EF7A680053F3DE /* FixedRankE3F.cpp */,
+				7A2CDEE724EF7A680053F3DE /* FixedRankE3F.h */,
+				7AEA7E2824D79A110071731D /* CStiefel.cpp */,
+				7AEA7E2724D79A110071731D /* CStiefel.h */,
+				7ABD1BF724C08E5100323130 /* CFixedRankQ2F.cpp */,
+				7ABD1BFA24C08E5100323130 /* CFixedRankQ2F.h */,
+				7ABD1BEC24C08E5000323130 /* CSymFixedRankQ.cpp */,
+				7ABD1BED24C08E5000323130 /* CSymFixedRankQ.h */,
+				7A6D8DCA2454936D007C9589 /* Element.cpp */,
+				7A6D8DCB2454936E007C9589 /* Element.h */,
+				7ABD1BF824C08E5100323130 /* Euclidean.cpp */,
+				7ABD1BEE24C08E5000323130 /* Euclidean.h */,
+				7ABD1BF324C08E5100323130 /* FixedRankE.cpp */,
+				7ABD1BF624C08E5100323130 /* FixedRankE.h */,
+				7ABD1BF224C08E5100323130 /* FixedRankQ2F.cpp */,
+				7ABD1BF424C08E5100323130 /* FixedRankQ2F.h */,
+				7A8D39C624C93ABB00B9D6CD /* Grassmann.cpp */,
+				7A8D39C524C93ABB00B9D6CD /* Grassmann.h */,
+				7A32A3EA22A48890001B35FC /* Manifold.cpp */,
+				7A32A45322A48890001B35FC /* Manifold.h */,
+				7ABD1BF524C08E5100323130 /* MultiManifolds.cpp */,
+				7ABD1BF924C08E5100323130 /* MultiManifolds.h */,
+				7A32A3EB22A48890001B35FC /* SmartSpace.cpp */,
+				7A32A45D22A48890001B35FC /* SmartSpace.h */,
+				7A8D39D124C9734600B9D6CD /* SPDManifold.cpp */,
+				7A8D39D224C9734600B9D6CD /* SPDManifold.h */,
+				7ABD1BFB24C08E5100323130 /* Sphere.cpp */,
+				7ABD1BF024C08E5100323130 /* Sphere.h */,
+				7AF560792456B2EA00656428 /* SphereTx.cpp */,
+				7AF5607A2456B2EA00656428 /* SphereTx.h */,
+				7AF5607B2456B2EA00656428 /* Stiefel.cpp */,
+				7AF560742456B2E900656428 /* Stiefel.h */,
+				7ABD1BF124C08E5100323130 /* SymFixedRankQ.cpp */,
+				7ABD1BEF24C08E5100323130 /* SymFixedRankQ.h */,
+			);
+			path = Manifolds;
+			sourceTree = SOURCE_ROOT;
+		};
+		7A32A47622A48890001B35FC /* Others */ = {
+			isa = PBXGroup;
+			children = (
+				7ABD1C0424C08E6100323130 /* MinPNormConHull.cpp */,
+				7ABD1C0524C08E6100323130 /* MinPNormConHull.h */,
+				7AFE70AB245F896D009E1D37 /* SparseMatrix.cpp */,
+				7AFE70AC245F896D009E1D37 /* SparseMatrix.h */,
+				7A32A48A22A48890001B35FC /* BlasLapackCppWrapper.cpp */,
+				7A32A48122A48890001B35FC /* BlasLapackCppWrapper.h */,
+				7A32A48922A48890001B35FC /* def.h */,
+				7A32A48B22A48890001B35FC /* fftw */,
+				7A32A47A22A48890001B35FC /* ForDebug.cpp */,
+				7A32A48322A48890001B35FC /* ForDebug.h */,
+				7A32A47722A48890001B35FC /* randgen.cpp */,
+				7A32A48422A48890001B35FC /* randgen.h */,
+				7A32A48722A48890001B35FC /* Readme.txt */,
+				7A32A48622A48890001B35FC /* Readme.txt.bak */,
+				7A32A47B22A48890001B35FC /* SparseBLAS */,
+				7A32A48D22A48890001B35FC /* Spline.cpp */,
+				7A32A47822A48890001B35FC /* Spline.h */,
+				7A32A47922A48890001B35FC /* Timer.cpp */,
+				7A32A48022A48890001B35FC /* Timer.h */,
+				7A32A48F22A48890001B35FC /* wavelet */,
+			);
+			path = Others;
+			sourceTree = SOURCE_ROOT;
+		};
+		7A32A47B22A48890001B35FC /* SparseBLAS */ = {
+			isa = PBXGroup;
+			children = (
+				7AFE70AE2460E6B6009E1D37 /* nist_spblas.h */,
+				7A32A47C22A48890001B35FC /* blas_enum.h */,
+				7A32A47D22A48890001B35FC /* blas_sparse_proto.h */,
+				7A32A47E22A48890001B35FC /* nist_spblas.cpp */,
+				7A32A47F22A48890001B35FC /* blas_sparse.h */,
+			);
+			path = SparseBLAS;
+			sourceTree = "<group>";
+		};
+		7A32A48B22A48890001B35FC /* fftw */ = {
+			isa = PBXGroup;
+			children = (
+				7A32A48C22A48890001B35FC /* fftw3.h */,
+			);
+			path = fftw;
+			sourceTree = "<group>";
+		};
+		7A32A48F22A48890001B35FC /* wavelet */ = {
+			isa = PBXGroup;
+			children = (
+				7A32A49022A48890001B35FC /* wavelet.h */,
+				7A32A49122A48890001B35FC /* wavelet.cpp */,
+			);
+			path = wavelet;
+			sourceTree = "<group>";
+		};
+		7A32A49222A48891001B35FC /* test */ = {
+			isa = PBXGroup;
+			children = (
+				7ACF9E942CDCEEC000D43D59 /* TestGrassPCA.cpp */,
+				7ACF9E932CDCEEC000D43D59 /* TestGrassPCA.h */,
+				7A6080C72CB945EE00839B5B /* TestPoincareEmbeddings.cpp */,
+				7A6080C82CB945EE00839B5B /* TestPoincareEmbeddings.h */,
+				7A6080A32CB38A8600839B5B /* TestGrassMatCompletion.cpp */,
+				7A6080A42CB38A8600839B5B /* TestGrassMatCompletion.h */,
+				7AACEBFB26CB8FC6009C75FC /* TestGrassSVPCA.cpp */,
+				7AACEBFA26CB8FC6009C75FC /* TestGrassSVPCA.h */,
+				7AACEBF526CB40DD009C75FC /* TestObliqueSPCA.cpp */,
+				7AACEBF426CB40DC009C75FC /* TestObliqueSPCA.h */,
+				7A9BFCFA2531356F00662DCA /* TestFRankETextureInpainting.cpp */,
+				7A9BFCFB2531356F00662DCA /* TestFRankETextureInpainting.h */,
+				7AF4949424F3E8E3002DEAF2 /* TestStieSoftICA.cpp */,
+				7AF4949324F3E8E2002DEAF2 /* TestStieSoftICA.h */,
+				7A2CDEED24F11D200053F3DE /* TestFRankE3FMatCompletion.cpp */,
+				7A2CDEEE24F11D200053F3DE /* TestFRankE3FMatCompletion.h */,
+				7AEA7E3324DE4F8A0071731D /* DriverJuliaProb.cpp */,
+				7AEA7E3424DE4F8A0071731D /* DriverJuliaProb.h */,
+				7AEA7E2D24DCE8DB0071731D /* TestCStieBrockett.cpp */,
+				7AEA7E2E24DCE8DB0071731D /* TestCStieBrockett.h */,
+				7A8D39DB24C9B74A00B9D6CD /* TestSPDKarcherMean.cpp */,
+				7A8D39DA24C9B74A00B9D6CD /* TestSPDKarcherMean.h */,
+				7A8D39CB24C96C6F00B9D6CD /* TestGrassRQ.cpp */,
+				7A8D39CC24C96C6F00B9D6CD /* TestGrassRQ.h */,
+				7ABD1C1924C08E8000323130 /* TestCFRankQ2FBlindDecon2D.cpp */,
+				7ABD1C0724C08E7F00323130 /* TestCFRankQ2FBlindDecon2D.h */,
+				7ABD1C1724C08E8000323130 /* TestCSFRQPhaseRetrieval.cpp */,
+				7ABD1C0A24C08E8000323130 /* TestCSFRQPhaseRetrieval.h */,
+				7ABD1C1424C08E8000323130 /* TestEucQuadratic.cpp */,
+				7ABD1C0924C08E8000323130 /* TestEucQuadratic.h */,
+				7ABD1C1A24C08E8000323130 /* TestFRankESparseApprox.cpp */,
+				7ABD1C0B24C08E8000323130 /* TestFRankESparseApprox.h */,
+				7ABD1C0824C08E8000323130 /* TestFRankEWeightApprox.cpp */,
+				7ABD1C1124C08E8000323130 /* TestFRankEWeightApprox.h */,
+				7ABD1C1524C08E8000323130 /* TestFRankQ2FMatCompletion.cpp */,
+				7ABD1C1224C08E8000323130 /* TestFRankQ2FMatCompletion.h */,
+				7ABD1C1024C08E8000323130 /* TestProdStieSumBrockett.cpp */,
+				7ABD1C1824C08E8000323130 /* TestProdStieSumBrockett.h */,
+				7ABD1C0C24C08E8000323130 /* TestSFRQLyapunov.cpp */,
+				7ABD1C0F24C08E8000323130 /* TestSFRQLyapunov.h */,
+				7ABD1C0D24C08E8000323130 /* TestSphereSparsestVector.cpp */,
+				7ABD1C1624C08E8000323130 /* TestSphereSparsestVector.h */,
+				7ABD1C0E24C08E8000323130 /* TestStieSPCA.cpp */,
+				7ABD1C1324C08E8000323130 /* TestStieSPCA.h */,
+				7A230D82243B18CF002185CC /* TestStieBrockett.cpp */,
+				7A230D83243B18D0002185CC /* TestStieBrockett.h */,
+				7A3062042430B75F00722D9D /* TestElement.cpp */,
+				7A3062052430B75F00722D9D /* TestElement.h */,
+				7A32A4E422A48891001B35FC /* DriverCpp.cpp */,
+				7A32A49E22A48891001B35FC /* DriverCpp.h */,
+				7A32A4F522A48891001B35FC /* DriverMexProb.cpp */,
+				7A32A4AC22A48891001B35FC /* DriverMexProb.h */,
+			);
+			path = test;
+			sourceTree = SOURCE_ROOT;
+		};
+		7A32A4FB22A48891001B35FC /* Solvers */ = {
+			isa = PBXGroup;
+			children = (
+				7AC324992CDEF3DC00D3232F /* SolversSMSto.cpp */,
+				7AC3249A2CDEF3DC00D3232F /* SolversSMSto.h */,
+				7A6080BF2CB8CCFE00839B5B /* RAMSGRADSP.cpp */,
+				7A6080BE2CB8CCFE00839B5B /* RAMSGRADSP.h */,
+				7A6080BC2CB679F700839B5B /* RAMSGRAD.cpp */,
+				7A6080BB2CB679F600839B5B /* RAMSGRAD.h */,
+				7A6080B82CB6726700839B5B /* RADAM.cpp */,
+				7A6080B92CB6726700839B5B /* RADAM.h */,
+				7A6080B52CB65D0E00839B5B /* RADAMSP.cpp */,
+				7A6080B62CB65D0E00839B5B /* RADAMSP.h */,
+				7A6080AF2CB51F3900839B5B /* RSGD.cpp */,
+				7A6080B02CB51F3A00839B5B /* RSGD.h */,
+				7A6080AA2CB4A95900839B5B /* SVRLRBFGS.cpp */,
+				7A6080A92CB4A95800839B5B /* SVRLRBFGS.h */,
+				7A6080AB2CB4A95900839B5B /* SVRLRBroydenFamily.cpp */,
+				7A6080AC2CB4A95900839B5B /* SVRLRBroydenFamily.h */,
+				7A60809F2CB3837700839B5B /* RSVRG.cpp */,
+				7A60809E2CB3837700839B5B /* RSVRG.h */,
+				7A60809D2CB3837600839B5B /* SolversSMSVRG.cpp */,
+				7A6080A02CB3837700839B5B /* SolversSMSVRG.h */,
+				7A6080942CB26AF100839B5B /* LRBroydenFamily.cpp */,
+				7A6080952CB26AF100839B5B /* LRBroydenFamily.h */,
+				7AACEBFD26CC837D009C75FC /* IARPG.cpp */,
+				7AACEC0026CC837E009C75FC /* IARPG.h */,
+				7AACEBFF26CC837E009C75FC /* IRPG.cpp */,
+				7AACEBFE26CC837E009C75FC /* IRPG.h */,
+				7AF4949624FD20CD002DEAF2 /* LRTRSR1woR.cpp */,
+				7AF4949724FD20CE002DEAF2 /* LRTRSR1woR.h */,
+				7AA41363244E630D0078E3AC /* RBFGSSub.cpp */,
+				7AA41364244E630D0078E3AC /* RBFGSSub.h */,
+				7AA41350244C38060078E3AC /* SolversNSMPGLS.cpp */,
+				7AA4134F244C38050078E3AC /* SolversNSMPGLS.h */,
+				7AA41346244BD4670078E3AC /* LRBFGSSub.cpp */,
+				7AA41347244BD4670078E3AC /* LRBFGSSub.h */,
+				7AA4134324489D4E0078E3AC /* SolversNSMSubLS.cpp */,
+				7AA4134424489D4F0078E3AC /* SolversNSMSubLS.h */,
+				7AA4132F2447FA0F0078E3AC /* RGS.cpp */,
+				7AA413302447FA0F0078E3AC /* RGS.h */,
+				7AA4132D2447F29A0078E3AC /* SolversNSMSub.cpp */,
+				7AA4132C2447F29A0078E3AC /* SolversNSMSub.h */,
+				7A230D72243412AA002185CC /* LRTRSR1.cpp */,
+				7A230D71243412AA002185CC /* LRTRSR1.h */,
+				7A230D6F24340BB2002185CC /* RTRSR1.cpp */,
+				7A230D6E24340BB1002185CC /* RTRSR1.h */,
+				7A230D6B24340A7A002185CC /* RTRNewton.cpp */,
+				7A230D6C24340A7A002185CC /* RTRNewton.h */,
+				7AD5FC102432F5F200C3FCF3 /* RTRSD.cpp */,
+				7AD5FC0F2432F5F200C3FCF3 /* RTRSD.h */,
+				7AD5FC0D2432EAAC00C3FCF3 /* SolversSMTR.cpp */,
+				7AD5FC0C2432EAAB00C3FCF3 /* SolversSMTR.h */,
+				7AD5FC0A2432DC8700C3FCF3 /* LRBFGS.cpp */,
+				7AD5FC092432DC8700C3FCF3 /* LRBFGS.h */,
+				7AD5FC072432D78000C3FCF3 /* RBFGS.cpp */,
+				7AD5FC062432D78000C3FCF3 /* RBFGS.h */,
+				7AD5FC032432D20900C3FCF3 /* RWRBFGS.cpp */,
+				7AD5FC042432D20900C3FCF3 /* RWRBFGS.h */,
+				7AD5FC002432C7CE00C3FCF3 /* RBroydenFamily.cpp */,
+				7AD5FC012432C7CE00C3FCF3 /* RBroydenFamily.h */,
+				7AD5FBFD24322D9900C3FCF3 /* RNewton.cpp */,
+				7AD5FBFE24322D9A00C3FCF3 /* RNewton.h */,
+				7AD5FBFB2432193100C3FCF3 /* RCG.cpp */,
+				7AD5FBFA2432193100C3FCF3 /* RCG.h */,
+				7A30620124302B2800722D9D /* SolversSMLS.cpp */,
+				7A30620224302B2800722D9D /* SolversSMLS.h */,
+				7A3061FE24301B0800722D9D /* SolversNSM.cpp */,
+				7A3061FF24301B0900722D9D /* SolversNSM.h */,
+				7A3061FB242F990200722D9D /* SolversSM.cpp */,
+				7A3061FC242F990300722D9D /* SolversSM.h */,
+				7A32A52122A48891001B35FC /* RSD.cpp */,
+				7A32A4FC22A48891001B35FC /* RSD.h */,
+				7A32A51622A48891001B35FC /* Solvers.cpp */,
+				7A32A50922A48891001B35FC /* Solvers.h */,
+			);
+			path = Solvers;
+			sourceTree = SOURCE_ROOT;
+		};
+		7A32A65E22A48B9D001B35FC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7ADBA03F2478F8CA00BA8FF0 /* libcblas.tbd */,
+				7ADBA03D2478F8C200BA8FF0 /* libclapack.tbd */,
+				7ADBA0372478E72E00BA8FF0 /* libgfortran.a */,
+				7AFEAA452478D0830087B502 /* libtmglib.a */,
+				7AFEAA422478CFCD0087B502 /* libblas.a */,
+				7AFEAA412478CFCD0087B502 /* liblapack.a */,
+				7AFEAA3F24780D570087B502 /* libfftw3f.a */,
+				7A32A66522A4C063001B35FC /* libfftw3.la */,
+				7A32A66322A4BFFA001B35FC /* libfftw3.a */,
+				7A32A66122A48BA6001B35FC /* liblapack.tbd */,
+				7A32A65F22A48B9E001B35FC /* libblas.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7A9B8EEB238291D900427DD5 /* Problems */ = {
+			isa = PBXGroup;
+			children = (
+				7ACF9E912CDCEB7100D43D59 /* GrassPCA.cpp */,
+				7ACF9E902CDCEB7100D43D59 /* GrassPCA.h */,
+				7A6080C52CB945DE00839B5B /* PoincareEmbeddings.cpp */,
+				7A6080C42CB945DD00839B5B /* PoincareEmbeddings.h */,
+				7A6080A72CB38B3800839B5B /* GrassMatCompletion.cpp */,
+				7A6080A62CB38B3800839B5B /* GrassMatCompletion.h */,
+				7AACEBF826CB5D2E009C75FC /* GrassSVPCA.cpp */,
+				7AACEBF726CB5D2D009C75FC /* GrassSVPCA.h */,
+				7AACEBF126CB3256009C75FC /* ObliqueSPCA.cpp */,
+				7AACEBF226CB3256009C75FC /* ObliqueSPCA.h */,
+				7A9BFCF725305A3700662DCA /* FRankETextureInpainting.cpp */,
+				7A9BFCF825305A3700662DCA /* FRankETextureInpainting.h */,
+				7AF4949124F3CBE3002DEAF2 /* StieSoftICA.cpp */,
+				7AF4949024F3CBE2002DEAF2 /* StieSoftICA.h */,
+				7A2CDEEA24F0BC0C0053F3DE /* FRankE3FMatCompletion.cpp */,
+				7A2CDEEB24F0BC0D0053F3DE /* FRankE3FMatCompletion.h */,
+				7AEA7E3124DE4F110071731D /* juliaProblem.cpp */,
+				7AEA7E3024DE4F110071731D /* juliaProblem.h */,
+				7AEA7E2B24DCDEA00071731D /* CStieBrockett.cpp */,
+				7AEA7E2A24DCDE9F0071731D /* CStieBrockett.h */,
+				7A8D39D424C98FC600B9D6CD /* SPDKarcherMean.cpp */,
+				7A8D39D524C98FC700B9D6CD /* SPDKarcherMean.h */,
+				7A8D39C924C96A1F00B9D6CD /* GrassRQ.cpp */,
+				7A8D39C824C96A1F00B9D6CD /* GrassRQ.h */,
+				7ABD1BD824C08E3A00323130 /* CFRankQ2FBlindDecon2D.cpp */,
+				7ABD1BCD24C08E1A00323130 /* CFRankQ2FBlindDecon2D.h */,
+				7ABD1BCC24C08E1A00323130 /* CSFRQPhaseRetrieval.cpp */,
+				7ABD1BCB24C08E1900323130 /* CSFRQPhaseRetrieval.h */,
+				7ABD1BE124C08E3A00323130 /* EucQuadratic.cpp */,
+				7ABD1BDD24C08E3A00323130 /* EucQuadratic.h */,
+				7ABD1BD124C08E3A00323130 /* FRankESparseApprox.cpp */,
+				7ABD1BD024C08E3900323130 /* FRankESparseApprox.h */,
+				7ABD1BDA24C08E3A00323130 /* FRankEWeightApprox.cpp */,
+				7ABD1BD524C08E3A00323130 /* FRankEWeightApprox.h */,
+				7ABD1BD424C08E3A00323130 /* FRankQ2FMatCompletion.cpp */,
+				7ABD1BD624C08E3A00323130 /* FRankQ2FMatCompletion.h */,
+				7A9B8F29238291D900427DD5 /* mexProblem.cpp */,
+				7A9B8F65238291D900427DD5 /* mexProblem.h */,
+				7A9B8EF2238291D900427DD5 /* Problem.cpp */,
+				7A9B8F3E238291D900427DD5 /* Problem.h */,
+				7ABD1BD224C08E3A00323130 /* ProdStieSumBrockett.cpp */,
+				7ABD1BCF24C08E3900323130 /* ProdStieSumBrockett.h */,
+				7ABD1BDB24C08E3A00323130 /* SFRQLyapunov.cpp */,
+				7ABD1BDE24C08E3A00323130 /* SFRQLyapunov.h */,
+				7ABD1BDC24C08E3A00323130 /* SphereConvexHull.cpp */,
+				7ABD1BD324C08E3A00323130 /* SphereConvexHull.h */,
+				7ABD1BDF24C08E3A00323130 /* SphereSparsestVector.cpp */,
+				7ABD1BE024C08E3A00323130 /* SphereSparsestVector.h */,
+				7AF560862456B39500656428 /* SphereTxRQ.cpp */,
+				7AF5608C2456B39600656428 /* SphereTxRQ.h */,
+				7AF560902456B39700656428 /* StieBrockett.cpp */,
+				7AF5608D2456B39600656428 /* StieBrockett.h */,
+				7ABD1BD724C08E3A00323130 /* StieSPCA.cpp */,
+				7ABD1BD924C08E3A00323130 /* StieSPCA.h */,
+			);
+			path = Problems;
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7A32A3DB22A48847001B35FC /* ROPTLIB_mac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7A32A3E322A48847001B35FC /* Build configuration list for PBXNativeTarget "ROPTLIB_mac" */;
+			buildPhases = (
+				7A32A3D822A48847001B35FC /* Sources */,
+				7A32A3D922A48847001B35FC /* Frameworks */,
+				7A32A3DA22A48847001B35FC /* Copy Files */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ROPTLIB_mac;
+			productName = ROPTLIB_mac;
+			productReference = 7A32A3DC22A48847001B35FC /* ROPTLIB_mac */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7A32A3D422A48847001B35FC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1020;
+				ORGANIZATIONNAME = "wen huang";
+				TargetAttributes = {
+					7A32A3DB22A48847001B35FC = {
+						CreatedOnToolsVersion = 10.2.1;
+					};
+				};
+			};
+			buildConfigurationList = 7A32A3D722A48847001B35FC /* Build configuration list for PBXProject "ROPTLIB_mac" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7A32A3D322A48847001B35FC;
+			productRefGroup = 7A32A3DD22A48847001B35FC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7A32A3DB22A48847001B35FC /* ROPTLIB_mac */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7A32A3D822A48847001B35FC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7AEA7E2924D79A110071731D /* CStiefel.cpp in Sources */,
+				7A6080A52CB38A8600839B5B /* TestGrassMatCompletion.cpp in Sources */,
+				7A32A5DF22A48891001B35FC /* randgen.cpp in Sources */,
+				7A30620024301B0900722D9D /* SolversNSM.cpp in Sources */,
+				7AEA7E3224DE4F110071731D /* juliaProblem.cpp in Sources */,
+				7A230D7024340BB2002185CC /* RTRSR1.cpp in Sources */,
+				7A6D8DCC2454936E007C9589 /* Element.cpp in Sources */,
+				7A32A61122A48891001B35FC /* DriverCpp.cpp in Sources */,
+				7A9BFCFC2531356F00662DCA /* TestFRankETextureInpainting.cpp in Sources */,
+				7ABD1BE524C08E3A00323130 /* StieSPCA.cpp in Sources */,
+				7ABD1BEB24C08E3A00323130 /* EucQuadratic.cpp in Sources */,
+				7ABD1BE324C08E3A00323130 /* ProdStieSumBrockett.cpp in Sources */,
+				7ACF9E952CDCEEC000D43D59 /* TestGrassPCA.cpp in Sources */,
+				7A6080A82CB38B3800839B5B /* GrassMatCompletion.cpp in Sources */,
+				7AF4949524F3E8E3002DEAF2 /* TestStieSoftICA.cpp in Sources */,
+				7ABD1C2324C08E8000323130 /* TestCFRankQ2FBlindDecon2D.cpp in Sources */,
+				7A6080BA2CB6726700839B5B /* RADAM.cpp in Sources */,
+				7ABD1C2224C08E8000323130 /* TestCSFRQPhaseRetrieval.cpp in Sources */,
+				7AA41348244BD4680078E3AC /* LRBFGSSub.cpp in Sources */,
+				7ABD1BEA24C08E3A00323130 /* SphereSparsestVector.cpp in Sources */,
+				7AACEBF926CB5D2E009C75FC /* GrassSVPCA.cpp in Sources */,
+				7ABD1C0124C08E5100323130 /* CFixedRankQ2F.cpp in Sources */,
+				7A32A5E222A48891001B35FC /* nist_spblas.cpp in Sources */,
+				7A32A5E722A48891001B35FC /* wavelet.cpp in Sources */,
+				7A32A5A322A48891001B35FC /* SmartSpace.cpp in Sources */,
+				7AA4132E2447F29A0078E3AC /* SolversNSMSub.cpp in Sources */,
+				7ABD1C1C24C08E8000323130 /* TestSFRQLyapunov.cpp in Sources */,
+				7A6080C32CB945D100839B5B /* PoincareBall.cpp in Sources */,
+				7A6080B72CB65D0E00839B5B /* RADAMSP.cpp in Sources */,
+				7ABD1C1D24C08E8000323130 /* TestSphereSparsestVector.cpp in Sources */,
+				7ABD1C0224C08E5100323130 /* Euclidean.cpp in Sources */,
+				7ABD1C1B24C08E8000323130 /* TestFRankEWeightApprox.cpp in Sources */,
+				7ACF9E922CDCEB7100D43D59 /* GrassPCA.cpp in Sources */,
+				7A32A63022A48891001B35FC /* RSD.cpp in Sources */,
+				7AFE70AD245F896D009E1D37 /* SparseMatrix.cpp in Sources */,
+				7ABD1BFD24C08E5100323130 /* SymFixedRankQ.cpp in Sources */,
+				7AACEBF626CB40DD009C75FC /* TestObliqueSPCA.cpp in Sources */,
+				7A9B8F7E238291DA00427DD5 /* mexProblem.cpp in Sources */,
+				7AF560822456B2EB00656428 /* Stiefel.cpp in Sources */,
+				7A32A5E422A48891001B35FC /* BlasLapackCppWrapper.cpp in Sources */,
+				7A6080BD2CB679F700839B5B /* RAMSGRAD.cpp in Sources */,
+				7AEA7E2F24DCE8DC0071731D /* TestCStieBrockett.cpp in Sources */,
+				7ABD1C2024C08E8000323130 /* TestEucQuadratic.cpp in Sources */,
+				7ABD1C1F24C08E8000323130 /* TestProdStieSumBrockett.cpp in Sources */,
+				7ABD1BE224C08E3A00323130 /* FRankESparseApprox.cpp in Sources */,
+				7AC3249B2CDEF3DC00D3232F /* SolversSMSto.cpp in Sources */,
+				7AA41365244E630E0078E3AC /* RBFGSSub.cpp in Sources */,
+				7ABD1BE824C08E3A00323130 /* SFRQLyapunov.cpp in Sources */,
+				7AD5FC082432D78100C3FCF3 /* RBFGS.cpp in Sources */,
+				7ABD1BE724C08E3A00323130 /* FRankEWeightApprox.cpp in Sources */,
+				7ABD1BFC24C08E5100323130 /* CSymFixedRankQ.cpp in Sources */,
+				7AF560932456B39800656428 /* SphereTxRQ.cpp in Sources */,
+				7AACEBFC26CB8FC7009C75FC /* TestGrassSVPCA.cpp in Sources */,
+				7AA413312447FA100078E3AC /* RGS.cpp in Sources */,
+				7AACEC0226CC837E009C75FC /* IRPG.cpp in Sources */,
+				7A6080A22CB3837700839B5B /* RSVRG.cpp in Sources */,
+				7A32A5E122A48891001B35FC /* ForDebug.cpp in Sources */,
+				7A8D39DC24C9B74A00B9D6CD /* TestSPDKarcherMean.cpp in Sources */,
+				7A6080B12CB51F3A00839B5B /* RSGD.cpp in Sources */,
+				7A32A62B22A48891001B35FC /* Solvers.cpp in Sources */,
+				7AACEC0126CC837E009C75FC /* IARPG.cpp in Sources */,
+				7A6080C62CB945DE00839B5B /* PoincareEmbeddings.cpp in Sources */,
+				7AD5FBFF24322D9A00C3FCF3 /* RNewton.cpp in Sources */,
+				7ABD1C0624C08E6100323130 /* MinPNormConHull.cpp in Sources */,
+				7AD5FC112432F5F200C3FCF3 /* RTRSD.cpp in Sources */,
+				7ABD1C1E24C08E8000323130 /* TestStieSPCA.cpp in Sources */,
+				7AA41351244C38060078E3AC /* SolversNSMPGLS.cpp in Sources */,
+				7A9BFCF925305A3700662DCA /* FRankETextureInpainting.cpp in Sources */,
+				7A6080C92CB945EE00839B5B /* TestPoincareEmbeddings.cpp in Sources */,
+				7AF560982456B39800656428 /* StieBrockett.cpp in Sources */,
+				7ABD1BE424C08E3A00323130 /* FRankQ2FMatCompletion.cpp in Sources */,
+				7A32A61922A48891001B35FC /* DriverMexProb.cpp in Sources */,
+				7ABD1C0324C08E5100323130 /* Sphere.cpp in Sources */,
+				7A2CDEEC24F0BC0D0053F3DE /* FRankE3FMatCompletion.cpp in Sources */,
+				7A8D39D324C9734700B9D6CD /* SPDManifold.cpp in Sources */,
+				7A6080A12CB3837700839B5B /* SolversSMSVRG.cpp in Sources */,
+				7ABD1C2124C08E8000323130 /* TestFRankQ2FMatCompletion.cpp in Sources */,
+				7A230D84243B18D0002185CC /* TestStieBrockett.cpp in Sources */,
+				7ABD1BE924C08E3A00323130 /* SphereConvexHull.cpp in Sources */,
+				7AEA7E3524DE4F8A0071731D /* DriverJuliaProb.cpp in Sources */,
+				7AD5FC0E2432EAAC00C3FCF3 /* SolversSMTR.cpp in Sources */,
+				7AD5FC022432C7CE00C3FCF3 /* RBroydenFamily.cpp in Sources */,
+				7ABD1BFF24C08E5100323130 /* FixedRankE.cpp in Sources */,
+				7A32A5E022A48891001B35FC /* Timer.cpp in Sources */,
+				7A6080962CB26AF100839B5B /* LRBroydenFamily.cpp in Sources */,
+				7A30620324302B2800722D9D /* SolversSMLS.cpp in Sources */,
+				7A8D39D624C98FC700B9D6CD /* SPDKarcherMean.cpp in Sources */,
+				7A3061FD242F990300722D9D /* SolversSM.cpp in Sources */,
+				7ABD1C0024C08E5100323130 /* MultiManifolds.cpp in Sources */,
+				7AF4949224F3CBE3002DEAF2 /* StieSoftICA.cpp in Sources */,
+				7A8D39C724C93ABB00B9D6CD /* Grassmann.cpp in Sources */,
+				7A6080AD2CB4A95900839B5B /* SVRLRBFGS.cpp in Sources */,
+				7AD5FC0B2432DC8700C3FCF3 /* LRBFGS.cpp in Sources */,
+				7A2CDEEF24F11D200053F3DE /* TestFRankE3FMatCompletion.cpp in Sources */,
+				7A6080AE2CB4A95900839B5B /* SVRLRBroydenFamily.cpp in Sources */,
+				7A230D6D24340A7B002185CC /* RTRNewton.cpp in Sources */,
+				7ABD1BCE24C08E1A00323130 /* CSFRQPhaseRetrieval.cpp in Sources */,
+				7A9B8F6B238291D900427DD5 /* Problem.cpp in Sources */,
+				7A8D39CD24C96C7000B9D6CD /* TestGrassRQ.cpp in Sources */,
+				7AD5FC052432D20900C3FCF3 /* RWRBFGS.cpp in Sources */,
+				7A32A5E522A48891001B35FC /* Spline.cpp in Sources */,
+				7A6080C02CB8CCFF00839B5B /* RAMSGRADSP.cpp in Sources */,
+				7A230D73243412AB002185CC /* LRTRSR1.cpp in Sources */,
+				7ABD1BFE24C08E5100323130 /* FixedRankQ2F.cpp in Sources */,
+				7AACEBF326CB3256009C75FC /* ObliqueSPCA.cpp in Sources */,
+				7AF4949824FD20CF002DEAF2 /* LRTRSR1woR.cpp in Sources */,
+				7ABD1C2424C08E8000323130 /* TestFRankESparseApprox.cpp in Sources */,
+				7A3062062430B76000722D9D /* TestElement.cpp in Sources */,
+				7ABD1BE624C08E3A00323130 /* CFRankQ2FBlindDecon2D.cpp in Sources */,
+				7AA4134524489D4F0078E3AC /* SolversNSMSubLS.cpp in Sources */,
+				7A32A5A222A48891001B35FC /* Manifold.cpp in Sources */,
+				7AEA7E2C24DCDEA00071731D /* CStieBrockett.cpp in Sources */,
+				7A8D39CA24C96A1F00B9D6CD /* GrassRQ.cpp in Sources */,
+				7AF560812456B2EB00656428 /* SphereTx.cpp in Sources */,
+				7A2CDEE924EF7A690053F3DE /* FixedRankE3F.cpp in Sources */,
+				7AD5FBFC2432193100C3FCF3 /* RCG.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7A32A3E122A48847001B35FC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		7A32A3E222A48847001B35FC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		7A32A3E422A48847001B35FC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = (
+					/Users/whuang/Documents/Syn/Codes/newROPTLIB/ROPTLIB/cwrapper/lapack,
+					/Users/whuang/Documents/Syn/Codes/newROPTLIB/ROPTLIB/cwrapper/blas,
+					/Applications/MATLAB_R2019a.app/extern/include,
+					"/Applications/Julia-1.3.app/Contents/Resources/julia/include/julia",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib/,
+					"$(PROJECT_DIR)/BinaryFiles",
+					/usr/local/gfortran/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = /Users/whuang/Documents/Syn/Codes/newROPTLIB/ROPTLIB;
+			};
+			name = Debug;
+		};
+		7A32A3E522A48847001B35FC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = (
+					/Users/whuang/Documents/Syn/Codes/newROPTLIB/ROPTLIB/cwrapper/lapack,
+					/Users/whuang/Documents/Syn/Codes/newROPTLIB/ROPTLIB/cwrapper/blas,
+					/Applications/MATLAB_R2019a.app/extern/include,
+					"/Applications/Julia-1.3.app/Contents/Resources/julia/include/julia",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib/,
+					"$(PROJECT_DIR)/BinaryFiles",
+					/usr/local/gfortran/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = /Users/whuang/Documents/Syn/Codes/newROPTLIB/ROPTLIB;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7A32A3D722A48847001B35FC /* Build configuration list for PBXProject "ROPTLIB_mac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7A32A3E122A48847001B35FC /* Debug */,
+				7A32A3E222A48847001B35FC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7A32A3E322A48847001B35FC /* Build configuration list for PBXNativeTarget "ROPTLIB_mac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7A32A3E422A48847001B35FC /* Debug */,
+				7A32A3E522A48847001B35FC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7A32A3D422A48847001B35FC /* Project object */;
+}

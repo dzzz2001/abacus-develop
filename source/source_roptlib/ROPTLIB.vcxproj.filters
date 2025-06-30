@@ -1,0 +1,774 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Test">
+      <UniqueIdentifier>{31f7b78b-4d17-4376-8d6c-2e5a9f3296a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Solvers">
+      <UniqueIdentifier>{aefce2eb-2733-4895-b9ef-630f1a89efb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Problems">
+      <UniqueIdentifier>{84bedbf3-9946-4106-a0b6-d805d81df1aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Others">
+      <UniqueIdentifier>{57bfeb48-ec12-45c8-9c9a-5cacca335cac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Manifolds">
+      <UniqueIdentifier>{41fa038a-7052-44bf-9076-ae970523faeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Manifolds">
+      <UniqueIdentifier>{9e27026b-294d-401a-b999-f82055908f08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Solvers">
+      <UniqueIdentifier>{154c6fd0-06a9-4e24-87ad-7b91122eae75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Test">
+      <UniqueIdentifier>{941db44d-b053-4548-8fa7-56d83d0669b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Others">
+      <UniqueIdentifier>{2962fdf3-316c-4e4f-a0af-d406faf7a5f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Problems">
+      <UniqueIdentifier>{b27c01b2-ea23-4260-8e71-256b7ba310ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Others\SparseBLAS">
+      <UniqueIdentifier>{87bc1824-b69f-43ed-9d23-f6f1bc1b9a27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Others\wavelet">
+      <UniqueIdentifier>{7be9e177-6245-42d3-a6a1-f4004b7630f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Others\SparseBLAS">
+      <UniqueIdentifier>{604337d4-3a42-488a-9c4e-6adb0e97e5ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Others\wavelet">
+      <UniqueIdentifier>{1c34f146-7bc4-4c0f-98be-fbd5e88ee4c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Others\fftw">
+      <UniqueIdentifier>{1528023d-31cc-4bbf-935c-b5e7bd93f6dd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="test\DriverMexProb.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\Element.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\SmartSpace.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\Problem.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Others\ForDebug.cpp">
+      <Filter>Source Files\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="Others\randgen.cpp">
+      <Filter>Source Files\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="Others\Spline.cpp">
+      <Filter>Source Files\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="Others\Timer.cpp">
+      <Filter>Source Files\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\Manifold.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\mexProblem.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RSD.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\Solvers.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestEucQuadratic.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Others\wavelet\wavelet.cpp">
+      <Filter>Source Files\Others\wavelet</Filter>
+    </ClCompile>
+    <ClCompile Include="Others\SparseBLAS\nist_spblas.cpp">
+      <Filter>Source Files\Others\SparseBLAS</Filter>
+    </ClCompile>
+    <ClCompile Include="test\DriverCpp.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SolversNSM.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SolversSM.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SolversSMLS.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\Euclidean.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\FixedRankE.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\Sphere.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\SphereTx.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\Stiefel.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Others\MinPNormConHull.cpp">
+      <Filter>Source Files\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\FRankESparseApprox.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\FRankEWeightApprox.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\SphereConvexHull.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\SphereSparsestVector.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\SphereTxRQ.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\StieBrockett.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\StieSPCA.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\LRBFGS.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\LRBFGSSub.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\LRTRSR1.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RBFGS.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RBFGSSub.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RBroydenFamily.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RCG.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RGS.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RNewton.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RTRNewton.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RTRSD.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RTRSR1.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RWRBFGS.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SolversNSMPGLS.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SolversNSMSub.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SolversNSMSubLS.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SolversSMTR.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestElement.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestFRankESparseApprox.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestFRankEWeightApprox.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestSphereSparsestVector.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestStieBrockett.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestStieSPCA.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Others\BlasLapackCppWrapper.cpp">
+      <Filter>Source Files\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\EucQuadratic.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\MultiManifolds.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\ProdStieSumBrockett.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestProdStieSumBrockett.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\CFixedRankQ2F.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\FixedRankQ2F.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\CFRankQ2FBlindDecon2D.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\FRankQ2FMatCompletion.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestCFRankQ2FBlindDecon2D.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestFRankQ2FMatCompletion.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Others\SparseMatrix.cpp">
+      <Filter>Source Files\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\SymFixedRankQ.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\SPDManifold.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\Grassmann.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\CSymFixedRankQ.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\CSFRQPhaseRetrieval.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\GrassRQ.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\SFRQLyapunov.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\SPDKarcherMean.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestCSFRQPhaseRetrieval.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestGrassRQ.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestSFRQLyapunov.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestSPDKarcherMean.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\FixedRankE3F.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\CStiefel.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\CStieBrockett.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\FRankE3FMatCompletion.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\juliaProblem.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\StieSoftICA.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\LRTRSR1woR.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="test\DriverJuliaProb.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestCStieBrockett.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestFRankE3FMatCompletion.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestStieSoftICA.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Manifolds\PoincareBall.cpp">
+      <Filter>Source Files\Manifolds</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\FRankETextureInpainting.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\GrassMatCompletion.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\GrassPCA.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\GrassSVPCA.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\ObliqueSPCA.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Problems\PoincareEmbeddings.cpp">
+      <Filter>Source Files\Problems</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\IARPG.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\IRPG.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\LRBroydenFamily.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RADAM.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RADAMSP.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RAMSGRAD.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RAMSGRADSP.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RSGD.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\RSVRG.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SolversSMSto.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SolversSMSVRG.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SVRLRBFGS.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="Solvers\SVRLRBroydenFamily.cpp">
+      <Filter>Source Files\Solvers</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestFRankETextureInpainting.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestGrassMatCompletion.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestGrassPCA.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestGrassSVPCA.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestObliqueSPCA.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\TestPoincareEmbeddings.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Others\def.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="test\DriverMexProb.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\Element.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\Manifold.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RSD.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\Solvers.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\ForDebug.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\Problem.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\SmartSpace.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\randgen.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\Spline.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestEucQuadratic.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\Timer.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\mexProblem.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\wavelet\wavelet.h">
+      <Filter>Header Files\Others\wavelet</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\SparseBLAS\blas_enum.h">
+      <Filter>Header Files\Others\SparseBLAS</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\SparseBLAS\blas_sparse.h">
+      <Filter>Header Files\Others\SparseBLAS</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\SparseBLAS\blas_sparse_proto.h">
+      <Filter>Header Files\Others\SparseBLAS</Filter>
+    </ClInclude>
+    <ClInclude Include="test\DriverCpp.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\BlasLapackCppWrapper.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SolversNSM.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SolversSM.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SolversSMLS.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\Euclidean.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\FixedRankE.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\Sphere.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\SphereTx.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\Stiefel.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\fftw\fftw3.h">
+      <Filter>Header Files\Others\fftw</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\MinPNormConHull.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\FRankESparseApprox.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\FRankEWeightApprox.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\SphereConvexHull.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\SphereSparsestVector.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\SphereTxRQ.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\StieBrockett.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\StieSPCA.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\LRBFGS.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\LRBFGSSub.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\LRTRSR1.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RBFGS.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RBFGSSub.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RBroydenFamily.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RCG.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RGS.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RNewton.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RTRNewton.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RTRSD.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RTRSR1.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RWRBFGS.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SolversNSMPGLS.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SolversNSMSub.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SolversNSMSubLS.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SolversSMTR.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestElement.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestFRankESparseApprox.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestFRankEWeightApprox.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestSphereSparsestVector.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestStieBrockett.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestStieSPCA.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\EucQuadratic.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\MultiManifolds.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\ProdStieSumBrockett.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestProdStieSumBrockett.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\CFixedRankQ2F.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\FixedRankQ2F.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\CFRankQ2FBlindDecon2D.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\FRankQ2FMatCompletion.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestCFRankQ2FBlindDecon2D.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestFRankQ2FMatCompletion.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="Others\SparseMatrix.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\SymFixedRankQ.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\SPDManifold.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\Grassmann.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\CSymFixedRankQ.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\CSFRQPhaseRetrieval.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\GrassRQ.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\SFRQLyapunov.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\SPDKarcherMean.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestCSFRQPhaseRetrieval.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestGrassRQ.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestSFRQLyapunov.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestSPDKarcherMean.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\CStiefel.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\CStieBrockett.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\juliaProblem.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\FixedRankE3F.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\FRankE3FMatCompletion.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\StieSoftICA.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\LRTRSR1woR.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="test\DriverJuliaProb.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestCStieBrockett.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestFRankE3FMatCompletion.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestStieSoftICA.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="Manifolds\PoincareBall.h">
+      <Filter>Header Files\Manifolds</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\PoincareEmbeddings.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\ObliqueSPCA.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\GrassSVPCA.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\GrassPCA.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\GrassMatCompletion.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Problems\FRankETextureInpainting.h">
+      <Filter>Header Files\Problems</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SVRLRBroydenFamily.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SVRLRBFGS.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SolversSMSVRG.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\SolversSMSto.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RSVRG.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RSGD.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RAMSGRADSP.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RAMSGRAD.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RADAMSP.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\RADAM.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\LRBroydenFamily.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\IRPG.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="Solvers\IARPG.h">
+      <Filter>Header Files\Solvers</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestPoincareEmbeddings.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestObliqueSPCA.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestGrassSVPCA.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestGrassPCA.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestGrassMatCompletion.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\TestFRankETextureInpainting.h">
+      <Filter>Header Files\Test</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,50 @@
+% Compile all test problems in Matlab
+
+fprintf('Compiling DriverMexProb...\n');
+MyMex DriverMexProb
+fprintf('Compiling TestCFRankQ2FBlindDecon2D...\n');
+MyMex TestCFRankQ2FBlindDecon2D
+fprintf('Compiling TestCSFRQPhaseRetrieval...\n');
+MyMex TestCSFRQPhaseRetrieval
+fprintf('Compiling TestCStieBrockett...\n');
+MyMex TestCStieBrockett
+fprintf('Compiling TestEucQuadratic...\n');
+MyMex TestEucQuadratic
+fprintf('Compiling TestFRankE3FMatCompletion...\n');
+MyMex TestFRankE3FMatCompletion
+fprintf('Compiling TestFRankESparseApprox...\n');
+MyMex TestFRankESparseApprox
+fprintf('Compiling TestFRankETextureInpainting...\n');
+MyMex TestFRankETextureInpainting
+fprintf('Compiling TestFRankEWeightApprox...\n');
+MyMex TestFRankEWeightApprox
+fprintf('Compiling TestFRankQ2FMatCompletion...\n');
+MyMex TestFRankQ2FMatCompletion
+fprintf('Compiling TestGrassMatCompletion...\n');
+MyMex TestGrassMatCompletion
+fprintf('Compiling TestGrassPCA...\n');
+MyMex TestGrassPCA
+fprintf('Compiling TestGrassRQ...\n');
+MyMex TestGrassRQ
+fprintf('Compiling TestGrassSVPCA...\n');
+MyMex TestGrassSVPCA
+fprintf('Compiling TestObliqueSPCA...\n');
+MyMex TestObliqueSPCA
+fprintf('Compiling TestPoincareEmbeddings...\n');
+MyMex TestPoincareEmbeddings
+fprintf('Compiling TestProdStieSumBrockett...\n');
+MyMex TestProdStieSumBrockett
+fprintf('Compiling TestSFRQLyapunov...\n');
+MyMex TestSFRQLyapunov
+fprintf('Compiling TestSPDKarcherMean...\n');
+MyMex TestSPDKarcherMean
+fprintf('Compiling TestSphereSparsestVector...\n');
+MyMex TestSphereSparsestVector
+fprintf('Compiling TestStieBrockett...\n');
+MyMex TestStieBrockett
+fprintf('Compiling TestStieSoftICA...\n');
+MyMex TestStieSoftICA
+fprintf('Compiling TestStieSPCA...\n');
+MyMex TestStieSPCA
+
+

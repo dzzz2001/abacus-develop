@@ -1,6 +1,8 @@
 #ifndef INPUT_PARAMETER_H
 #define INPUT_PARAMETER_H
 #include "md_parameter.h"
+#include "rdmft_parameter.h"
+
 #include "source_base/vector3.h"
 
 #include <string>
@@ -642,6 +644,7 @@ struct Input_para
     bool rdmft = false;               // rdmft, reduced density matrix funcional theory
     double rdmft_power_alpha = 0.656; // the alpha parameter of power-functional, g(occ_number) = occ_number^alpha
     // double rdmft_wp22_omega;                 // the omega parameter of wp22-functional = exx_erfc_omega
+    RDMFT_para rdmftp; // parameter for rdmft calculation
 
     // ==============   #Parameters (22.EXX PW) =====================
     // EXX for planewave basis, rhx0820 2025-03-10

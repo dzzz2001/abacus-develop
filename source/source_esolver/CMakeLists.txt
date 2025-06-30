@@ -4,6 +4,7 @@ list(APPEND objects
     esolver_fp.cpp
     esolver_ks_pw.cpp
     esolver_ks_lcaopw.cpp
+    esolver_rdmft_pw.cpp #kluo added 2025-05-06
     esolver_sdft_pw.cpp
     esolver_lj.cpp
     esolver_dp.cpp
@@ -17,6 +18,7 @@ if(ENABLE_LCAO)
   list(APPEND objects
       esolver_ks_lcao.cpp
       esolver_ks_lcao_tddft.cpp
+      esolver_rdmft_lcao.cpp #kluo added 2025-05-06
       lcao_before_scf.cpp
       lcao_after_scf.cpp
       esolver_gets.cpp

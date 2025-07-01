@@ -719,23 +719,8 @@ endif()
 
 # roptlite
 if(USE_ROPTLITE)
-
-# find_package(roptlite REQUIRED)
-# configure_file(cmake/roptlib.cmake roptlib-download/CMakeLists.txt)
-
-# execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}"
-#       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/roptlib-download)
-# execute_process(COMMAND "${CMAKE_COMMAND}" --build .
-#       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/roptlib-download)
-
-# # message(STATUS " current directory is ${CMAKE_BINARY_DIR} ")
-# add_subdirectory("${CMAKE_BINARY_DIR}/roptlib-src")
-# add_subdirectory(${ROPTLITE_DIR})
-  # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-endif()
-
-if(USE_ROPTLITE)
-  target_link_libraries(${ABACUS_BIN_NAME} roptlite)
+find_package(roptlite REQUIRED)
+target_link_libraries(${ABACUS_BIN_NAME} roptlite)
 endif()
 
 add_subdirectory(source)

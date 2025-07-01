@@ -721,6 +721,9 @@ endif()
 if(USE_ROPTLITE)
 find_package(roptlite REQUIRED)
 target_link_libraries(${ABACUS_BIN_NAME} roptlite)
+message(STATUS "Found roptlite: include_dirs " ${ROPTLITE_DIR})
+target_include_directories(${ABACUS_BIN_NAME} PUBLIC ${ROPTLITE_DIR}/src)
+
 endif()
 
 add_subdirectory(source)

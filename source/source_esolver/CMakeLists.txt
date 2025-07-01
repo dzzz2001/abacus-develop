@@ -40,19 +40,19 @@ add_library(
 if(USE_ROPTLITE)
 target_include_directories(esolver
     PUBLIC
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/..
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Manifolds
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Others
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Others/SparseBLAS
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Others/fftw
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Others/wavelet
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Problems
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/Solvers
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/cwrapper
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/cwrapper/blas
-      ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/cwrapper/lapack
-      # ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib/test
+      ${ROPTLITE_DIR}/
+      ${ROPTLITE_DIR}/src/
+      ${ROPTLITE_DIR}/src/Manifolds
+      ${ROPTLITE_DIR}/src/Others
+      ${ROPTLITE_DIR}/src/Others/SparseBLAS
+      ${ROPTLITE_DIR}/src/Others/fftw
+      ${ROPTLITE_DIR}/src/Others/wavelet
+      ${ROPTLITE_DIR}/src/Problems
+      ${ROPTLITE_DIR}/src/Solvers
+      ${ROPTLITE_DIR}/src/cwrapper
+      ${ROPTLITE_DIR}/src/cwrapper/blas
+      ${ROPTLITE_DIR}/src/cwrapper/lapack
+      # ${ROPTLITE_DIR}/src/test
 )
 endif()
 

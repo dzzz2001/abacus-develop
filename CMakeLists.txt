@@ -51,7 +51,7 @@ option(ENABLE_RAPIDJSON "Enable rapid-json usage" OFF)
 option(ENABLE_CNPY "Enable cnpy usage" OFF)
 option(ENABLE_CUSOLVERMP "Enable cusolvermp" OFF)
 
-option(USE_ROPTLIB "Use roptlib" ON)
+option(USE_ROPTLITE "Use roptlib" ON)
 
 # enable json support
 if(ENABLE_RAPIDJSON)
@@ -716,20 +716,27 @@ if(BUILD_TESTING)
   endfunction(AddTest)
 endif()
 
-  if(USE_ROPTLIB)
 
-# ROPTLIB
-configure_file(cmake/roptlib.cmake roptlib-download/CMakeLists.txt)
-execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/roptlib-download")
-execute_process(COMMAND "${CMAKE_COMMAND}" --build .
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/roptlib-download")
-add_subdirectory("${CMAKE_BINARY_DIR}/roptlib-src"
-        "${CMAKE_BINARY_DIR}/roptlib-build")
-        
-      target_link_libraries(${ABACUS_BIN_NAME} roptlib)
-    endif()
+# roptlite
+if(USE_ROPTLITE)
 
+# find_package(roptlite REQUIRED)
+# configure_file(cmake/roptlib.cmake roptlib-download/CMakeLists.txt)
+
+# execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}"
+#       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/roptlib-download)
+# execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+#       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/roptlib-download)
+
+# # message(STATUS " current directory is ${CMAKE_BINARY_DIR} ")
+# add_subdirectory("${CMAKE_BINARY_DIR}/roptlib-src")
+# add_subdirectory(${ROPTLITE_DIR})
+  # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
+if(USE_ROPTLITE)
+  target_link_libraries(${ABACUS_BIN_NAME} roptlite)
+endif()
 
 add_subdirectory(source)
 

@@ -37,7 +37,7 @@ add_library(
         ../source_pw/hamilt_pwdft/module_exx_helper/exx_helper.h
 )
 
-if(USE_ROPTLIB)
+if(USE_ROPTLITE)
 target_include_directories(esolver
     PUBLIC
       ${CMAKE_CURRENT_SOURCE_DIR}/../source_roptlib

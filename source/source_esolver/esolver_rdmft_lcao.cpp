@@ -1,6 +1,7 @@
 #include "esolver_rdmft_lcao.h"
 
 #include "Problems/Problem.h"
+#include "Manifolds/Manifold.h"
 
 namespace ModuleESolver
 {

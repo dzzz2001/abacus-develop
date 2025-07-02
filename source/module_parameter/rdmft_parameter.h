@@ -21,6 +21,30 @@ struct RDMFT_para
    std::string  occ_opt_method="sd"; // method for occupation optimization
    std::string  orb_opt_method="cg"; // method for orbital optimization
 
+    // line search algorithm for optimization
+    // armijo: Armijo
+    // wolfe: classical Wolfe condition
+    // swolfe: Strong wolfe condition
+    // exact: exact condition
+   std::string ls_algo = "wolfe"; 
+
+    // conjugate gradient algorithm 
+    // FR: FLETCHER_REEVES
+    // PR: POLAK_RIBIERE
+    // DY: DAI_YUAN
+    // HZ: HAGER_ZHANG
+    // HS: HESTENES_STIEFEL
+   std::string ls_cg_algo = "fr";
+
+
+    // initial step type  
+    // BB: 
+    // QuadInt:
+    std::string initstep_type; 
+ 
+    double ls_gtol; // line search gradient tolerance
+    double ls_ftol; // line search function value tolerance
+
 };
 
 #endif // RDMFT_PARA_H

@@ -14,7 +14,7 @@ if(NOT ROPTLITE_DIR)
     # Download roptlite if not found
     FetchContent_Declare(
         roptlite
-        URL https://github.com/kluophysics/roptlite/archive/refs/tags/v1.0.0.tar.gz
+        URL https://github.com/kluophysics/roptlite/archive/refs/tags/v1.0.1.tar.gz
     )
     FetchContent_MakeAvailable(roptlite)
     set(ROPTLITE_DIR ${roptlite_SOURCE_DIR})

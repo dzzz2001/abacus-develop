@@ -1,5 +1,7 @@
 #include "esolver_rdmft_lcao.h"
 
+#include "Problems/Problem.h"
+
 namespace ModuleESolver
 {
 

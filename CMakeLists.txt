@@ -51,7 +51,7 @@ option(ENABLE_RAPIDJSON "Enable rapid-json usage" OFF)
 option(ENABLE_CNPY "Enable cnpy usage" OFF)
 option(ENABLE_CUSOLVERMP "Enable cusolvermp" OFF)
 
-option(USE_ROPTLITE "Use roptlib" ON)
+option(USE_ROPTLITE "Use roptlite for RDMFT calculation" ON)
 
 # enable json support
 if(ENABLE_RAPIDJSON)

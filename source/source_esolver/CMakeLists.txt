@@ -41,18 +41,6 @@ if(USE_ROPTLITE)
 target_include_directories(esolver
     PUBLIC
       ${ROPTLITE_DIR}/
-      ${ROPTLITE_DIR}/src/
-      ${ROPTLITE_DIR}/src/Manifolds
-      ${ROPTLITE_DIR}/src/Others
-      ${ROPTLITE_DIR}/src/Others/SparseBLAS
-      ${ROPTLITE_DIR}/src/Others/fftw
-      ${ROPTLITE_DIR}/src/Others/wavelet
-      ${ROPTLITE_DIR}/src/Problems
-      ${ROPTLITE_DIR}/src/Solvers
-      ${ROPTLITE_DIR}/src/cwrapper
-      ${ROPTLITE_DIR}/src/cwrapper/blas
-      ${ROPTLITE_DIR}/src/cwrapper/lapack
-      # ${ROPTLITE_DIR}/src/test
 )
 endif()
 

@@ -51,7 +51,8 @@ option(ENABLE_RAPIDJSON "Enable rapid-json usage" OFF)
 option(ENABLE_CNPY "Enable cnpy usage" OFF)
 option(ENABLE_CUSOLVERMP "Enable cusolvermp" OFF)
 
-option(USE_ROPTLITE "Use roptlite for RDMFT calculation" ON)
+option(ENABLE_RDMFT "Enable RDMFT calculation" OFF)
+option(USE_ROPTLITE "Use roptlite for RDMFT calculation" OFF)
 
 # enable json support
 if(ENABLE_RAPIDJSON)
@@ -716,6 +717,10 @@ if(BUILD_TESTING)
   endfunction(AddTest)
 endif()
 
+if(ENABLE_RDMFT)
+  set(USE_ROPTLITE ON)
+endif()
+
 
 # roptlite
 if(USE_ROPTLITE)
@@ -723,7 +728,6 @@ find_package(roptlite REQUIRED)
 target_link_libraries(${ABACUS_BIN_NAME} roptlite)
 message(STATUS "Found roptlite: include_dirs " ${ROPTLITE_DIR})
 target_include_directories(${ABACUS_BIN_NAME} PUBLIC ${ROPTLITE_DIR}/src)
-
 endif()
 
 add_subdirectory(source)

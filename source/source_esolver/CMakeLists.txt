@@ -40,7 +40,7 @@ add_library(
 if(USE_ROPTLITE)
 target_include_directories(esolver
     PUBLIC
-      ${ROPTLITE_DIR}/
+      ${roptlite_INCLUDE_DIRS}/
 )
 endif()
 

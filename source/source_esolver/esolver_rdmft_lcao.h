@@ -63,10 +63,18 @@ class ESolver_RDMFT_LCAO : public ESolver_KS_LCAO<TK, TR>
 
     void joint_optimization();
 
+    void initialize_density_matrix(); // initialize the  natural orbitals, occupation numbers
+    // void initialize_eta(); // initialize the occupation numbers
+
 
     std::string occupation_optimization_method = "sd";
     std::string orbital_optimization_method = "cg";
 
+    int nkpt; // number of k-points
+    int nbands; // number of local bands
+    int nbasis; // number of basis functions
+    
+  
 };
 
 }

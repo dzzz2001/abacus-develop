@@ -21,7 +21,7 @@ struct Input_para
     std::string calculation = "scf";    ///< "scf" : self consistent calculation.
                                         ///< "nscf" : non-self consistent calculation.
                                         ///< "relax" : cell relaxations
-    std::string esolver_type = "ksdft"; ///< the energy solver: ksdft, sdft, ofdft, tddft, lj, dp
+    std::string esolver_type = "ksdft"; ///< the energy solver: ksdft, sdft, ofdft, tddft, lj, dp, rdmft
     /* symmetry level:
       -1, no symmetry at all;
       0, only basic time reversal would be considered;

@@ -45,6 +45,8 @@ struct RDMFT_para
     double ls_gtol; // line search gradient tolerance
     double ls_ftol; // line search function value tolerance
 
+    std::string rdmft_init_method = "ks"; // method for initializing the natural orbitals and occupation numbers
+
 };
 
 #endif // RDMFT_PARA_H

@@ -1,5 +1,8 @@
 #include "esolver_rdmft_lcao.h"
 
+#include "source_hsolver/hsolver.h" // for hsolver::set_diagethr_ks
+
+
 #include "Problems/Problem.h"
 #include "Manifolds/Manifold.h"
 
@@ -24,6 +27,23 @@ void ESolver_RDMFT_LCAO<TK, TR>::before_all_runners(UnitCell& ucell, const Input
 {
     // Implementation of before_all_runners, adapted from esolver_ks.cpp
    ESolver_KS_LCAO<TK, TR>::before_all_runners(ucell, inp);
+
+    // There are a few choices for different psi initialization methods.
+    // 1) Use the psi from KS solver after a few iterations
+    if (PARAM.inp.rdmftp.rdmft_init_method == "ks")
+    {
+        ESolver_KS_LCAO<TK, TR>::runner(ucell, 0);
+    }
+    else
+    {
+        ModuleBase::WARNING_QUIT("ESolver_RDMFT_LCAO", "Unknown rdmft_init_method: " 
+            + PARAM.inp.rdmftp.rdmft_init_method);
+    }
+
+   nkpt = this->psi -> get_nk();
+   nbands = this->psi -> get_nbands();
+   nbasis = this->psi -> get_nbasis();
+
 }
 
 template <typename TK, typename TR>
@@ -63,6 +83,9 @@ void ESolver_RDMFT_LCAO<TK, TR>::runner(UnitCell& ucell, const int istep)
 {
     ModuleBase::TITLE("ESolver_RDMFT_LCAO", "runner");
     ModuleBase::timer::tick(this->classname, "runner");
+
+    // ESolver_KS_LCAO<TK, TR>::runner(ucell, istep);
+
     //----------------------------------------------------------------
     // 1) before_scf (electronic iteration loops)
     //----------------------------------------------------------------
@@ -179,6 +202,75 @@ void ESolver_RDMFT_LCAO<TK, TR>::joint_optimization()
 
     // Implementation of joint_optimization
 }
+
+template <typename TK, typename TR>
+void ESolver_RDMFT_LCAO<TK, TR>::initialize_density_matrix()
+{
+    ModuleBase::TITLE("ESolver_RDMFT_LCAO", "initialize_density_matrix");
+    ModuleBase::timer::tick(this->classname, "initialize_density_matrix");
+
+
+    //    // Use the psi from KS solver
+//         // the number of iterations is controlled still by the scf_nmax for KS solver.
+//         int istep = 0;
+
+//         // ESolver_KS_LCAO<TK, TR>::before_scf(ucell, istep);
+
+//         bool conv_esolver = false;
+//         this->niter = this->maxniter;
+//         this->diag_ethr = PARAM.inp.pw_diag_thr;
+
+//         for(int iter = 1; iter < this->maxniter; iter++)
+//         {
+//             ModuleBase::GlobalFunc::OUT(GlobalV::ofs_running, "RDMFT INIT LOOP ITER", iter);
+//             // call the before_scf function to initialize the psi
+//             // this->before_scf(ucell, 1);
+
+//         ESolver_KS_LCAO<TK, TR>::iter_init(ucell, istep, iter);
+
+//         std::cout << "before hamilt2rho_single and diag_ethr = " << this->diag_ethr << std::endl;
+//         //----------------------------------------------------------------
+//         // use Hamiltonian to obtain charge density
+// 		//----------------------------------------------------------------
+//         ESolver_KS_LCAO<TK, TR>::hamilt2rho(ucell, istep, iter, this->diag_ethr);
+//             std::cout << "after hamilt2rho" << std::endl;
+//         ESolver_KS_LCAO<TK, TR>::iter_finish(ucell, istep, iter, conv_esolver);
+
+//             std::cout << "after iter_finish" << std::endl;
+
+//             // check convergence
+//             if (conv_esolver || this->oscillate_esolver)
+//             {
+//                 this->niter = iter;
+//                 if (this->oscillate_esolver)
+//                 {
+//                     std::cout << " !! Density oscillation is found, STOP HERE !!" << std::endl;
+//                 }
+//                 break;
+//             }
+
+//         } // end scf iterations
+
+//         ESolver_KS_LCAO<TK, TR>::after_scf(ucell, istep, conv_esolver);
+
+        ModuleBase::timer::tick(this->classname, "initialize_density_matrix");
+    }
+
+// template <typename TK, typename TR>
+// void ESolver_RDMFT_LCAO<TK, TR>::initialize_eta()
+// {
+//     ModuleBase::TITLE("ESolver_RDMFT_LCAO", "initialize_eta");
+//     ModuleBase::timer::tick(this->classname, "initialize_eta"); 
+
+//     // 1) Use the eta from KS solver after a few iterations
+//     if (PARAM.inp.rdmftp.eta_init_method == "ks")
+//     {
+//         // Use the eta from KS solver
+//         this->pelec->wg  = this->pelec->wg;
+//     }
+//     // Implementation of initialize_eta
+//     ModuleBase::timer::tick(this->classname, "initialize_eta");
+// }
 
 template class ESolver_RDMFT_LCAO<double, double>;
 template class ESolver_RDMFT_LCAO<std::complex<double>, double>;

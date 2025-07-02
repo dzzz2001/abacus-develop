@@ -17,7 +17,7 @@ if(NOT ROPTLITE_DIR)
     FetchContent_Declare(
         roptlite
         GIT_REPOSITORY https://github.com/kluophysics/roptlite.git
-        GIT_TAG "origin/master"
+        GIT_TAG "work"
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
         # URL https://github.com/kluophysics/roptlite/archive/refs/tags/v1.0.1.tar.gz
@@ -47,9 +47,9 @@ set(roptlite_INCLUDE_DIRS
 mark_as_advanced(ROPTLITE_DIR)
 
 # Add the roptlite library target if not already present
-if(NOT TARGET roptlite)
-    add_subdirectory(${ROPTLITE_DIR} ${CMAKE_BINARY_DIR}/roptlite-build)
-endif()
+# if(NOT TARGET roptlite)
+#     add_subdirectory(${ROPTLITE_DIR} ${CMAKE_BINARY_DIR}/roptlite-build)
+# endif()
 
 # Handle the QUIET and REQUIRED arguments and set ROPTLITE_FOUND
 include(FindPackageHandleStandardArgs)

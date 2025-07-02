@@ -50,6 +50,6 @@ mark_as_advanced(ROPTLITE_DIR)
 
 # # Add the roptlite library target if not already present
 # if(NOT TARGET roptlite)
-#     add_subdirectory(${ROPTLITE_DIR} ${CMAKE_BINARY_DIR}/roptlib-build)
+#     add_subdirectory(${ROPTLITE_DIR} ${CMAKE_BINARY_DIR}/roptlite-build)
 # endif()
 

@@ -3,7 +3,20 @@
 
 #include "esolver_ks_lcao.h"
 
-// #include "module_optimizer/problem.h"
+#include "Problems/Problem.h"
+#include "Manifolds/Manifold.h"
+
+
+#include "Solvers/RSD.h"
+#include "Solvers/RNewton.h"
+#include "Solvers/RCG.h"
+#include "Solvers/RBFGS.h"
+#include "Solvers/LRBFGS.h"
+
+#include "Others/def.h"
+
+
+using namespace roptlite;
 
 namespace ModuleESolver
 {
@@ -63,12 +76,17 @@ class ESolver_RDMFT_LCAO : public ESolver_KS_LCAO<TK, TR>
 
     void joint_optimization();
 
-    void initialize_density_matrix(); // initialize the  natural orbitals, occupation numbers
-    // void initialize_eta(); // initialize the occupation numbers
+    void setup_problem();
+    void setup_solver();
 
 
     std::string occupation_optimization_method = "sd";
     std::string orbital_optimization_method = "cg";
+
+    Solvers * solver;
+    Problem * problem;
+    Manifold * manifold;
+    Variable  * X  ;
 
     int nkpt; // number of k-points
     int nbands; // number of local bands

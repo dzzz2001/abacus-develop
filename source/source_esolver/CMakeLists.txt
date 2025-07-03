@@ -38,9 +38,18 @@ add_library(
 )
 
 if(USE_ROPTLITE)
+message(STATUS "roptlite include directory: ${ROPTLITE_INCLUDE_DIR}")
+include_directories(${ROPTLITE_INCLUDE_DIR})
+
 target_include_directories(esolver
     PUBLIC
-      ${roptlite_INCLUDE_DIRS}/
+      # ${ROPTLITE_INCLUDE_DIR}
+      # ${ROPTLITE_INCLUDE_DIR}/src
+
+)
+target_link_libraries(esolver
+    PUBLIC
+    roptlite
 )
 target_link_libraries(esolver roptlite)
 else()

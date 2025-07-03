@@ -3,9 +3,6 @@
 #include "source_hsolver/hsolver.h" // for hsolver::set_diagethr_ks
 
 
-#include "Problems/Problem.h"
-#include "Manifolds/Manifold.h"
-
 namespace ModuleESolver
 {
 
@@ -49,6 +46,8 @@ void ESolver_RDMFT_LCAO<TK, TR>::before_all_runners(UnitCell& ucell, const Input
         ModuleBase::WARNING_QUIT("ESolver_RDMFT_LCAO", "Unknown rdmft_init_method: " 
             + PARAM.inp.rdmftp.rdmft_init_method);
     }
+
+    ModuleBase::GlobalFunc::DONE(GlobalV::ofs_running, "INIT RDMFT ");
 
    nkpt = this->psi -> get_nk();
    nbands = this->psi -> get_nbands();
@@ -99,8 +98,8 @@ void ESolver_RDMFT_LCAO<TK, TR>::runner(UnitCell& ucell, const int istep)
     //----------------------------------------------------------------
     // 1) before_scf (electronic iteration loops)
     //----------------------------------------------------------------
-    this->before_scf(ucell, istep);
-    ModuleBase::GlobalFunc::DONE(GlobalV::ofs_running, "INIT RDMFT ");
+    // this->before_scf(ucell, istep);
+    // ModuleBase::GlobalFunc::DONE(GlobalV::ofs_running, "INIT RDMFT ");
 
     // 2) SCF iterations
     bool conv_esolver = false;
@@ -214,73 +213,41 @@ void ESolver_RDMFT_LCAO<TK, TR>::joint_optimization()
 }
 
 template <typename TK, typename TR>
-void ESolver_RDMFT_LCAO<TK, TR>::initialize_density_matrix()
+void ESolver_RDMFT_LCAO<TK, TR>::setup_problem()
 {
-    ModuleBase::TITLE("ESolver_RDMFT_LCAO", "initialize_density_matrix");
-    ModuleBase::timer::tick(this->classname, "initialize_density_matrix");
+    ModuleBase::TITLE("ESolver_RDMFT_LCAO", "setup_problem");
+    ModuleBase::timer::tick(this->classname, "setup_problem");
+
+    // Implementation of setup_problem
+    // This function should set up the problem for RDMFT LCAO solver
 
 
-    //    // Use the psi from KS solver
-//         // the number of iterations is controlled still by the scf_nmax for KS solver.
-//         int istep = 0;
+    ModuleBase::timer::tick(this->classname, "setup_problem");
+}
 
-//         // ESolver_KS_LCAO<TK, TR>::before_scf(ucell, istep);
+template <typename TK, typename TR>
+void ESolver_RDMFT_LCAO<TK, TR>::setup_solver()
+{
+    ModuleBase::TITLE("ESolver_RDMFT_LCAO", "setup_solver");
+    ModuleBase::timer::tick(this->classname, "setup_solver");   
 
-//         bool conv_esolver = false;
-//         this->niter = this->maxniter;
-//         this->diag_ethr = PARAM.inp.pw_diag_thr;
+    // Implementation of setup_solver
+    // This function should set up the solver for RDMFT LCAO solver
 
-//         for(int iter = 1; iter < this->maxniter; iter++)
-//         {
-//             ModuleBase::GlobalFunc::OUT(GlobalV::ofs_running, "RDMFT INIT LOOP ITER", iter);
-//             // call the before_scf function to initialize the psi
-//             // this->before_scf(ucell, 1);
-
-//         ESolver_KS_LCAO<TK, TR>::iter_init(ucell, istep, iter);
-
-//         std::cout << "before hamilt2rho_single and diag_ethr = " << this->diag_ethr << std::endl;
-//         //----------------------------------------------------------------
-//         // use Hamiltonian to obtain charge density
-// 		//----------------------------------------------------------------
-//         ESolver_KS_LCAO<TK, TR>::hamilt2rho(ucell, istep, iter, this->diag_ethr);
-//             std::cout << "after hamilt2rho" << std::endl;
-//         ESolver_KS_LCAO<TK, TR>::iter_finish(ucell, istep, iter, conv_esolver);
-
-//             std::cout << "after iter_finish" << std::endl;
-
-//             // check convergence
-//             if (conv_esolver || this->oscillate_esolver)
-//             {
-//                 this->niter = iter;
-//                 if (this->oscillate_esolver)
-//                 {
-//                     std::cout << " !! Density oscillation is found, STOP HERE !!" << std::endl;
-//                 }
-//                 break;
-//             }
-
-//         } // end scf iterations
-
-//         ESolver_KS_LCAO<TK, TR>::after_scf(ucell, istep, conv_esolver);
-
-        ModuleBase::timer::tick(this->classname, "initialize_density_matrix");
+    if (PARAM.inp.rdmftp.occ_opt_method == "sd") // steepest descent
+    {
+        solver = new roptlite::RSD(problem, X);
     }
-
-// template <typename TK, typename TR>
-// void ESolver_RDMFT_LCAO<TK, TR>::initialize_eta()
-// {
-//     ModuleBase::TITLE("ESolver_RDMFT_LCAO", "initialize_eta");
-//     ModuleBase::timer::tick(this->classname, "initialize_eta"); 
-
-//     // 1) Use the eta from KS solver after a few iterations
-//     if (PARAM.inp.rdmftp.eta_init_method == "ks")
-//     {
-//         // Use the eta from KS solver
-//         this->pelec->wg  = this->pelec->wg;
-//     }
-//     // Implementation of initialize_eta
-//     ModuleBase::timer::tick(this->classname, "initialize_eta");
-// }
+    else if (PARAM.inp.rdmftp.occ_opt_method == "cg") // conjugate gradient
+    {
+        solver = new roptlite::RCG(problem, X);
+    }
+    else
+    {
+        ModuleBase::WARNING_QUIT("ESolver_RDMFT_LCAO", "Unknown occupation optimization method");
+    }
+    ModuleBase::timer::tick(this->classname, "setup_solver");
+}
 
 template class ESolver_RDMFT_LCAO<double, double>;
 template class ESolver_RDMFT_LCAO<std::complex<double>, double>;

@@ -42,6 +42,9 @@ target_include_directories(esolver
     PUBLIC
       ${roptlite_INCLUDE_DIRS}/
 )
+target_link_libraries(esolver roptlite)
+else()
+  message(STATUS "Roptlib is not enabled.")
 endif()
 
 

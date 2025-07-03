@@ -724,10 +724,16 @@ endif()
 
 # roptlite
 if(USE_ROPTLITE)
-find_package(roptlite REQUIRED)
+  configure_file(cmake/roptlite.cmake roptlite-download/CMakeLists.txt)
+  execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+          WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/roptlite-download")
+  execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+          WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/roptlite-download")
+  add_subdirectory("${CMAKE_BINARY_DIR}/roptlite-src"
+          "${CMAKE_BINARY_DIR}/roptlite-build")
 target_link_libraries(${ABACUS_BIN_NAME} roptlite)
-message(STATUS "Found roptlite: include_dirs " ${ROPTLITE_DIR})
-target_include_directories(${ABACUS_BIN_NAME} PUBLIC ${ROPTLITE_DIR}/src)
+else()
+  message(STATUS "Roptlite is not enabled.")
 endif()
 
 add_subdirectory(source)

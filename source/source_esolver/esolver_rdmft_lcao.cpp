@@ -32,7 +32,17 @@ void ESolver_RDMFT_LCAO<TK, TR>::before_all_runners(UnitCell& ucell, const Input
     // 1) Use the psi from KS solver after a few iterations
     if (PARAM.inp.rdmftp.rdmft_init_method == "ks")
     {
+		std::cout << " ---------------------------------------------------------" << std::endl;
+		std::cout << " RDMFT: Initial density matrix from KS iteration " << std::endl;
+        std::cout << " RDMFT: The number of iterations "  << inp.scf_nmax << " is controlled by scf_nmax" << std::endl;
+        std::cout << " RDMFT: Note:  SCF is not required to converge!!!" << std::endl;
+
         ESolver_KS_LCAO<TK, TR>::runner(ucell, 0);
+
+        std::cout << " RDMFT: Initial density matrix is done " << std::endl;
+        std::cout << " ---------------------------------------------------------" << std::endl;
+
+
     }
     else
     {

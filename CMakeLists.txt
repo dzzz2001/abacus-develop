@@ -727,10 +727,12 @@ if(USE_ROPTLITE)
 include(FetchContent)
   FetchContent_Declare(
     ROPTLITE
-    GIT_REPOSITORY https://github.com/kluophysics/ROPTLITE.git
-    GIT_TAG "origin/master"
-    GIT_SHALLOW TRUE
-    GIT_PROGRESS TRUE)
+    # GIT_REPOSITORY https://github.com/kluophysics/ROPTLITE.git
+    # GIT_TAG "origin/master"
+    # GIT_SHALLOW TRUE
+    # GIT_PROGRESS TRUE)
+    URL "https://codeload.github.com/kluophysics/ROPTLITE/tar.gz/master"
+  )
   FetchContent_MakeAvailable(ROPTLITE)
   target_link_libraries(${ABACUS_BIN_NAME} ROPTLITE)
   include_directories(

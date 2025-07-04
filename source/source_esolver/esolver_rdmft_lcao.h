@@ -16,7 +16,7 @@
 #include "Others/def.h"
 
 
-using namespace roptlite;
+using namespace ROPTLITE;
 
 namespace ModuleESolver
 {

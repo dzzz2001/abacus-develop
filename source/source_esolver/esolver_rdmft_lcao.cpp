@@ -236,11 +236,11 @@ void ESolver_RDMFT_LCAO<TK, TR>::setup_solver()
 
     if (PARAM.inp.rdmftp.occ_opt_method == "sd") // steepest descent
     {
-        solver = new roptlite::RSD(problem, X);
+        solver = new ROPTLITE::RSD(problem, X);
     }
     else if (PARAM.inp.rdmftp.occ_opt_method == "cg") // conjugate gradient
     {
-        solver = new roptlite::RCG(problem, X);
+        solver = new ROPTLITE::RCG(problem, X);
     }
     else
     {

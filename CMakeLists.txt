@@ -52,7 +52,7 @@ option(ENABLE_CNPY "Enable cnpy usage" OFF)
 option(ENABLE_CUSOLVERMP "Enable cusolvermp" OFF)
 
 option(ENABLE_RDMFT "Enable RDMFT calculation" OFF)
-option(USE_ROPTLITE "Use roptlite for RDMFT calculation" OFF)
+option(USE_ROPTLITE "Use ROPTLITE for RDMFT calculation" OFF)
 
 # enable json support
 if(ENABLE_RAPIDJSON)
@@ -722,18 +722,22 @@ if(ENABLE_RDMFT)
 endif()
 
 
-# roptlite
+# ROPTLITE
 if(USE_ROPTLITE)
-  configure_file(cmake/roptlite.cmake roptlite-download/CMakeLists.txt)
-  execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
-          WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/roptlite-download")
-  execute_process(COMMAND "${CMAKE_COMMAND}" --build .
-          WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/roptlite-download")
-  add_subdirectory("${CMAKE_BINARY_DIR}/roptlite-src"
-          "${CMAKE_BINARY_DIR}/roptlite-build")
-target_link_libraries(${ABACUS_BIN_NAME} roptlite)
+include(FetchContent)
+  FetchContent_Declare(
+    ROPTLITE
+    GIT_REPOSITORY https://github.com/kluophysics/ROPTLITE.git
+    GIT_TAG "origin/master"
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE)
+  FetchContent_MakeAvailable(ROPTLITE)
+  target_link_libraries(${ABACUS_BIN_NAME} ROPTLITE)
+  include_directories(
+    ${ROPTLITE_SOURCE_DIR}
+    )
 else()
-  message(STATUS "Roptlite is not enabled.")
+  message(STATUS "ROPTLITE is not enabled.")
 endif()
 
 add_subdirectory(source)

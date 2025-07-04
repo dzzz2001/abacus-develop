@@ -38,22 +38,22 @@ add_library(
 )
 
 if(USE_ROPTLITE)
-message(STATUS "roptlite include directory: ${ROPTLITE_INCLUDE_DIR}")
+message(STATUS "ROPTLITE include directory: ${ROPTLITE_INCLUDE_DIR}")
 include_directories(${ROPTLITE_INCLUDE_DIR})
 
 target_include_directories(esolver
     PUBLIC
       # ${ROPTLITE_INCLUDE_DIR}
       # ${ROPTLITE_INCLUDE_DIR}/src
-
+    ${ROPTLITE_SOURCE_DIR}
 )
 target_link_libraries(esolver
     PUBLIC
-    roptlite
+    ROPTLITE
 )
-target_link_libraries(esolver roptlite)
+# target_link_libraries(esolver ROPTLITE)
 else()
-  message(STATUS "Roptlib is not enabled.")
+  message(STATUS "ROPTLITE is not enabled.")
 endif()
 
 

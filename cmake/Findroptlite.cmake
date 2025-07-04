@@ -15,7 +15,7 @@ include(FetchContent)
     FetchContent_Declare(
         ROPTLITE
         GIT_REPOSITORY https://github.com/kluophysics/ROPTLITE.git
-        GIT_TAG "work"
+        GIT_TAG "origin/master"
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
         # URL https://github.com/kluophysics/ROPTLITE/archive/refs/tags/v1.0.1.tar.gz

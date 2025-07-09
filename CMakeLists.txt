@@ -51,6 +51,9 @@ option(ENABLE_RAPIDJSON "Enable rapid-json usage" OFF)
 option(ENABLE_CNPY "Enable cnpy usage" OFF)
 option(ENABLE_CUSOLVERMP "Enable cusolvermp" OFF)
 
+option(ENABLE_RDMFT "Enable RDMFT calculation" OFF)
+option(USE_ROPTLITE "Use ROPTLITE for RDMFT calculation" OFF)
+
 # enable json support
 if(ENABLE_RAPIDJSON)
   find_package(RapidJSON)
@@ -712,6 +715,31 @@ if(BUILD_TESTING)
       COMMAND ${UT_TARGET}
       WORKING_DIRECTORY $<TARGET_FILE_DIR:${UT_TARGET}>)
   endfunction(AddTest)
+endif()
+
+if(ENABLE_RDMFT)
+  set(USE_ROPTLITE ON)
+endif()
+
+
+# ROPTLITE
+if(USE_ROPTLITE)
+include(FetchContent)
+  FetchContent_Declare(
+    ROPTLITE
+    # GIT_REPOSITORY https://github.com/kluophysics/ROPTLITE.git
+    # GIT_TAG "origin/master"
+    # GIT_SHALLOW TRUE
+    # GIT_PROGRESS TRUE)
+    URL "https://codeload.github.com/kluophysics/ROPTLITE/tar.gz/master"
+  )
+  FetchContent_MakeAvailable(ROPTLITE)
+  target_link_libraries(${ABACUS_BIN_NAME} ROPTLITE)
+  include_directories(
+    ${ROPTLITE_SOURCE_DIR}
+    )
+else()
+  message(STATUS "ROPTLITE is not enabled.")
 endif()
 
 add_subdirectory(source)

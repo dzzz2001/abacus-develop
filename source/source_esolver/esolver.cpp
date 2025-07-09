@@ -23,6 +23,9 @@ extern "C"
 
 #include <stdexcept>
 
+#include "esolver_rdmft_lcao.h"
+#include "esolver_rdmft_pw.h"  // kluo added 2025-05-06
+
 namespace ModuleESolver
 {
 
@@ -42,6 +45,10 @@ std::string determine_type()
         else if (PARAM.inp.esolver_type == "ksdft")
         {
             esolver_type = "ksdft_pw";
+        }
+        else if (PARAM.inp.esolver_type == "rdmft")         // kluo added 2025-05-06
+        {
+            esolver_type = "rdmft_pw";
         }
     }
     else if (PARAM.inp.basis_type == "lcao_in_pw")
@@ -77,6 +84,10 @@ std::string determine_type()
         else if (PARAM.inp.esolver_type == "lr")
         {
             esolver_type = "lr_lcao";
+        }
+        else if (PARAM.inp.esolver_type == "rdmft")         // kluo added 2025-05-06
+        {
+            esolver_type = "rdmft_lcao";
         }
 #else
         ModuleBase::WARNING_QUIT("ESolver", "Calculation involving numerical orbitals must be compiled with __LCAO");
@@ -176,6 +187,16 @@ ESolver* init_esolver(const Input_para& inp, UnitCell& ucell)
         return new ESolver_SDFT_PW<std::complex<double>, base_device::DEVICE_CPU>();
         // }
     }
+         else if (esolver_type == "rdmft_pw") // kluo added 2025-05-06
+     {
+#if ((defined __CUDA) || (defined __ROCM))
+        if (PARAM.inp.device == "gpu")
+        {
+            return new ESolver_RDMFT_PW<std::complex<double>, base_device::DEVICE_GPU>();
+        }
+#endif
+            return new ESolver_RDMFT_PW<std::complex<double>, base_device::DEVICE_CPU>();
+    }
 #ifdef __LCAO
     else if (esolver_type == "ksdft_lip")
     {
@@ -226,6 +247,17 @@ ESolver* init_esolver(const Input_para& inp, UnitCell& ucell)
             {
                 return new ESolver_KS_LCAO<std::complex<double>, std::complex<double>>();
             }
+        }
+    }
+    else if (esolver_type == "rdmft_lcao")  // kluo added 2025-05-06
+    {
+        if (PARAM.globalv.gamma_only_local)
+        {
+            return new ESolver_RDMFT_LCAO<double, double>();
+        }
+        else 
+        {
+            return new ESolver_RDMFT_LCAO<std::complex<double>, double>();
         }
     }
     else if (esolver_type == "ksdft_lcao_tddft")

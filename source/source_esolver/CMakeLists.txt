@@ -4,6 +4,7 @@ list(APPEND objects
     esolver_fp.cpp
     esolver_ks_pw.cpp
     esolver_ks_lcaopw.cpp
+    esolver_rdmft_pw.cpp #kluo added 2025-05-06
     esolver_sdft_pw.cpp
     esolver_lj.cpp
     esolver_dp.cpp
@@ -17,6 +18,7 @@ if(ENABLE_LCAO)
   list(APPEND objects
       esolver_ks_lcao.cpp
       esolver_ks_lcao_tddft.cpp
+      esolver_rdmft_lcao.cpp #kluo added 2025-05-06
       lcao_before_scf.cpp
       lcao_after_scf.cpp
       esolver_gets.cpp
@@ -25,6 +27,8 @@ if(ENABLE_LCAO)
   )
 endif()
 
+
+
 add_library(
     esolver
     OBJECT
@@ -32,6 +36,26 @@ add_library(
         ../source_pw/module_pwdft/module_exx_helper/exx_helper.cpp
         ../source_pw/module_pwdft/module_exx_helper/exx_helper.h
 )
+
+if(USE_ROPTLITE)
+message(STATUS "ROPTLITE include directory: ${ROPTLITE_INCLUDE_DIR}")
+include_directories(${ROPTLITE_INCLUDE_DIR})
+
+target_include_directories(esolver
+    PUBLIC
+      # ${ROPTLITE_INCLUDE_DIR}
+      # ${ROPTLITE_INCLUDE_DIR}/src
+    ${ROPTLITE_SOURCE_DIR}
+)
+target_link_libraries(esolver
+    PUBLIC
+    ROPTLITE
+)
+# target_link_libraries(esolver ROPTLITE)
+else()
+  message(STATUS "ROPTLITE is not enabled.")
+endif()
+
 
 if(ENABLE_COVERAGE)
   add_coverage(esolver)

@@ -27,6 +27,7 @@ class Diag_Cusolver_gvd{
 // private variables
 //-------------------
 
+    cudaStream_t stream = nullptr; // cuda stream for asynchronous execution
     cusolverDnHandle_t cusolverH = nullptr;
 
     cusolverEigType_t itype = CUSOLVER_EIG_TYPE_1; //problem type: A*x = (lambda)*B*x
@@ -63,7 +64,7 @@ public:
 
     int is_init = 0;    // For expensive gpu initialization only once when using cusolver for lcao
 
-    Diag_Cusolver_gvd();
+    explicit Diag_Cusolver_gvd(cudaStream_t stream_in = 0);
     ~Diag_Cusolver_gvd();
 
 //   subroutines that are related to calculating generalized eigenvalues and eigenvectors for dense matrix pairs:

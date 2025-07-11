@@ -1,3 +1,4 @@
+#include <omp.h>
 #include "hsolver_lcao.h"
 
 #ifdef __MPI
@@ -18,6 +19,7 @@
 
 #ifdef __CUDA
 #include "diago_cusolver.h"
+#include <cuda_runtime.h>
 #endif
 
 #ifdef __PEXSI
@@ -54,6 +56,10 @@ void HSolverLCAO<T, Device>::solve(hamilt::Hamilt<T>* pHamilt,
 #ifdef __MPI
             this->parakSolve(pHamilt, psi, pes, PARAM.globalv.kpar_lcao);
 #endif
+        }
+        else if (PARAM.globalv.kpar_lcao > 1 && this->method == "cusolver")
+        {
+            this->parakSolve_cusolver(pHamilt, psi, pes);
         }
         else if (PARAM.globalv.kpar_lcao == 1)
         {
@@ -293,6 +299,149 @@ void HSolverLCAO<T, Device>::parakSolve(hamilt::Hamilt<T>* pHamilt,
     k2d.unset_para_env();
     ModuleBase::timer::tick("HSolverLCAO", "parakSolve");
 #endif
+}
+
+template <typename T, typename Device>
+void HSolverLCAO<T, Device>::parakSolve_cusolver(hamilt::Hamilt<T>* pHamilt,
+                                            psi::Psi<T>& psi,
+                                            elecstate::ElecState* pes)
+{
+    ModuleBase::timer::tick("HSolverLCAO", "parakSolve");
+    const int dev_id = base_device::information::set_device_by_rank();
+    int kpar = omp_get_max_threads();
+    std::vector<cudaStream_t> streams(kpar);
+    for(int i = 0; i < kpar; i++)
+    {
+        cudaStreamCreate(&streams[i]);
+    }
+    const int nks = psi.get_nk();  // total number of k points
+    const int nbands = this->ParaV->get_nbands();
+    // Set the parallel storage scheme for the matrix and psi
+    Parallel_2D mat_para_global;    // store the info about how the origin matrix is distributed in parallel
+    Parallel_2D mat_para_local;     // store the info about how the matrix is distributed after collected from all processes
+    Parallel_2D psi_para_global;    // store the info about how the psi is distributed in parallel
+    Parallel_2D psi_para_local;     // store the info about how the psi is distributed before distributing to all processes
+
+    MPI_Comm new_comm;
+    MPI_Comm_split(MPI_COMM_WORLD, GlobalV::MY_RANK, 0, &new_comm);
+    int nrow = this->ParaV->get_global_row_size(); // number of rows in the global matrix
+    int ncol = nrow;
+    int nb2d = this->ParaV->get_block_size();      // block size for the 2D matrix distribution
+    mat_para_global.init(nrow, ncol, nb2d, MPI_COMM_WORLD);
+    psi_para_global.init(nrow, nbands, nb2d, MPI_COMM_WORLD);
+    mat_para_local.init(nrow, ncol, nb2d, new_comm);
+    psi_para_local.init(nrow, ncol, nb2d, new_comm);
+    std::vector<std::vector<T>> hk_vec;
+    std::vector<std::vector<T>> sk_vec;
+    for (int ik = 0; ik < nks; ik += GlobalV::NPROC * kpar)
+    {
+        std::vector<int> kpoints_local;   // store the k points that need to be calculated by each process in each loop
+
+        /* store the total k points that need to be calculated in each loop
+           the key is the k point index, the value is the process id that will calculate this k point */
+        std::map<int, int> kpoints_global;
+        for (int kpt = ik; kpt < ik + GlobalV::NPROC * kpar && kpt < nks; ++kpt)
+        {
+            kpoints_global[kpt] = kpt % GlobalV::NPROC;
+        }
+
+        for (int kpt = ik + GlobalV::MY_RANK; kpt < nks && kpt < ik + GlobalV::NPROC * kpar; kpt += GlobalV::NPROC)
+        {
+            kpoints_local.push_back(kpt);
+        }
+
+        hk_vec.resize(kpoints_local.size(), std::vector<T>(nrow * ncol, 0.0));
+        sk_vec.resize(kpoints_local.size(), std::vector<T>(nrow * ncol, 0.0));
+        int mat_id = 0;
+        for(const auto& pair : kpoints_global )
+        {
+            int kpt = pair.first;
+            pHamilt->updateHk(kpt);
+            hamilt::MatrixBlock<T> hk_2D, sk_2D;
+            pHamilt->matrix(hk_2D, sk_2D);
+            int desc_tmp[9];
+            T* hk_local_ptr = nullptr;
+            T* sk_local_ptr = nullptr;
+            std::copy(mat_para_local.desc, mat_para_local.desc + 9, desc_tmp);
+            if(std::find(kpoints_local.begin(), kpoints_local.end(), kpt) == kpoints_local.end())
+            {
+                // if the k point is not in the local k points, set the desc[1] to -1
+                // which means that the matrix will not be distributed to this process
+                desc_tmp[1] = -1;
+            } else
+            {
+                hk_local_ptr = hk_vec[mat_id].data();
+                sk_local_ptr = sk_vec[mat_id].data();
+                mat_id++;
+            }
+
+            Cpxgemr2d(nrow, ncol, hk_2D.p, 1, 1, mat_para_global.desc,
+                      hk_local_ptr, 1, 1, desc_tmp,
+                      mat_para_global.blacs_ctxt);
+            Cpxgemr2d(nrow, ncol, sk_2D.p, 1, 1, mat_para_global.desc,
+                      sk_local_ptr, 1, 1, desc_tmp,
+                      mat_para_global.blacs_ctxt);
+            
+        }
+
+        // Now we have the local hk and sk matrices, we can solve the eigenvalue problem
+        std::vector<psi::Psi<T>> psi_local(kpoints_local.size(), psi::Psi<T>(1, ncol, nrow, nrow, true));
+        #pragma omp parallel
+        {
+            cudaSetDevice(dev_id);
+            #pragma omp for
+            for (int i = 0; i < kpoints_local.size(); i++)
+            {
+                int ik = kpoints_local[i];
+                psi_local[i].fix_k(0);
+
+                hamilt::MatrixBlock<T> hk_local = hamilt::MatrixBlock<T>{
+                    hk_vec[i].data(), (size_t)nrow, (size_t)ncol,
+                    mat_para_local.desc};
+                hamilt::MatrixBlock<T> sk_local = hamilt::MatrixBlock<T>{
+                    sk_vec[i].data(), (size_t)nrow, (size_t)ncol,
+                    mat_para_local.desc};
+                DiagoCusolver<T> cu(nullptr, streams[i]);
+                cu.diag_pool(hk_local, sk_local, psi_local[i], &(pes->ekb(ik, 0)));
+            }
+        }
+        // Now we have the local psi matrices, we can distribute them to the global psi matrix
+        for(const auto& pair: kpoints_global)
+        {
+            int kpt = pair.first;
+            int root = pair.second;
+            MPI_Bcast(&(pes->ekb(kpt, 0)), nbands, MPI_DOUBLE, root, MPI_COMM_WORLD);
+            int desc_pool[9];
+            std::copy(psi_para_local.desc, psi_para_local.desc + 9, desc_pool);
+            auto kid = std::find(kpoints_local.begin(), kpoints_local.end(), kpt);
+            T* psi_local_ptr = nullptr;
+            if ( kid == kpoints_local.end())
+            {
+                desc_pool[1] = -1;
+            }else
+            {
+                int psi_id = kid - kpoints_local.begin();
+                psi_local_ptr = psi_local[psi_id].get_pointer();
+            }
+            psi.fix_k(kpt);
+            Cpxgemr2d(nrow,
+                      nbands,
+                      psi_local_ptr,
+                      1,
+                      1,
+                      desc_pool,
+                      psi.get_pointer(),
+                      1,
+                      1,
+                      psi_para_global.desc,
+                      psi_para_global.blacs_ctxt);
+        }
+    }
+    for(int i = 0; i < kpar; i++)
+    {
+        cudaStreamDestroy(streams[i]);
+    }
+    ModuleBase::timer::tick("HSolverLCAO", "parakSolve");
 }
 
 template class HSolverLCAO<double>;

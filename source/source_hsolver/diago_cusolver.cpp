@@ -30,7 +30,8 @@ template <typename T>
 int DiagoCusolver<T>::DecomposedState = 0;
 
 template <typename T>
-DiagoCusolver<T>::DiagoCusolver(const Parallel_Orbitals* ParaV)
+DiagoCusolver<T>::DiagoCusolver(const Parallel_Orbitals* ParaV, cudaStream_t stream_in)
+: dc(stream_in)
 {
     this->ParaV = ParaV;
 }
@@ -196,6 +197,24 @@ void DiagoCusolver<T>::diag(hamilt::Hamilt<T>* phm_in, psi::Psi<T>& psi, Real* e
     // Copy the eigenvalues to the output arrays
     const int inc = 1;
     BlasConnector::copy(PARAM.inp.nbands, eigen.data(), inc, eigenvalue_in, inc);
+}
+
+template <typename T>
+void DiagoCusolver<T>::diag_pool(hamilt::MatrixBlock<T>& h_mat,
+    hamilt::MatrixBlock<T>& s_mat,
+    psi::Psi<T>& psi,
+    Real* eigenvalue_in)
+{
+    ModuleBase::timer::tick("DiagoCusolver", "cusolver");
+    // Allocate memory for eigenvalues
+    std::vector<double> eigen(PARAM.globalv.nlocal, 0.0);
+    std::vector<T> eigenvectors(h_mat.row * h_mat.col);
+    this->dc.Dngvd(h_mat.row, h_mat.col, h_mat.p, s_mat.p, eigen.data(), eigenvectors.data());
+    const int size = psi.get_nbands() * psi.get_nbasis();
+    BlasConnector::copy(size, eigenvectors.data(), 1, psi.get_pointer(), 1);
+    const int inc = 1;
+    BlasConnector::copy(PARAM.inp.nbands, eigen.data(), inc, eigenvalue_in, inc);
+    ModuleBase::timer::tick("DiagoCusolver", "cusolver");
 }
 
 // Explicit instantiation of the DiagoCusolver class for real and complex numbers

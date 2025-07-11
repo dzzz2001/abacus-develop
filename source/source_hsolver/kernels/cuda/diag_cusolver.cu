@@ -2,10 +2,12 @@
 #include "diag_cusolver.cuh"
 #include "helper_cuda.h"
 
-Diag_Cusolver_gvd::Diag_Cusolver_gvd(){
+Diag_Cusolver_gvd::Diag_Cusolver_gvd(cudaStream_t stream_in){
 // step 1: create cusolver/cublas handle
+    stream = stream_in;
     cusolverH = NULL;
     checkCudaErrors( cusolverDnCreate(&cusolverH) );
+    cusolverDnSetStream(cusolverH, stream);
 
     itype = CUSOLVER_EIG_TYPE_1; // A*x = (lambda)*B*x
     jobz = CUSOLVER_EIG_MODE_VECTOR; // compute eigenvalues and eigenvectors.
@@ -70,8 +72,8 @@ void Diag_Cusolver_gvd::Dngvd_double(int N, int M, double *A, double *B, double 
             this->finalize();
             this->init_double(M);
         }
-        checkCudaErrors( cudaMemcpy(d_A, A, sizeof(double) * lda * m, cudaMemcpyHostToDevice) );
-        checkCudaErrors( cudaMemcpy(d_B, B, sizeof(double) * lda * m, cudaMemcpyHostToDevice) );
+        checkCudaErrors( cudaMemcpyAsync(d_A, A, sizeof(double) * lda * m, cudaMemcpyHostToDevice, stream) );
+        checkCudaErrors( cudaMemcpyAsync(d_B, B, sizeof(double) * lda * m, cudaMemcpyHostToDevice, stream) );
 
     // Query working space of sygvd
     // The helper functions below can calculate the sizes needed for pre-allocated buffer.
@@ -108,12 +110,12 @@ void Diag_Cusolver_gvd::Dngvd_double(int N, int M, double *A, double *B, double 
             lwork,
             devInfo
         ));
-        checkCudaErrors( cudaDeviceSynchronize() );
 
     // copy (W, V) to the cpu root
-        checkCudaErrors( cudaMemcpy(W, d_W, sizeof(double)*m, cudaMemcpyDeviceToHost) );
-        checkCudaErrors( cudaMemcpy(V, d_A, sizeof(double)*lda*m, cudaMemcpyDeviceToHost) );
-        checkCudaErrors( cudaMemcpy(&info_gpu, devInfo, sizeof(int), cudaMemcpyDeviceToHost) );
+        checkCudaErrors( cudaMemcpyAsync(W, d_W, sizeof(double)*m, cudaMemcpyDeviceToHost, stream) );
+        checkCudaErrors( cudaMemcpyAsync(V, d_A, sizeof(double)*lda*m, cudaMemcpyDeviceToHost, stream) );
+        checkCudaErrors( cudaMemcpyAsync(&info_gpu, devInfo, sizeof(int), cudaMemcpyDeviceToHost, stream) );
+        checkCudaErrors( cudaStreamSynchronize(stream) );
         assert(0 == info_gpu);
     // free the buffer
         if (d_work ) checkCudaErrors( cudaFree(d_work) );
@@ -129,8 +131,8 @@ void Diag_Cusolver_gvd::Dngvd_complex(int N, int M, std::complex<double> *A, std
             this->finalize();
             this->init_complex(M);
         }
-        checkCudaErrors( cudaMemcpy(d_A2, A, sizeof(cuDoubleComplex) * lda * m, cudaMemcpyHostToDevice) );
-        checkCudaErrors( cudaMemcpy(d_B2, B, sizeof(cuDoubleComplex) * lda * m, cudaMemcpyHostToDevice) );
+        checkCudaErrors( cudaMemcpyAsync(d_A2, A, sizeof(cuDoubleComplex) * lda * m, cudaMemcpyHostToDevice, stream) );
+        checkCudaErrors( cudaMemcpyAsync(d_B2, B, sizeof(cuDoubleComplex) * lda * m, cudaMemcpyHostToDevice, stream) );
 
     // Query working space of Zhegvd
     // The helper functions below can calculate the sizes needed for pre-allocated buffer.
@@ -169,12 +171,12 @@ void Diag_Cusolver_gvd::Dngvd_complex(int N, int M, std::complex<double> *A, std
                 lwork,
                 devInfo)
         );
-        checkCudaErrors( cudaDeviceSynchronize() );
         
     // copy (W, V) to the cpu root
-        checkCudaErrors( cudaMemcpy(W, d_W, sizeof(double)*m, cudaMemcpyDeviceToHost) );
-        checkCudaErrors( cudaMemcpy(V, d_A2, sizeof(std::complex<double>)*lda*m, cudaMemcpyDeviceToHost) );
-        checkCudaErrors( cudaMemcpy(&info_gpu, devInfo, sizeof(int), cudaMemcpyDeviceToHost) );
+        checkCudaErrors( cudaMemcpyAsync(W, d_W, sizeof(double)*m, cudaMemcpyDeviceToHost, stream) );
+        checkCudaErrors( cudaMemcpyAsync(V, d_A2, sizeof(std::complex<double>)*lda*m, cudaMemcpyDeviceToHost, stream) );
+        checkCudaErrors( cudaMemcpyAsync(&info_gpu, devInfo, sizeof(int), cudaMemcpyDeviceToHost, stream) );
+        checkCudaErrors( cudaStreamSynchronize(stream) );
         assert(0 == info_gpu);
 
     // free the buffer

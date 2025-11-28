@@ -55,4 +55,10 @@ if(ENABLE_COVERAGE)
   add_coverage(gint)
 endif()
 
+if(BUILD_TESTING)
+  if(ENABLE_MPI)
+    add_subdirectory(test)
+  endif()
+endif()
+
 endif()

@@ -226,6 +226,8 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     int ap_num = 0;
     int max_m = 0;
     int max_n = 0;
+    long long sum_m = 0;
+    long long sum_n = 0;
     int max_k = mgrids_num_;
     CHECK_CUDA(cudaEventSynchronize(event_));
     for (int i = 0; i < bgrid_batch_->get_batch_size(); i++)
@@ -251,7 +253,7 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
 
                 if(iat_1 > iat_2)
                 { continue; }
-                
+
                 int hr_offset = hRGint.find_matrix_offset(iat_1, iat_2, r_1 - r_2);
                 if (hr_offset == -1)
                 { continue; }
@@ -271,9 +273,13 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
 
                 max_m = std::max(max_m, nw1);
                 max_n = std::max(max_n, nw2);
+                sum_m += nw1;
+                sum_n += nw2;
             }
         }
     }
+    const int avg_m = ap_num > 0 ? static_cast<int>(sum_m / ap_num) : max_m;
+    const int avg_n = ap_num > 0 ? static_cast<int>(sum_n / ap_num) : max_n;
 
     gemm_A_.copy_host_to_device_async(ap_num);
     gemm_B_.copy_host_to_device_async(ap_num);
@@ -289,6 +295,8 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     gemm_tn_vbatch<Real>(max_m,
                     max_n,
                     max_k,
+                    avg_m,
+                    avg_n,
                     gemm_m_.get_device_ptr(),
                     gemm_n_.get_device_ptr(),
                     gemm_k_.get_device_ptr(),
@@ -317,6 +325,7 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
     int max_m = mgrids_num_;
     int max_n = 0;
     int max_k = 0;
+    long long sum_n = 0;
     CHECK_CUDA(cudaEventSynchronize(event_));
     for (int i = 0; i < bgrid_batch_->get_batch_size(); i++)
     {
@@ -359,9 +368,12 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
 
                 max_n = std::max(max_n, nw2);
                 max_k = std::max(max_k, nw1);
+                sum_n += nw2;
             }
         }
     }
+    // avg_m = mgrids_num_ (constant for all items); avg_n reflects typical nw
+    const int avg_n = ap_num > 0 ? static_cast<int>(sum_n / ap_num) : max_n;
 
     gemm_A_.copy_host_to_device_async(ap_num);
     gemm_B_.copy_host_to_device_async(ap_num);
@@ -384,6 +396,8 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
     gemm_nn_vbatch<Real>(max_m,
                     max_n,
                     max_k,
+                    max_m,
+                    avg_n,
                     gemm_m_.get_device_ptr(),
                     gemm_n_.get_device_ptr(),
                     gemm_k_.get_device_ptr(),

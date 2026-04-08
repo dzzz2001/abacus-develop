@@ -2,10 +2,24 @@
 #include "phi_operator_kernel.cuh"
 #include "dgemm_vbatch.h"
 #include <cuda_runtime.h>
+#include <vector>
+#include <cstdint>
+#include <algorithm>
 #include "source_base/module_device/device_check.h"
 
 namespace ModuleGint
 {
+
+// Map a problem-size key (nw or max(nw1,nw2)) to one of three kernel buckets:
+//   0 = small  (key <= 8)
+//   1 = medium (8 < key <= 16)
+//   2 = large  (key > 16)
+static inline int gemm_bucket_of(int key)
+{
+    if (key <= 8) { return 0; }
+    if (key <= 16) { return 1; }
+    return 2;
+}
 
 template<typename Real>
 PhiOperatorGpu<Real>::PhiOperatorGpu(std::shared_ptr<const GintGpuVars> gint_gpu_vars, cudaStream_t stream)
@@ -226,9 +240,29 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     int ap_num = 0;
     int max_m = 0;
     int max_n = 0;
-    long long sum_m = 0;
-    long long sum_n = 0;
     int max_k = mgrids_num_;
+    // Per-item bucket id, sized to current ap_num. Reused as a thread-local
+    // scratch; the std::vector is stack-friendly and small (<= max_atom_pairs).
+    std::vector<uint8_t> bucket(BatchBigGrid::get_max_atom_pairs_num());
+    int bucket_cnt[3] = {0, 0, 0};
+    // Per-bucket max M/N so each kernel launch sizes its grid to its own
+    // bucket's largest item, not the batch-wide max. Without this, a bucket-0
+    // launch (small BLK) on a batch containing large-nw atoms wastes blocks
+    // on out-of-range tiles that early-exit. K is the mesh-grid count, shared
+    // across all items, so no per-bucket tracking needed.
+    int bmax_m[3] = {0, 0, 0};
+    int bmax_n[3] = {0, 0, 0};
+
+    auto* h_A   = gemm_A_.get_host_ptr();
+    auto* h_B   = gemm_B_.get_host_ptr();
+    auto* h_C   = gemm_C_.get_host_ptr();
+    auto* h_lda = gemm_lda_.get_host_ptr();
+    auto* h_ldb = gemm_ldb_.get_host_ptr();
+    auto* h_ldc = gemm_ldc_.get_host_ptr();
+    auto* h_m   = gemm_m_.get_host_ptr();
+    auto* h_n   = gemm_n_.get_host_ptr();
+    auto* h_k   = gemm_k_.get_host_ptr();
+
     CHECK_CUDA(cudaEventSynchronize(event_));
     for (int i = 0; i < bgrid_batch_->get_batch_size(); i++)
     {
@@ -260,26 +294,85 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
 
                 const int phi_2_offset = atoms_phi_start_.get_host_ptr()[pre_atoms + ia_2];
 
-                gemm_A_.get_host_ptr()[ap_num] = phi_d + phi_1_offset;
-                gemm_B_.get_host_ptr()[ap_num] = phi_vldr3_d + phi_2_offset;
-                gemm_C_.get_host_ptr()[ap_num] = hr_d + hr_offset;
-                gemm_lda_.get_host_ptr()[ap_num] = phi_len_mgrid;
-                gemm_ldb_.get_host_ptr()[ap_num] = phi_len_mgrid;
-                gemm_ldc_.get_host_ptr()[ap_num] = nw2;
-                gemm_m_.get_host_ptr()[ap_num] = nw1;
-                gemm_n_.get_host_ptr()[ap_num] = nw2;
-                gemm_k_.get_host_ptr()[ap_num] = bgrid->get_mgrids_num();
+                h_A[ap_num] = phi_d + phi_1_offset;
+                h_B[ap_num] = phi_vldr3_d + phi_2_offset;
+                h_C[ap_num] = hr_d + hr_offset;
+                h_lda[ap_num] = phi_len_mgrid;
+                h_ldb[ap_num] = phi_len_mgrid;
+                h_ldc[ap_num] = nw2;
+                h_m[ap_num] = nw1;
+                h_n[ap_num] = nw2;
+                h_k[ap_num] = bgrid->get_mgrids_num();
+
+                // TN dispatch key is max(nw1, nw2) -- both feed kernel M and N.
+                const int b = gemm_bucket_of(std::max(nw1, nw2));
+                bucket[ap_num] = static_cast<uint8_t>(b);
+                bucket_cnt[b]++;
+                bmax_m[b] = std::max(bmax_m[b], nw1);
+                bmax_n[b] = std::max(bmax_n[b], nw2);
+
                 ap_num++;
 
                 max_m = std::max(max_m, nw1);
                 max_n = std::max(max_n, nw2);
-                sum_m += nw1;
-                sum_n += nw2;
             }
         }
     }
-    const int avg_m = ap_num > 0 ? static_cast<int>(sum_m / ap_num) : max_m;
-    const int avg_n = ap_num > 0 ? static_cast<int>(sum_n / ap_num) : max_n;
+
+    // 3-way Dutch National Flag partition: reorder all parallel arrays so
+    // bucket-0 items come first, then bucket-1, then bucket-2. This lets us
+    // launch one kernel per bucket with offset device pointers, instead of
+    // picking a single suboptimal kernel for the whole batch.
+    // Skipped entirely when only one bucket is non-empty (uniform systems).
+    const int distinct_buckets =
+        (bucket_cnt[0] > 0) + (bucket_cnt[1] > 0) + (bucket_cnt[2] > 0);
+    if (distinct_buckets > 1)
+    {
+        int lo = 0, mid = 0, hi = ap_num - 1;
+        while (mid <= hi)
+        {
+            const int b = bucket[mid];
+            if (b == 0)
+            {
+                if (mid != lo)
+                {
+                    std::swap(h_A[lo],   h_A[mid]);
+                    std::swap(h_B[lo],   h_B[mid]);
+                    std::swap(h_C[lo],   h_C[mid]);
+                    std::swap(h_lda[lo], h_lda[mid]);
+                    std::swap(h_ldb[lo], h_ldb[mid]);
+                    std::swap(h_ldc[lo], h_ldc[mid]);
+                    std::swap(h_m[lo],   h_m[mid]);
+                    std::swap(h_n[lo],   h_n[mid]);
+                    std::swap(h_k[lo],   h_k[mid]);
+                    std::swap(bucket[lo], bucket[mid]);
+                }
+                lo++;
+                mid++;
+            }
+            else if (b == 1)
+            {
+                mid++;
+            }
+            else
+            {
+                if (mid != hi)
+                {
+                    std::swap(h_A[mid],   h_A[hi]);
+                    std::swap(h_B[mid],   h_B[hi]);
+                    std::swap(h_C[mid],   h_C[hi]);
+                    std::swap(h_lda[mid], h_lda[hi]);
+                    std::swap(h_ldb[mid], h_ldb[hi]);
+                    std::swap(h_ldc[mid], h_ldc[hi]);
+                    std::swap(h_m[mid],   h_m[hi]);
+                    std::swap(h_n[mid],   h_n[hi]);
+                    std::swap(h_k[mid],   h_k[hi]);
+                    std::swap(bucket[mid], bucket[hi]);
+                }
+                hi--;
+            }
+        }
+    }
 
     gemm_A_.copy_host_to_device_async(ap_num);
     gemm_B_.copy_host_to_device_async(ap_num);
@@ -291,24 +384,35 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     gemm_n_.copy_host_to_device_async(ap_num);
     gemm_k_.copy_host_to_device_async(ap_num);
     CHECK_CUDA(cudaEventRecord(event_, stream_));
-    
-    gemm_tn_vbatch<Real>(max_m,
-                    max_n,
-                    max_k,
-                    avg_m,
-                    avg_n,
-                    gemm_m_.get_device_ptr(),
-                    gemm_n_.get_device_ptr(),
-                    gemm_k_.get_device_ptr(),
-                    gemm_A_.get_device_ptr(),
-                    gemm_lda_.get_device_ptr(),
-                    gemm_B_.get_device_ptr(),
-                    gemm_ldb_.get_device_ptr(),
-                    gemm_C_.get_device_ptr(),
-                    gemm_ldc_.get_device_ptr(),
-                    ap_num,
-                    stream_,
-                    nullptr);
+
+    // Launch one kernel per non-empty bucket. After partitioning, items are
+    // contiguous in device memory, so we just offset the device pointers.
+    const int bucket_off[3] = {
+        0,
+        bucket_cnt[0],
+        bucket_cnt[0] + bucket_cnt[1],
+    };
+    for (int b = 0; b < 3; b++)
+    {
+        if (bucket_cnt[b] == 0) { continue; }
+        const int off = bucket_off[b];
+        gemm_tn_vbatch<Real>(bmax_m[b],
+                        bmax_n[b],
+                        max_k,
+                        b,
+                        gemm_m_.get_device_ptr() + off,
+                        gemm_n_.get_device_ptr() + off,
+                        gemm_k_.get_device_ptr() + off,
+                        gemm_A_.get_device_ptr() + off,
+                        gemm_lda_.get_device_ptr() + off,
+                        gemm_B_.get_device_ptr() + off,
+                        gemm_ldb_.get_device_ptr() + off,
+                        gemm_C_.get_device_ptr() + off,
+                        gemm_ldc_.get_device_ptr() + off,
+                        bucket_cnt[b],
+                        stream_,
+                        nullptr);
+    }
 }
 
 template<typename Real>
@@ -325,7 +429,24 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
     int max_m = mgrids_num_;
     int max_n = 0;
     int max_k = 0;
-    long long sum_n = 0;
+    std::vector<uint8_t> bucket(BatchBigGrid::get_max_atom_pairs_num());
+    int bucket_cnt[3] = {0, 0, 0};
+    // Per-bucket max N/K so each launch sizes its grid to its own bucket's
+    // largest item, not the batch-wide max. M == mgrids_num_ is constant.
+    int bmax_n[3] = {0, 0, 0};
+    int bmax_k[3] = {0, 0, 0};
+
+    auto* h_A     = gemm_A_.get_host_ptr();
+    auto* h_B     = gemm_B_.get_host_ptr();
+    auto* h_C     = gemm_C_.get_host_ptr();
+    auto* h_lda   = gemm_lda_.get_host_ptr();
+    auto* h_ldb   = gemm_ldb_.get_host_ptr();
+    auto* h_ldc   = gemm_ldc_.get_host_ptr();
+    auto* h_m     = gemm_m_.get_host_ptr();
+    auto* h_n     = gemm_n_.get_host_ptr();
+    auto* h_k     = gemm_k_.get_host_ptr();
+    auto* h_alpha = gemm_alpha_.get_host_ptr();
+
     CHECK_CUDA(cudaEventSynchronize(event_));
     for (int i = 0; i < bgrid_batch_->get_batch_size(); i++)
     {
@@ -354,26 +475,86 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
 
                 const int phi_dm_offset = atoms_phi_start_.get_host_ptr()[pre_atoms + ia_2];
 
-                gemm_A_.get_host_ptr()[ap_num] = phi_d + phi_1_offset;
-                gemm_B_.get_host_ptr()[ap_num] = dm_d + dm_offset;
-                gemm_C_.get_host_ptr()[ap_num] = phi_dm_d + phi_dm_offset;
-                gemm_lda_.get_host_ptr()[ap_num] = phi_len_mgrid;
-                gemm_ldb_.get_host_ptr()[ap_num] = nw2;
-                gemm_ldc_.get_host_ptr()[ap_num] = phi_len_mgrid;
-                gemm_m_.get_host_ptr()[ap_num] = mgrids_num_;
-                gemm_n_.get_host_ptr()[ap_num] = nw2;
-                gemm_k_.get_host_ptr()[ap_num] = nw1;
-                gemm_alpha_.get_host_ptr()[ap_num] = ia_1 == ia_2 ? Real(1.0) : Real(2.0);
+                h_A[ap_num] = phi_d + phi_1_offset;
+                h_B[ap_num] = dm_d + dm_offset;
+                h_C[ap_num] = phi_dm_d + phi_dm_offset;
+                h_lda[ap_num] = phi_len_mgrid;
+                h_ldb[ap_num] = nw2;
+                h_ldc[ap_num] = phi_len_mgrid;
+                h_m[ap_num] = mgrids_num_;
+                h_n[ap_num] = nw2;
+                h_k[ap_num] = nw1;
+                h_alpha[ap_num] = ia_1 == ia_2 ? Real(1.0) : Real(2.0);
+
+                // NN dispatch key is nw2 (gemm N dim, M is constant = mgrids_num_).
+                const int b = gemm_bucket_of(nw2);
+                bucket[ap_num] = static_cast<uint8_t>(b);
+                bucket_cnt[b]++;
+                bmax_n[b] = std::max(bmax_n[b], nw2);
+                bmax_k[b] = std::max(bmax_k[b], nw1);
+
                 ap_num++;
 
                 max_n = std::max(max_n, nw2);
                 max_k = std::max(max_k, nw1);
-                sum_n += nw2;
             }
         }
     }
-    // avg_m = mgrids_num_ (constant for all items); avg_n reflects typical nw
-    const int avg_n = ap_num > 0 ? static_cast<int>(sum_n / ap_num) : max_n;
+
+    // 3-way Dutch National Flag partition across all parallel arrays so that
+    // bucket-0 items come first, then bucket-1, then bucket-2. One launch per
+    // non-empty bucket below picks the matching kernel.
+    const int distinct_buckets =
+        (bucket_cnt[0] > 0) + (bucket_cnt[1] > 0) + (bucket_cnt[2] > 0);
+    if (distinct_buckets > 1)
+    {
+        int lo = 0, mid = 0, hi = ap_num - 1;
+        while (mid <= hi)
+        {
+            const int b = bucket[mid];
+            if (b == 0)
+            {
+                if (mid != lo)
+                {
+                    std::swap(h_A[lo],     h_A[mid]);
+                    std::swap(h_B[lo],     h_B[mid]);
+                    std::swap(h_C[lo],     h_C[mid]);
+                    std::swap(h_lda[lo],   h_lda[mid]);
+                    std::swap(h_ldb[lo],   h_ldb[mid]);
+                    std::swap(h_ldc[lo],   h_ldc[mid]);
+                    std::swap(h_m[lo],     h_m[mid]);
+                    std::swap(h_n[lo],     h_n[mid]);
+                    std::swap(h_k[lo],     h_k[mid]);
+                    std::swap(h_alpha[lo], h_alpha[mid]);
+                    std::swap(bucket[lo], bucket[mid]);
+                }
+                lo++;
+                mid++;
+            }
+            else if (b == 1)
+            {
+                mid++;
+            }
+            else
+            {
+                if (mid != hi)
+                {
+                    std::swap(h_A[mid],     h_A[hi]);
+                    std::swap(h_B[mid],     h_B[hi]);
+                    std::swap(h_C[mid],     h_C[hi]);
+                    std::swap(h_lda[mid],   h_lda[hi]);
+                    std::swap(h_ldb[mid],   h_ldb[hi]);
+                    std::swap(h_ldc[mid],   h_ldc[hi]);
+                    std::swap(h_m[mid],     h_m[hi]);
+                    std::swap(h_n[mid],     h_n[hi]);
+                    std::swap(h_k[mid],     h_k[hi]);
+                    std::swap(h_alpha[mid], h_alpha[hi]);
+                    std::swap(bucket[mid], bucket[hi]);
+                }
+                hi--;
+            }
+        }
+    }
 
     gemm_A_.copy_host_to_device_async(ap_num);
     gemm_B_.copy_host_to_device_async(ap_num);
@@ -392,24 +573,33 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
     }
     CHECK_CUDA(cudaEventRecord(event_, stream_));
 
-    auto alpha_ptr = is_symm ? gemm_alpha_.get_device_ptr() : nullptr;
-    gemm_nn_vbatch<Real>(max_m,
-                    max_n,
-                    max_k,
-                    max_m,
-                    avg_n,
-                    gemm_m_.get_device_ptr(),
-                    gemm_n_.get_device_ptr(),
-                    gemm_k_.get_device_ptr(),
-                    gemm_A_.get_device_ptr(),
-                    gemm_lda_.get_device_ptr(),
-                    gemm_B_.get_device_ptr(),
-                    gemm_ldb_.get_device_ptr(),
-                    gemm_C_.get_device_ptr(),
-                    gemm_ldc_.get_device_ptr(),
-                    ap_num,
-                    stream_,
-                    alpha_ptr);
+    const int bucket_off[3] = {
+        0,
+        bucket_cnt[0],
+        bucket_cnt[0] + bucket_cnt[1],
+    };
+    for (int b = 0; b < 3; b++)
+    {
+        if (bucket_cnt[b] == 0) { continue; }
+        const int off = bucket_off[b];
+        auto alpha_ptr = is_symm ? (gemm_alpha_.get_device_ptr() + off) : nullptr;
+        gemm_nn_vbatch<Real>(max_m,
+                        bmax_n[b],
+                        bmax_k[b],
+                        b,
+                        gemm_m_.get_device_ptr() + off,
+                        gemm_n_.get_device_ptr() + off,
+                        gemm_k_.get_device_ptr() + off,
+                        gemm_A_.get_device_ptr() + off,
+                        gemm_lda_.get_device_ptr() + off,
+                        gemm_B_.get_device_ptr() + off,
+                        gemm_ldb_.get_device_ptr() + off,
+                        gemm_C_.get_device_ptr() + off,
+                        gemm_ldc_.get_device_ptr() + off,
+                        bucket_cnt[b],
+                        stream_,
+                        alpha_ptr);
+    }
 }
 
 template<typename Real>

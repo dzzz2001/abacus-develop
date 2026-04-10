@@ -41,37 +41,75 @@ void gemm_nn_vbatch(
     // NN dimension mapping (after A/B swap in _impl):
     //   kernel M = n (nw2, small 2-27), kernel N = m (bxyz, large 27-125),
     //   kernel K = k (nw1, small 2-27).
-    // Tile shape: small BLK_M x large BLK_N x small BLK_K.
     //
     // Dispatch key:
-    //   max_n  -> selects BLK_M (nw2 axis)
-    //   max_m  -> selects BLK_N (bxyz axis)
+    //   max_n -> selects BLK_M (nw2 axis)
+    //   max_m -> selects BLK_N (bxyz axis)
+    //   max_k -> selects BLK_K (nw1 axis)
     //
-    // Tier 0 (max_n <= 8): small BLK_M=8 -- avoids wasting threads on the
-    //                      nw2 axis when nw2 is small (Li/O/B/C/N/F-only
-    //                      sub-batches).
-    // Tier 1 (max_n > 8 && max_m <= 64):
-    //                      BLK_M=16, BLK_N=64. Covers bxyz in {27, 48, 64}
-    //                      with BLK_N=64 in a single N-tile, and handles
-    //                      nw2 in [9, 27] with two BLK_M=16 tiles at full
-    //                      thread density (16+11 for nw2=27, 100% useful).
-    //                      This is today's "bucket 1+2" tile and the
-    //                      production code path for cases 1-3.
-    // Tier 2 (max_n > 8 && max_m  > 64):
-    //                      BLK_M=16, BLK_N=128. New tier for bxyz in
-    //                      {80, 100, 125}. BLK_N=128 covers bxyz=125 in a
-    //                      single N-tile (was 2 tiles at BLK_N=64). Same
-    //                      BLK_M / BLK_K as tier 1 so behavior degrades
-    //                      gracefully if a benchmark turns up unexpected
-    //                      regressions; only the bxyz axis changes.
+    // The inner ladder (on max_m) steps BLK_N so each bxyz lands on a tile
+    // that nearly fits it in one N-tile. The outer ladder (on max_n) picks
+    // BLK_M: =8 when nw2 is all-small (Li/H/.. only), =16 otherwise.
+    //
+    // Tier 0 path (max_n <= 8) used to be a one-shot BLK 8x64x16. That
+    // wastes 42% of the N axis at bxyz=27 and 25-56% on the boundary tile
+    // at bxyz in {80, 100}. Mirroring the tier 1/2 bxyz ladder inside tier 0
+    // restores a one-tile-per-matrix fit without changing the M/K tile.
     if (max_n <= 8) {
-        //                         DIM_X,Y  BLK_M,N,K   DIM_XA,YA  DIM_XB,YB
-        vbatched_gemm_nn_impl<T,   8, 16,    8,  64, 16, 8, 16,    8, 16>
+        //                             DIM_X,Y  BLK_M,N,K   DIM_XA,YA  DIM_XB,YB
+        if (max_m <= 32) {
+            vbatched_gemm_nn_impl<T,   8, 16,    8,  32, 16, 8, 16,    8, 16>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        } else if (max_m <= 48) {
+            vbatched_gemm_nn_impl<T,   8, 16,    8,  48, 16, 8, 16,    8, 16>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        } else if (max_m <= 64) {
+            vbatched_gemm_nn_impl<T,   8, 16,    8,  64, 16, 8, 16,    8, 16>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        } else if (max_m <= 80) {
+            vbatched_gemm_nn_impl<T,   8, 16,    8,  80, 16, 8, 16,    8, 16>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        } else if (max_m <= 112) {
+            vbatched_gemm_nn_impl<T,   8, 16,    8, 112, 16, 8, 16,    8, 16>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        } else {
+            vbatched_gemm_nn_impl<T,   8, 16,    8, 128, 16, 8, 16,    8, 16>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        }
+    } else if (max_m <= 32) {
+        vbatched_gemm_nn_impl<T,   8, 16,   16,  32, 16, 8, 16,    8, 16>
+            (max_m, max_n, m_d, n_d, k_d,
+             A_array_d, lda_d, B_array_d, ldb_d,
+             C_array_d, ldc_d, batchCount, stream, alpha);
+    } else if (max_m <= 48) {
+        vbatched_gemm_nn_impl<T,   8, 16,   16,  48, 16, 8, 16,    8, 16>
             (max_m, max_n, m_d, n_d, k_d,
              A_array_d, lda_d, B_array_d, ldb_d,
              C_array_d, ldc_d, batchCount, stream, alpha);
     } else if (max_m <= 64) {
         vbatched_gemm_nn_impl<T,   8, 16,   16,  64, 16, 8, 16,    8, 16>
+            (max_m, max_n, m_d, n_d, k_d,
+             A_array_d, lda_d, B_array_d, ldb_d,
+             C_array_d, ldc_d, batchCount, stream, alpha);
+    } else if (max_m <= 80) {
+        vbatched_gemm_nn_impl<T,   8, 16,   16,  80, 16, 8, 16,    8, 16>
+            (max_m, max_n, m_d, n_d, k_d,
+             A_array_d, lda_d, B_array_d, ldb_d,
+             C_array_d, ldc_d, batchCount, stream, alpha);
+    } else if (max_m <= 112) {
+        vbatched_gemm_nn_impl<T,   8, 16,   16, 112, 16, 8, 16,    8, 16>
             (max_m, max_n, m_d, n_d, k_d,
              A_array_d, lda_d, B_array_d, ldb_d,
              C_array_d, ldc_d, batchCount, stream, alpha);
@@ -99,29 +137,9 @@ void gemm_tn_vbatch(
     // Tile shape: small BLK_M x small BLK_N x large BLK_K.
     //
     // Dispatch key:
-    //   max(max_m, max_n) -> selects BLK_M / BLK_N (the nw axes)
-    //   max_k             -> selects BLK_K        (the bxyz axis)
-    //
-    // Tier 0 (max(max_m, max_n) <= 8):
-    //                      BLK 8x8x32. Small-nw-only sub-batches.
-    // Tier 1 (max(max_m, max_n) > 8 && max_k <= 64):
-    //                      BLK 16x16x32. Today's "bucket 1+2" tile and the
-    //                      production path for cases 1-3 (bxyz in {27,48,64}).
-    //                      BLK_M=BLK_N=16 is intentionally narrow: see the
-    //                      asymmetric-pair note below.
-    // Tier 2 (max(max_m, max_n) > 8 && max_k  > 64):
-    //                      BLK 16x16x64. New tier for bxyz in {80,100,125}.
-    //                      Doubled BLK_K halves the K-iter count at bxyz=125
-    //                      vs tier 1. BLK_M/BLK_N stay at 16 -- crucially,
-    //                      we do not widen the nw-axis tile, so asymmetric
-    //                      pairs (TM-O = 13x27, TM-Li = 7x27) keep their
-    //                      thread density.
-    //
-    // Asymmetric-pair safety: previous tuning notes (commit history of this
-    // file) document that widening BLK_M / BLK_N beyond 16 wastes ~60% of
-    // threads on TM-O (13x27) pairs because the smaller dim only fills part
-    // of the tile, and that this dominates the K-iter savings of a wider
-    // tile. The new tier therefore only varies BLK_K.
+    //   max_n -> selects BLK_M (nw2 axis)
+    //   max_m -> selects BLK_N (nw1 axis)
+    //   max_k -> selects BLK_K (bxyz axis)
     const int max_mn = max_m > max_n ? max_m : max_n;
     if (max_mn <= 8) {
         //                         DIM_X,Y  BLK_M,N,K   DIM_XA,YA  DIM_XB,YB
@@ -129,6 +147,32 @@ void gemm_tn_vbatch(
             (max_m, max_n, m_d, n_d, k_d,
              A_array_d, lda_d, B_array_d, ldb_d,
              C_array_d, ldc_d, batchCount, stream, alpha);
+    } else if (max_m <= 8) {
+        // Tier Am: nw1 small, nw2 large. BLK_N=8 on the nw1 axis.
+        if (max_k <= 64) {
+            vbatched_gemm_tn_impl<T,   8, 8,    16,  8, 32, 8, 8,      8, 8>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        } else {
+            vbatched_gemm_tn_impl<T,   8, 8,    16,  8, 64, 8, 8,      8, 8>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        }
+    } else if (max_n <= 8) {
+        // Tier An: nw2 small, nw1 large. BLK_M=8 on the nw2 axis.
+        if (max_k <= 64) {
+            vbatched_gemm_tn_impl<T,   8, 8,     8, 16, 32, 8, 8,      8, 8>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        } else {
+            vbatched_gemm_tn_impl<T,   8, 8,     8, 16, 64, 8, 8,      8, 8>
+                (max_m, max_n, m_d, n_d, k_d,
+                 A_array_d, lda_d, B_array_d, ldb_d,
+                 C_array_d, ldc_d, batchCount, stream, alpha);
+        }
     } else if (max_k <= 64) {
         vbatched_gemm_tn_impl<T,   8, 8,    16, 16, 32, 8, 8,      8, 8>
             (max_m, max_n, m_d, n_d, k_d,

@@ -7,25 +7,16 @@
 // Shape-based dispatch
 // ----------------------------------------------------------------------------
 //
-// The two wrappers below select a kernel template instantiation from
-// (max_m, max_n, max_k) of the sub-batch instead of an externally-supplied
-// bucket id. Callers (`phi_mul_phi`, `phi_mul_dm` in phi_operator_gpu.cu) are
-// still expected to partition their full batch into shape-homogeneous
-// sub-batches before calling -- this wrapper just routes to the right tile.
-//
-// Recall the kernel-level dimension mapping after the A/B swap inside
-// `vbatched_gemm_{nn,tn}_impl`:
+// Kernel-level dimension mapping (after A/B swap inside vbatched_gemm_*_impl):
 //
 //   call    | wrapper max_m | wrapper max_n | wrapper max_k
 //   --------|---------------|---------------|---------------
-//   NN      | bxyz (const)  | nw2           | nw1
-//   TN      | nw1           | nw2           | bxyz (const)
+//   NN      | bxyz (large)  | nw2 (small)   | nw1 (small)
+//   TN      | nw1 (small)   | nw2 (small)   | bxyz (large)
 //
-// The dispatch boundaries below are chosen so that on the current production
-// call sites (cases bxyz <= 64), the wrapper picks exactly the same template
-// the previous bucket-id-based dispatch would have. The third tier targets
-// large bxyz (>= 80) and is additive -- it gives future tuning a landing pad
-// without disturbing today's call sites.
+// Callers (`phi_mul_phi`, `phi_mul_dm` in phi_operator_gpu.cu) partition
+// their full batch into shape-homogeneous sub-batches before calling;
+// these wrappers only route (max_m, max_n, max_k) to a tile template.
 // ----------------------------------------------------------------------------
 
 template<typename T>
@@ -38,87 +29,40 @@ void gemm_nn_vbatch(
     int batchCount, cudaStream_t stream,
     const T* alpha)
 {
-    // NN dimension mapping (after A/B swap in _impl):
-    //   kernel M = n (nw2, small 2-27), kernel N = m (bxyz, large 27-125),
-    //   kernel K = k (nw1, small 2-27).
+    // 3x2 ladder (6 instantiations), tuned for A100:
+    //   max_n -> BLK_M in {8, 16, 32}   (nw2 axis)
+    //   max_m -> BLK_N in {32, 64}      (bxyz axis, capped at 64)
+    //   BLK_K fixed at 16               (nw1 axis)
     //
-    // Dispatch key:
-    //   max_n -> selects BLK_M (nw2 axis)
-    //   max_m -> selects BLK_N (bxyz axis)
-    //   max_k -> selects BLK_K (nw1 axis)
+    // BLK_N is capped at 64 because A100's 108 SMs benefit more from a
+    // larger block count than from a single oversized tile per matrix.
+    // bxyz > 64 wraps into ceil(bxyz/64) N-tiles; total flop waste in
+    // the tail tile is identical to a BLK_N=128 single-tile layout, but
+    // SM occupancy roughly doubles (~11 KB shmem vs ~21 KB, ~100 regs/thread
+    // vs ~150), so latency hiding improves.
     //
-    // The inner ladder (on max_m) steps BLK_N so each bxyz lands on a tile
-    // that nearly fits it in one N-tile. The outer ladder (on max_n) picks
-    // BLK_M: =8 when nw2 is all-small (Li/H/.. only), =16 otherwise.
-    //
-    // Tier 0 path (max_n <= 8) used to be a one-shot BLK 8x64x16. That
-    // wastes 42% of the N axis at bxyz=27 and 25-56% on the boundary tile
-    // at bxyz in {80, 100}. Mirroring the tier 1/2 bxyz ladder inside tier 0
-    // restores a one-tile-per-matrix fit without changing the M/K tile.
+    // Block shape is DIM_X=8 x DIM_Y=16 (128 threads). Every (BLK_M, BLK_N)
+    // pair satisfies BLK_M % DIM_X == 0 and BLK_N % DIM_Y == 0, so all six
+    // combinations compile to valid kernels. Boundary tiles that exceed the
+    // per-matrix M/N are masked out by the in-kernel store guard.
+    #define NN_DISPATCH(BLK_M_, BLK_N_)                                    \
+        vbatched_gemm_nn_impl<T, 8, 16, BLK_M_, BLK_N_, 16, 8, 16, 8, 16>( \
+            max_m, max_n, m_d, n_d, k_d,                                   \
+            A_array_d, lda_d, B_array_d, ldb_d,                            \
+            C_array_d, ldc_d, batchCount, stream, alpha)
+
     if (max_n <= 8) {
-        //                             DIM_X,Y  BLK_M,N,K   DIM_XA,YA  DIM_XB,YB
-        if (max_m <= 32) {
-            vbatched_gemm_nn_impl<T,   8, 16,    8,  32, 16, 8, 16,    8, 16>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        } else if (max_m <= 48) {
-            vbatched_gemm_nn_impl<T,   8, 16,    8,  48, 16, 8, 16,    8, 16>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        } else if (max_m <= 64) {
-            vbatched_gemm_nn_impl<T,   8, 16,    8,  64, 16, 8, 16,    8, 16>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        } else if (max_m <= 80) {
-            vbatched_gemm_nn_impl<T,   8, 16,    8,  80, 16, 8, 16,    8, 16>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        } else if (max_m <= 112) {
-            vbatched_gemm_nn_impl<T,   8, 16,    8, 112, 16, 8, 16,    8, 16>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        } else {
-            vbatched_gemm_nn_impl<T,   8, 16,    8, 128, 16, 8, 16,    8, 16>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        }
-    } else if (max_m <= 32) {
-        vbatched_gemm_nn_impl<T,   8, 16,   16,  32, 16, 8, 16,    8, 16>
-            (max_m, max_n, m_d, n_d, k_d,
-             A_array_d, lda_d, B_array_d, ldb_d,
-             C_array_d, ldc_d, batchCount, stream, alpha);
-    } else if (max_m <= 48) {
-        vbatched_gemm_nn_impl<T,   8, 16,   16,  48, 16, 8, 16,    8, 16>
-            (max_m, max_n, m_d, n_d, k_d,
-             A_array_d, lda_d, B_array_d, ldb_d,
-             C_array_d, ldc_d, batchCount, stream, alpha);
-    } else if (max_m <= 64) {
-        vbatched_gemm_nn_impl<T,   8, 16,   16,  64, 16, 8, 16,    8, 16>
-            (max_m, max_n, m_d, n_d, k_d,
-             A_array_d, lda_d, B_array_d, ldb_d,
-             C_array_d, ldc_d, batchCount, stream, alpha);
-    } else if (max_m <= 80) {
-        vbatched_gemm_nn_impl<T,   8, 16,   16,  80, 16, 8, 16,    8, 16>
-            (max_m, max_n, m_d, n_d, k_d,
-             A_array_d, lda_d, B_array_d, ldb_d,
-             C_array_d, ldc_d, batchCount, stream, alpha);
-    } else if (max_m <= 112) {
-        vbatched_gemm_nn_impl<T,   8, 16,   16, 112, 16, 8, 16,    8, 16>
-            (max_m, max_n, m_d, n_d, k_d,
-             A_array_d, lda_d, B_array_d, ldb_d,
-             C_array_d, ldc_d, batchCount, stream, alpha);
+        if (max_m <= 32) { NN_DISPATCH( 8, 32); }
+        else             { NN_DISPATCH( 8, 64); }
+    } else if (max_n <= 16) {
+        if (max_m <= 32) { NN_DISPATCH(16, 32); }
+        else             { NN_DISPATCH(16, 64); }
     } else {
-        vbatched_gemm_nn_impl<T,   8, 16,   16, 128, 16, 8, 16,    8, 16>
-            (max_m, max_n, m_d, n_d, k_d,
-             A_array_d, lda_d, B_array_d, ldb_d,
-             C_array_d, ldc_d, batchCount, stream, alpha);
+        if (max_m <= 32) { NN_DISPATCH(32, 32); }
+        else             { NN_DISPATCH(32, 64); }
     }
+
+    #undef NN_DISPATCH
 }
 
 template<typename T>
@@ -131,59 +75,41 @@ void gemm_tn_vbatch(
     int batchCount, cudaStream_t stream,
     const T* alpha)
 {
-    // TN dimension mapping (after A/B swap in _impl):
-    //   kernel M = n (nw2, small 2-27), kernel N = m (nw1, small 2-27),
-    //   kernel K = k (bxyz, large 27-125).
-    // Tile shape: small BLK_M x small BLK_N x large BLK_K.
+    // 3x3 ladder (9 instantiations), tuned for A100:
+    //   max_n -> BLK_M in {8, 16, 32}   (nw2 axis)
+    //   max_m -> BLK_N in {8, 16, 32}   (nw1 axis)
+    //   BLK_K fixed at 32               (bxyz axis)
     //
-    // Dispatch key:
-    //   max_n -> selects BLK_M (nw2 axis)
-    //   max_m -> selects BLK_N (nw1 axis)
-    //   max_k -> selects BLK_K (bxyz axis)
-    const int max_mn = max_m > max_n ? max_m : max_n;
-    if (max_mn <= 8) {
-        //                         DIM_X,Y  BLK_M,N,K   DIM_XA,YA  DIM_XB,YB
-        vbatched_gemm_tn_impl<T,   8, 8,     8,  8, 32, 8, 8,      8, 8>
-            (max_m, max_n, m_d, n_d, k_d,
-             A_array_d, lda_d, B_array_d, ldb_d,
-             C_array_d, ldc_d, batchCount, stream, alpha);
-    } else if (max_m <= 8) {
-        // Tier Am: nw1 small, nw2 large. BLK_N=8 on the nw1 axis.
-        if (max_k <= 64) {
-            vbatched_gemm_tn_impl<T,   8, 8,    16,  8, 32, 8, 8,      8, 8>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        } else {
-            vbatched_gemm_tn_impl<T,   8, 8,    16,  8, 64, 8, 8,      8, 8>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        }
-    } else if (max_n <= 8) {
-        // Tier An: nw2 small, nw1 large. BLK_M=8 on the nw2 axis.
-        if (max_k <= 64) {
-            vbatched_gemm_tn_impl<T,   8, 8,     8, 16, 32, 8, 8,      8, 8>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        } else {
-            vbatched_gemm_tn_impl<T,   8, 8,     8, 16, 64, 8, 8,      8, 8>
-                (max_m, max_n, m_d, n_d, k_d,
-                 A_array_d, lda_d, B_array_d, ldb_d,
-                 C_array_d, ldc_d, batchCount, stream, alpha);
-        }
-    } else if (max_k <= 64) {
-        vbatched_gemm_tn_impl<T,   8, 8,    16, 16, 32, 8, 8,      8, 8>
-            (max_m, max_n, m_d, n_d, k_d,
-             A_array_d, lda_d, B_array_d, ldb_d,
-             C_array_d, ldc_d, batchCount, stream, alpha);
+    // BLK_K is fixed at 32 rather than split: the K-axis tail wastes only
+    // shmem loads (not FMAs), so a single BLK_K value keeps the template
+    // table small while still covering bxyz in [27, 125] via ceil(bxyz/32)
+    // K-tiles. bxyz=27 fits in one tile (5/32 = 16% load waste); larger
+    // bxyz wraps into 2-4 K-tiles with modest __syncthreads() overhead.
+    //
+    // Block shape is DIM_X=8 x DIM_Y=8 (64 threads). Every (BLK_M, BLK_N)
+    // pair is divisible by DIM_X/DIM_Y/DIM_*A/DIM_*B=8, so all nine
+    // combinations compile to valid kernels.
+    #define TN_DISPATCH(BLK_M_, BLK_N_)                                 \
+        vbatched_gemm_tn_impl<T, 8, 8, BLK_M_, BLK_N_, 32, 8, 8, 8, 8>( \
+            max_m, max_n, m_d, n_d, k_d,                                \
+            A_array_d, lda_d, B_array_d, ldb_d,                         \
+            C_array_d, ldc_d, batchCount, stream, alpha)
+
+    if (max_n <= 8) {
+        if      (max_m <=  8) { TN_DISPATCH( 8,  8); }
+        else if (max_m <= 16) { TN_DISPATCH( 8, 16); }
+        else                  { TN_DISPATCH( 8, 32); }
+    } else if (max_n <= 16) {
+        if      (max_m <=  8) { TN_DISPATCH(16,  8); }
+        else if (max_m <= 16) { TN_DISPATCH(16, 16); }
+        else                  { TN_DISPATCH(16, 32); }
     } else {
-        vbatched_gemm_tn_impl<T,   8, 8,    16, 16, 64, 8, 8,      8, 8>
-            (max_m, max_n, m_d, n_d, k_d,
-             A_array_d, lda_d, B_array_d, ldb_d,
-             C_array_d, ldc_d, batchCount, stream, alpha);
+        if      (max_m <=  8) { TN_DISPATCH(32,  8); }
+        else if (max_m <= 16) { TN_DISPATCH(32, 16); }
+        else                  { TN_DISPATCH(32, 32); }
     }
+
+    #undef TN_DISPATCH
 }
 
 // Explicit instantiations

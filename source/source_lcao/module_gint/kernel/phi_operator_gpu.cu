@@ -3,22 +3,12 @@
 #include "dgemm_vbatch.h"
 #include <cuda_runtime.h>
 #include <vector>
+#include <array>
 #include <algorithm>
 #include "source_base/module_device/device_check.h"
 
 namespace ModuleGint
 {
-
-// Map a problem-size key (nw or max(nw1,nw2)) to one of three kernel buckets:
-//   0 = small  (key <= 8)
-//   1 = medium (8 < key <= 16)
-//   2 = large  (key > 16)
-static inline int gemm_bucket_of(int key)
-{
-    if (key <= 8) { return 0; }
-    if (key <= 16) { return 1; }
-    return 2;
-}
 
 template<typename Real>
 PhiOperatorGpu<Real>::PhiOperatorGpu(std::shared_ptr<const GintGpuVars> gint_gpu_vars, cudaStream_t stream)
@@ -102,6 +92,41 @@ void PhiOperatorGpu<Real>::set_bgrid_batch(std::shared_ptr<BatchBigGrid> bgrid_b
     atoms_phi_start_.copy_host_to_device_async(bgrid_batch->get_atoms_num());
     mgrids_local_idx_batch_.copy_host_to_device_async(bgrid_batch->get_batch_size() * mgrids_num_);
     CHECK_CUDA(cudaEventRecord(event_, stream_));
+
+    // Pre-enumerate every (ia_1, ia_2) pair so phi_mul_phi / phi_mul_dm can
+    // skip this O(sum atoms_i^2) walk on every call. HContainer lookups and
+    // per-bgrid filters stay in the hot path since they depend on the
+    // specific caller (hRGint vs dm, symmetric vs not).
+    pair_cache_.clear();
+    for (int i = 0; i < bgrid_batch->get_batch_size(); ++i)
+    {
+        const auto& bgrid = bgrid_batch->get_bgrids()[i];
+        const int pre_atoms = atoms_num_info_h[i].y;
+        const int atoms_num = bgrid->get_atoms_num();
+        const int phi_len_mgrid = bgrid->get_phi_len();
+        const auto& atoms = bgrid->get_atoms();
+        for (int ia_1 = 0; ia_1 < atoms_num; ++ia_1)
+        {
+            const auto& atom_1 = atoms[ia_1];
+            for (int ia_2 = 0; ia_2 < atoms_num; ++ia_2)
+            {
+                const auto& atom_2 = atoms[ia_2];
+                PairInfo p;
+                p.phi_1_offset  = atoms_phi_start_h[pre_atoms + ia_1];
+                p.phi_2_offset  = atoms_phi_start_h[pre_atoms + ia_2];
+                p.phi_len_mgrid = phi_len_mgrid;
+                p.iat_1         = atom_1->get_iat();
+                p.iat_2         = atom_2->get_iat();
+                p.r_diff        = atom_1->get_R() - atom_2->get_R();
+                p.nw1           = static_cast<uint16_t>(atom_1->get_nw());
+                p.nw2           = static_cast<uint16_t>(atom_2->get_nw());
+                p.ia_le         = static_cast<uint8_t>(ia_1 <= ia_2);
+                p.is_diag       = static_cast<uint8_t>(ia_1 == ia_2);
+                pair_cache_.push_back(p);
+            }
+        }
+    }
+    pair_scratch_offset_.assign(pair_cache_.size(), -1);
 }
 
 template<typename Real>
@@ -235,21 +260,45 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     HContainer<Real>& hRGint,
     Real* hr_d) const
 {
-    // Why bucket the atom pairs before calling gemm_tn_vbatch:
-    // the vbatch dispatcher picks a single kernel template (a fixed
-    // BLK_M x BLK_N x BLK_K tile) per launch, sized from the batch-wide
-    // max(nw1, nw2). A real ABACUS batch mixes light atoms (nw ~ 4) with
-    // transition metals (nw ~ 25) in the same launch, so that one template
-    // is forced to fit the largest item and runs every small item on an
-    // over-sized, register-heavy block. Splitting the batch into three
-    // size tiers (see gemm_bucket_of) and issuing one vbatch launch per
-    // tier lets each launch pick a template matched to its own size range.
+    // Shape-exact bucketing: group atom pairs by (nw1, nw2). K = mgrids_num_
+    // is already batch-wide constant, so (nw1, nw2) fully determines the GEMM
+    // shape. Each bucket hands gemm_tn_vbatch a max_m / max_n that equal the
+    // bucket's own nw1 / nw2, so the 3x3 template ladder picks the tightest
+    // tile for every item -- no cross-species tile waste.
+    //
+    // Algorithm: counting-sort-style two-pass over the pre-enumerated
+    // pair_cache_ populated in set_bgrid_batch().
+    //   Pass 1: HContainer lookup -> stash hr_offset, count items per shape.
+    //   Prefix sum: build the list of non-empty buckets + their flat offsets.
+    //   Pass 2: scatter into the flat gemm_* host arrays at each bucket's
+    //           slot, then one H2D copy and one vbatch launch per bucket.
 
+    std::array<int, NW_MAX * NW_MAX> counts{};
+
+    // Pass 1: filter + HContainer lookup + per-shape count.
+    for (size_t i = 0; i < pair_cache_.size(); ++i)
+    {
+        const auto& p = pair_cache_[i];
+        if (p.iat_1 > p.iat_2) { pair_scratch_offset_[i] = -1; continue; }
+        const int hr = hRGint.find_matrix_offset(p.iat_1, p.iat_2, p.r_diff);
+        pair_scratch_offset_[i] = hr;
+        if (hr == -1) { continue; }
+        counts[p.nw1 * NW_MAX + p.nw2]++;
+    }
+
+    // Prefix sum over dense keys -> compact bucket list.
+    struct Bucket { int key; int off; int cnt; };
+    std::vector<Bucket> buckets;
+    buckets.reserve(32);
+    std::array<int, NW_MAX * NW_MAX> key_to_base{};
     int ap_num = 0;
-    int bucket_off[3] = {0, 0, 0};
-    int bucket_cnt[3] = {0, 0, 0};
-    int bmax_m[3] = {0, 0, 0};
-    int bmax_n[3] = {0, 0, 0};
+    for (int k = 0; k < NW_MAX * NW_MAX; ++k)
+    {
+        if (counts[k] == 0) { continue; }
+        buckets.push_back({k, ap_num, counts[k]});
+        key_to_base[k] = ap_num;
+        ap_num += counts[k];
+    }
 
     auto* h_A   = gemm_A_.get_host_ptr();
     auto* h_B   = gemm_B_.get_host_ptr();
@@ -261,65 +310,26 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     auto* h_n   = gemm_n_.get_host_ptr();
     auto* h_k   = gemm_k_.get_host_ptr();
 
-    const auto* atoms_num_h  = atoms_num_info_.get_host_ptr();
-    const auto* phi_start_h  = atoms_phi_start_.get_host_ptr();
-    const auto& bgrids       = bgrid_batch_->get_bgrids();
-    const int batch_size     = bgrid_batch_->get_batch_size();
-
     CHECK_CUDA(cudaEventSynchronize(event_));
 
-    for (int b = 0; b < 3; b++)
+    // Pass 2: scatter into the flat host arrays at per-bucket cursors.
+    std::array<int, NW_MAX * NW_MAX> cursor{};
+    for (size_t i = 0; i < pair_cache_.size(); ++i)
     {
-        bucket_off[b] = ap_num;
-        for (int i = 0; i < batch_size; i++)
-        {
-            const auto& bgrid = bgrids[i];
-            const int phi_len_mgrid = bgrid->get_phi_len();
-            const int mgrids_num = bgrid->get_mgrids_num();
-            const int pre_atoms = atoms_num_h[i].y;
-            const int atoms_num = bgrid->get_atoms_num();
-            const auto& atoms = bgrid->get_atoms();
-            for (int ia_1 = 0; ia_1 < atoms_num; ia_1++)
-            {
-                const auto& atom_1 = atoms[ia_1];
-                const int iat_1 = atom_1->get_iat();
-                const int nw1 = atom_1->get_nw();
-                const int phi_1_offset = phi_start_h[pre_atoms + ia_1];
-                const auto& r_1 = atom_1->get_R();
-
-                for (int ia_2 = 0; ia_2 < atoms_num; ia_2++)
-                {
-                    const auto& atom_2 = atoms[ia_2];
-                    const int iat_2 = atom_2->get_iat();
-                    if (iat_1 > iat_2) { continue; }
-
-                    const int nw2 = atom_2->get_nw();
-                    // TN dispatch key is max(nw1, nw2) -- both feed kernel M/N.
-                    if (gemm_bucket_of(std::max(nw1, nw2)) != b) { continue; }
-
-                    const int hr_offset = hRGint.find_matrix_offset(
-                        iat_1, iat_2, r_1 - atom_2->get_R());
-                    if (hr_offset == -1) { continue; }
-
-                    const int phi_2_offset = phi_start_h[pre_atoms + ia_2];
-
-                    h_A[ap_num] = phi_d + phi_1_offset;
-                    h_B[ap_num] = phi_vldr3_d + phi_2_offset;
-                    h_C[ap_num] = hr_d + hr_offset;
-                    h_lda[ap_num] = phi_len_mgrid;
-                    h_ldb[ap_num] = phi_len_mgrid;
-                    h_ldc[ap_num] = nw2;
-                    h_m[ap_num] = nw1;
-                    h_n[ap_num] = nw2;
-                    h_k[ap_num] = mgrids_num;
-
-                    bmax_m[b] = std::max(bmax_m[b], nw1);
-                    bmax_n[b] = std::max(bmax_n[b], nw2);
-                    ap_num++;
-                }
-            }
-        }
-        bucket_cnt[b] = ap_num - bucket_off[b];
+        const int hr = pair_scratch_offset_[i];
+        if (hr == -1) { continue; }
+        const auto& p = pair_cache_[i];
+        const int key = p.nw1 * NW_MAX + p.nw2;
+        const int pos = key_to_base[key] + cursor[key]++;
+        h_A[pos]   = phi_d + p.phi_1_offset;
+        h_B[pos]   = phi_vldr3_d + p.phi_2_offset;
+        h_C[pos]   = hr_d + hr;
+        h_lda[pos] = p.phi_len_mgrid;
+        h_ldb[pos] = p.phi_len_mgrid;
+        h_ldc[pos] = p.nw2;
+        h_m[pos]   = p.nw1;
+        h_n[pos]   = p.nw2;
+        h_k[pos]   = mgrids_num_;
     }
 
     gemm_A_.copy_host_to_device_async(ap_num);
@@ -333,23 +343,23 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     gemm_k_.copy_host_to_device_async(ap_num);
     CHECK_CUDA(cudaEventRecord(event_, stream_));
 
-    for (int b = 0; b < 3; b++)
+    for (const auto& b : buckets)
     {
-        if (bucket_cnt[b] == 0) { continue; }
-        const int off = bucket_off[b];
-        gemm_tn_vbatch<Real>(bmax_m[b],
-                        bmax_n[b],
+        const int nw1 = b.key / NW_MAX;
+        const int nw2 = b.key % NW_MAX;
+        gemm_tn_vbatch<Real>(nw1,
+                        nw2,
                         mgrids_num_,
-                        gemm_m_.get_device_ptr() + off,
-                        gemm_n_.get_device_ptr() + off,
-                        gemm_k_.get_device_ptr() + off,
-                        gemm_A_.get_device_ptr() + off,
-                        gemm_lda_.get_device_ptr() + off,
-                        gemm_B_.get_device_ptr() + off,
-                        gemm_ldb_.get_device_ptr() + off,
-                        gemm_C_.get_device_ptr() + off,
-                        gemm_ldc_.get_device_ptr() + off,
-                        bucket_cnt[b],
+                        gemm_m_.get_device_ptr() + b.off,
+                        gemm_n_.get_device_ptr() + b.off,
+                        gemm_k_.get_device_ptr() + b.off,
+                        gemm_A_.get_device_ptr() + b.off,
+                        gemm_lda_.get_device_ptr() + b.off,
+                        gemm_B_.get_device_ptr() + b.off,
+                        gemm_ldb_.get_device_ptr() + b.off,
+                        gemm_C_.get_device_ptr() + b.off,
+                        gemm_ldc_.get_device_ptr() + b.off,
+                        b.cnt,
                         stream_,
                         nullptr);
     }
@@ -365,11 +375,38 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
 {
     CHECK_CUDA(cudaMemsetAsync(phi_dm_d, 0, phi_len_ * sizeof(Real), stream_));
 
+    // Shape-exact bucketing: same structure as phi_mul_phi, but NN-flavored.
+    //   M = mgrids_num_ (batch-wide constant), N = nw2, K = nw1.
+    // Shape key is still (nw1, nw2); M is absent from the key since it's
+    // identical across every pair in the batch. is_symm selects the
+    // upper-triangle (ia_1 <= ia_2) subset and fills per-pair alpha.
+
+    std::array<int, NW_MAX * NW_MAX> counts{};
+
+    // Pass 1: filter + HContainer lookup + per-shape count.
+    for (size_t i = 0; i < pair_cache_.size(); ++i)
+    {
+        const auto& p = pair_cache_[i];
+        if (is_symm && !p.ia_le) { pair_scratch_offset_[i] = -1; continue; }
+        const int dm_offset = dm.find_matrix_offset(p.iat_1, p.iat_2, p.r_diff);
+        pair_scratch_offset_[i] = dm_offset;
+        if (dm_offset == -1) { continue; }
+        counts[p.nw1 * NW_MAX + p.nw2]++;
+    }
+
+    // Prefix sum over dense keys -> compact bucket list.
+    struct Bucket { int key; int off; int cnt; };
+    std::vector<Bucket> buckets;
+    buckets.reserve(32);
+    std::array<int, NW_MAX * NW_MAX> key_to_base{};
     int ap_num = 0;
-    int bucket_off[3] = {0, 0, 0};
-    int bucket_cnt[3] = {0, 0, 0};
-    int bmax_n[3] = {0, 0, 0};
-    int bmax_k[3] = {0, 0, 0};
+    for (int k = 0; k < NW_MAX * NW_MAX; ++k)
+    {
+        if (counts[k] == 0) { continue; }
+        buckets.push_back({k, ap_num, counts[k]});
+        key_to_base[k] = ap_num;
+        ap_num += counts[k];
+    }
 
     auto* h_A     = gemm_A_.get_host_ptr();
     auto* h_B     = gemm_B_.get_host_ptr();
@@ -382,68 +419,30 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
     auto* h_k     = gemm_k_.get_host_ptr();
     auto* h_alpha = gemm_alpha_.get_host_ptr();
 
-    const auto* atoms_num_h = atoms_num_info_.get_host_ptr();
-    const auto* phi_start_h = atoms_phi_start_.get_host_ptr();
-    const auto& bgrids      = bgrid_batch_->get_bgrids();
-    const int batch_size    = bgrid_batch_->get_batch_size();
-
     CHECK_CUDA(cudaEventSynchronize(event_));
 
-    for (int b = 0; b < 3; b++)
+    // Pass 2: scatter.
+    std::array<int, NW_MAX * NW_MAX> cursor{};
+    for (size_t i = 0; i < pair_cache_.size(); ++i)
     {
-        bucket_off[b] = ap_num;
-        for (int i = 0; i < batch_size; i++)
+        const int dm_offset = pair_scratch_offset_[i];
+        if (dm_offset == -1) { continue; }
+        const auto& p = pair_cache_[i];
+        const int key = p.nw1 * NW_MAX + p.nw2;
+        const int pos = key_to_base[key] + cursor[key]++;
+        h_A[pos]   = phi_d + p.phi_1_offset;
+        h_B[pos]   = dm_d + dm_offset;
+        h_C[pos]   = phi_dm_d + p.phi_2_offset;
+        h_lda[pos] = p.phi_len_mgrid;
+        h_ldb[pos] = p.nw2;
+        h_ldc[pos] = p.phi_len_mgrid;
+        h_m[pos]   = mgrids_num_;
+        h_n[pos]   = p.nw2;
+        h_k[pos]   = p.nw1;
+        if (is_symm)
         {
-            const auto& bgrid = bgrids[i];
-            const int phi_len_mgrid = bgrid->get_phi_len();
-            const int pre_atoms = atoms_num_h[i].y;
-            const int atoms_num = bgrid->get_atoms_num();
-            const auto& atoms = bgrid->get_atoms();
-            for (int ia_1 = 0; ia_1 < atoms_num; ia_1++)
-            {
-                const auto& atom_1 = atoms[ia_1];
-                const int iat_1 = atom_1->get_iat();
-                const int nw1 = atom_1->get_nw();
-                const int phi_1_offset = phi_start_h[pre_atoms + ia_1];
-                const auto& r_1 = atom_1->get_R();
-
-                const int ia_2_start = is_symm ? ia_1 : 0;
-                for (int ia_2 = ia_2_start; ia_2 < atoms_num; ia_2++)
-                {
-                    const auto& atom_2 = atoms[ia_2];
-                    const int nw2 = atom_2->get_nw();
-
-                    // NN dispatch key is nw2 (gemm N dim; M = mgrids_num_).
-                    if (gemm_bucket_of(nw2) != b) { continue; }
-
-                    const int iat_2 = atom_2->get_iat();
-                    const int dm_offset = dm.find_matrix_offset(
-                        iat_1, iat_2, r_1 - atom_2->get_R());
-                    if (dm_offset == -1) { continue; }
-
-                    const int phi_dm_offset = phi_start_h[pre_atoms + ia_2];
-
-                    h_A[ap_num] = phi_d + phi_1_offset;
-                    h_B[ap_num] = dm_d + dm_offset;
-                    h_C[ap_num] = phi_dm_d + phi_dm_offset;
-                    h_lda[ap_num] = phi_len_mgrid;
-                    h_ldb[ap_num] = nw2;
-                    h_ldc[ap_num] = phi_len_mgrid;
-                    h_m[ap_num] = mgrids_num_;
-                    h_n[ap_num] = nw2;
-                    h_k[ap_num] = nw1;
-                    if (is_symm)
-                    {
-                        h_alpha[ap_num] = ia_1 == ia_2 ? Real(1.0) : Real(2.0);
-                    }
-
-                    bmax_n[b] = std::max(bmax_n[b], nw2);
-                    bmax_k[b] = std::max(bmax_k[b], nw1);
-                    ap_num++;
-                }
-            }
+            h_alpha[pos] = p.is_diag ? Real(1.0) : Real(2.0);
         }
-        bucket_cnt[b] = ap_num - bucket_off[b];
     }
 
     gemm_A_.copy_host_to_device_async(ap_num);
@@ -462,24 +461,24 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
     }
     CHECK_CUDA(cudaEventRecord(event_, stream_));
 
-    for (int b = 0; b < 3; b++)
+    for (const auto& b : buckets)
     {
-        if (bucket_cnt[b] == 0) { continue; }
-        const int off = bucket_off[b];
-        auto alpha_ptr = is_symm ? (gemm_alpha_.get_device_ptr() + off) : nullptr;
+        const int nw1 = b.key / NW_MAX;
+        const int nw2 = b.key % NW_MAX;
+        auto alpha_ptr = is_symm ? (gemm_alpha_.get_device_ptr() + b.off) : nullptr;
         gemm_nn_vbatch<Real>(mgrids_num_,
-                        bmax_n[b],
-                        bmax_k[b],
-                        gemm_m_.get_device_ptr() + off,
-                        gemm_n_.get_device_ptr() + off,
-                        gemm_k_.get_device_ptr() + off,
-                        gemm_A_.get_device_ptr() + off,
-                        gemm_lda_.get_device_ptr() + off,
-                        gemm_B_.get_device_ptr() + off,
-                        gemm_ldb_.get_device_ptr() + off,
-                        gemm_C_.get_device_ptr() + off,
-                        gemm_ldc_.get_device_ptr() + off,
-                        bucket_cnt[b],
+                        nw2,
+                        nw1,
+                        gemm_m_.get_device_ptr() + b.off,
+                        gemm_n_.get_device_ptr() + b.off,
+                        gemm_k_.get_device_ptr() + b.off,
+                        gemm_A_.get_device_ptr() + b.off,
+                        gemm_lda_.get_device_ptr() + b.off,
+                        gemm_B_.get_device_ptr() + b.off,
+                        gemm_ldb_.get_device_ptr() + b.off,
+                        gemm_C_.get_device_ptr() + b.off,
+                        gemm_ldc_.get_device_ptr() + b.off,
+                        b.cnt,
                         stream_,
                         alpha_ptr);
     }

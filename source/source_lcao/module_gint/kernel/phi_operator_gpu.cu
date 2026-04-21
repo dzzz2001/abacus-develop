@@ -22,9 +22,8 @@ atoms_bgrids_rcoords_(BatchBigGrid::get_max_atoms_num(), stream_, true),
 atoms_phi_start_(BatchBigGrid::get_max_atoms_num(), stream_, true),
 mgrids_local_idx_batch_(BatchBigGrid::get_max_batch_size() 
     * BatchBigGrid::get_bgrid_info()->get_mgrids_num(), stream_, true),
-gemm_m_(BatchBigGrid::get_max_atom_pairs_num(), stream_, true),
-gemm_n_(BatchBigGrid::get_max_atom_pairs_num(), stream_, true),
-gemm_k_(BatchBigGrid::get_max_atom_pairs_num(), stream_, true),
+// device-only: wrapper fills on the GPU, so no pinned-host mirror needed.
+gemm_mnk_scratch_(3 * BatchBigGrid::get_max_atom_pairs_num(), stream_, false),
 gemm_lda_(BatchBigGrid::get_max_atom_pairs_num(), stream_, true),
 gemm_ldb_(BatchBigGrid::get_max_atom_pairs_num(), stream_, true),
 gemm_ldc_(BatchBigGrid::get_max_atom_pairs_num(), stream_, true),
@@ -262,16 +261,20 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
 {
     // Shape-exact bucketing: group atom pairs by (nw1, nw2). K = mgrids_num_
     // is already batch-wide constant, so (nw1, nw2) fully determines the GEMM
-    // shape. Each bucket hands gemm_tn_vbatch a max_m / max_n that equal the
-    // bucket's own nw1 / nw2, so the 3x3 template ladder picks the tightest
-    // tile for every item -- no cross-species tile waste.
+    // shape. Each bucket hands gemm_tn_vbatch scalar (nw1, nw2, mgrids_num_),
+    // so the 3x3 template ladder picks the tightest tile for every item and
+    // the wrapper sizes the grid exactly -- no cross-species tile waste, no
+    // over-launched blocks.
     //
     // Algorithm: counting-sort-style two-pass over the pre-enumerated
     // pair_cache_ populated in set_bgrid_batch().
     //   Pass 1: HContainer lookup -> stash hr_offset, count items per shape.
     //   Prefix sum: build the list of non-empty buckets + their flat offsets.
-    //   Pass 2: scatter into the flat gemm_* host arrays at each bucket's
-    //           slot, then one H2D copy and one vbatch launch per bucket.
+    //   Pass 2: scatter A/B/C pointers + lda/ldb/ldc into the flat host arrays
+    //           at each bucket's slot, then one H2D copy per array and one
+    //           vbatch launch per bucket. (m/n/k arrays are no longer
+    //           scattered -- the wrapper fills them on-device from the
+    //           scalar bucket shape.)
 
     std::array<int, NW_MAX * NW_MAX> counts{};
 
@@ -306,9 +309,6 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     auto* h_lda = gemm_lda_.get_host_ptr();
     auto* h_ldb = gemm_ldb_.get_host_ptr();
     auto* h_ldc = gemm_ldc_.get_host_ptr();
-    auto* h_m   = gemm_m_.get_host_ptr();
-    auto* h_n   = gemm_n_.get_host_ptr();
-    auto* h_k   = gemm_k_.get_host_ptr();
 
     CHECK_CUDA(cudaEventSynchronize(event_));
 
@@ -327,9 +327,6 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
         h_lda[pos] = p.phi_len_mgrid;
         h_ldb[pos] = p.phi_len_mgrid;
         h_ldc[pos] = p.nw2;
-        h_m[pos]   = p.nw1;
-        h_n[pos]   = p.nw2;
-        h_k[pos]   = mgrids_num_;
     }
 
     gemm_A_.copy_host_to_device_async(ap_num);
@@ -338,9 +335,6 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     gemm_lda_.copy_host_to_device_async(ap_num);
     gemm_ldb_.copy_host_to_device_async(ap_num);
     gemm_ldc_.copy_host_to_device_async(ap_num);
-    gemm_m_.copy_host_to_device_async(ap_num);
-    gemm_n_.copy_host_to_device_async(ap_num);
-    gemm_k_.copy_host_to_device_async(ap_num);
     CHECK_CUDA(cudaEventRecord(event_, stream_));
 
     for (const auto& b : buckets)
@@ -350,9 +344,7 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
         gemm_tn_vbatch<Real>(nw1,
                         nw2,
                         mgrids_num_,
-                        gemm_m_.get_device_ptr() + b.off,
-                        gemm_n_.get_device_ptr() + b.off,
-                        gemm_k_.get_device_ptr() + b.off,
+                        gemm_mnk_scratch_.get_device_ptr(),
                         gemm_A_.get_device_ptr() + b.off,
                         gemm_lda_.get_device_ptr() + b.off,
                         gemm_B_.get_device_ptr() + b.off,
@@ -414,9 +406,6 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
     auto* h_lda   = gemm_lda_.get_host_ptr();
     auto* h_ldb   = gemm_ldb_.get_host_ptr();
     auto* h_ldc   = gemm_ldc_.get_host_ptr();
-    auto* h_m     = gemm_m_.get_host_ptr();
-    auto* h_n     = gemm_n_.get_host_ptr();
-    auto* h_k     = gemm_k_.get_host_ptr();
     auto* h_alpha = gemm_alpha_.get_host_ptr();
 
     CHECK_CUDA(cudaEventSynchronize(event_));
@@ -436,9 +425,6 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
         h_lda[pos] = p.phi_len_mgrid;
         h_ldb[pos] = p.nw2;
         h_ldc[pos] = p.phi_len_mgrid;
-        h_m[pos]   = mgrids_num_;
-        h_n[pos]   = p.nw2;
-        h_k[pos]   = p.nw1;
         if (is_symm)
         {
             h_alpha[pos] = p.is_diag ? Real(1.0) : Real(2.0);
@@ -451,9 +437,6 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
     gemm_lda_.copy_host_to_device_async(ap_num);
     gemm_ldb_.copy_host_to_device_async(ap_num);
     gemm_ldc_.copy_host_to_device_async(ap_num);
-    gemm_m_.copy_host_to_device_async(ap_num);
-    gemm_n_.copy_host_to_device_async(ap_num);
-    gemm_k_.copy_host_to_device_async(ap_num);
     if (is_symm)
     {
         // if is_symm == false, gemm_alpha_ is always 1.0 and is skipped on device
@@ -469,9 +452,7 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
         gemm_nn_vbatch<Real>(mgrids_num_,
                         nw2,
                         nw1,
-                        gemm_m_.get_device_ptr() + b.off,
-                        gemm_n_.get_device_ptr() + b.off,
-                        gemm_k_.get_device_ptr() + b.off,
+                        gemm_mnk_scratch_.get_device_ptr(),
                         gemm_A_.get_device_ptr() + b.off,
                         gemm_lda_.get_device_ptr() + b.off,
                         gemm_B_.get_device_ptr() + b.off,

@@ -34,38 +34,64 @@ void gemm_nn_vbatch(
     int batchCount, cudaStream_t stream,
     const T* alpha)
 {
-    // 3x2 ladder (6 instantiations), tuned for A100:
-    //   n (nw2 axis) -> BLK_M in {8, 16, 32}
-    //   m (bxyz axis) -> BLK_N in {32, 64}      (capped at 64)
-    //   BLK_K fixed at 16                        (nw1 axis)
+    // 3x4 ladder (12 instantiations), tuned for Ampere:
+    //   n (nw2 axis)  -> BLK_M in {8, 16, 32}         (threshold ladder)
+    //   m (bxyz axis) -> BLK_N in {16, 32, 48, 64}    (waste-minimizing)
+    //   BLK_K fixed at 16                             (nw1 axis, <=13 here)
     //
-    // BLK_N is capped at 64 because A100's 108 SMs benefit more from a larger
-    // block count than from a single oversized tile per matrix. bxyz > 64
-    // wraps into ceil(bxyz/64) N-tiles; total flop waste in the tail tile is
-    // identical to a BLK_N=128 single-tile layout, but SM occupancy roughly
-    // doubles (~11 KB shmem vs ~21 KB, ~100 regs/thread vs ~150), so latency
-    // hiding improves.
+    // After the A/B swap in vbatched_gemm_nn_impl, the kernel's N-axis covers
+    // the bxyz dimension of the output C. Because M = bxyz is a runtime
+    // scalar that varies across benchmark cases (27, 48, 64, 80, 100, 125)
+    // and the register tile THR_N = BLK_N / DIM_Y is unrolled at compile
+    // time, a BLK_N that does not evenly divide bxyz produces fully-computed
+    // but mostly-masked tiles -- pure FMA waste on the under-full last
+    // grid-y block.
     //
-    // Block shape is DIM_X=8 x DIM_Y=16 (128 threads). Every (BLK_M, BLK_N)
-    // pair satisfies BLK_M % DIM_X == 0 and BLK_N % DIM_Y == 0, so all six
-    // combinations compile to valid kernels. Boundary tiles that exceed the
-    // per-matrix M/N are masked out by the in-kernel store guard (harmless
-    // here since exact shapes leave at most one boundary tile per axis).
+    // BLK_N is chosen by minimizing (tail_waste, grid_blocks)
+    // lexicographically over the candidate set. This lands bxyz=48 on
+    // BLK_N=48 (1 block, 0 waste) and bxyz=80/100 on BLK_N=16 (many blocks,
+    // 0 waste), while bxyz=64/125 still pick BLK_N=64 and bxyz=27 still
+    // picks BLK_N=32 (same 5-row tail as BLK_N=16 but 1 block instead of 2).
+    // All four BLK_N values satisfy BLK_N % DIM_Y = BLK_N % DIM_YB = 0, so
+    // the shmem-load loops and register tiles compile without changes.
     #define NN_DISPATCH(BLK_M_, BLK_N_)                                    \
         vbatched_gemm_nn_impl<T, 8, 16, BLK_M_, BLK_N_, 16, 8, 16, 8, 16>( \
             m, n, k,                                                       \
             A_array_d, lda_d, B_array_d, ldb_d,                            \
             C_array_d, ldc_d, batchCount, stream, alpha)
 
-    if (n <= 8) {
-        if (m <= 32) { NN_DISPATCH( 8, 32); }
-        else         { NN_DISPATCH( 8, 64); }
-    } else if (n <= 16) {
-        if (m <= 32) { NN_DISPATCH(16, 32); }
-        else         { NN_DISPATCH(16, 64); }
-    } else {
-        if (m <= 32) { NN_DISPATCH(32, 32); }
-        else         { NN_DISPATCH(32, 64); }
+    const int blk_m_tag = (n <= 8) ? 0 : (n <= 16) ? 1 : 2;
+
+    int blk_n_tag = 0;
+    {
+        constexpr int cands[4] = {16, 32, 48, 64};
+        int best_waste  = ((m + cands[0] - 1) / cands[0]) * cands[0] - m;
+        int best_blocks = (m + cands[0] - 1) / cands[0];
+        for (int i = 1; i < 4; ++i) {
+            const int blocks = (m + cands[i] - 1) / cands[i];
+            const int waste  = blocks * cands[i] - m;
+            if (waste < best_waste ||
+                (waste == best_waste && blocks < best_blocks)) {
+                best_waste  = waste;
+                best_blocks = blocks;
+                blk_n_tag   = i;
+            }
+        }
+    }
+
+    switch (blk_m_tag * 4 + blk_n_tag) {
+        case  0: NN_DISPATCH( 8, 16); break;
+        case  1: NN_DISPATCH( 8, 32); break;
+        case  2: NN_DISPATCH( 8, 48); break;
+        case  3: NN_DISPATCH( 8, 64); break;
+        case  4: NN_DISPATCH(16, 16); break;
+        case  5: NN_DISPATCH(16, 32); break;
+        case  6: NN_DISPATCH(16, 48); break;
+        case  7: NN_DISPATCH(16, 64); break;
+        case  8: NN_DISPATCH(32, 16); break;
+        case  9: NN_DISPATCH(32, 32); break;
+        case 10: NN_DISPATCH(32, 48); break;
+        case 11: NN_DISPATCH(32, 64); break;
     }
 
     #undef NN_DISPATCH

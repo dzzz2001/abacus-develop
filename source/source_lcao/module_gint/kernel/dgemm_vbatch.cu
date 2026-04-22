@@ -60,7 +60,10 @@ void gemm_nn_vbatch(
             A_array_d, lda_d, B_array_d, ldb_d,                            \
             C_array_d, ldc_d, batchCount, stream, alpha)
 
-    const int blk_m_tag = (n <= 8) ? 0 : (n <= 16) ? 1 : 2;
+    // VERIFICATION PATCH 2026-04-22: extend BLK_M ladder to include 48 so
+    // nw2 in (32, 48] (e.g. nw2=44 extended-basis atoms) lands on a 1-tile
+    // grid with ~10% waste instead of a 2-tile BLK_M=32 grid with ~45% waste.
+    const int blk_m_tag = (n <= 8) ? 0 : (n <= 16) ? 1 : (n <= 32) ? 2 : 3;
 
     int blk_n_tag = 0;
     {
@@ -92,6 +95,10 @@ void gemm_nn_vbatch(
         case  9: NN_DISPATCH(32, 32); break;
         case 10: NN_DISPATCH(32, 48); break;
         case 11: NN_DISPATCH(32, 64); break;
+        case 12: NN_DISPATCH(48, 16); break;
+        case 13: NN_DISPATCH(48, 32); break;
+        case 14: NN_DISPATCH(48, 48); break;
+        case 15: NN_DISPATCH(48, 64); break;
     }
 
     #undef NN_DISPATCH
@@ -126,18 +133,34 @@ void gemm_tn_vbatch(
             A_array_d, lda_d, B_array_d, ldb_d,                         \
             C_array_d, ldc_d, batchCount, stream, alpha)
 
-    if (n <= 8) {
-        if      (m <=  8) { TN_DISPATCH( 8,  8); }
-        else if (m <= 16) { TN_DISPATCH( 8, 16); }
-        else              { TN_DISPATCH( 8, 32); }
-    } else if (n <= 16) {
-        if      (m <=  8) { TN_DISPATCH(16,  8); }
-        else if (m <= 16) { TN_DISPATCH(16, 16); }
-        else              { TN_DISPATCH(16, 32); }
-    } else {
-        if      (m <=  8) { TN_DISPATCH(32,  8); }
-        else if (m <= 16) { TN_DISPATCH(32, 16); }
-        else              { TN_DISPATCH(32, 32); }
+    // VERIFICATION PATCH 2026-04-22: extend both BLK_M and BLK_N ladders up
+    // to 48 so that nw in (32, 48] (extended-basis nw=44 atoms: Ti/Mn/Fe/Co/
+    // Ni/Cu/Zn/Zr/Ba) lands on a 1-tile grid per axis (48^2 cells for 44^2
+    // output, ~19% waste) instead of a 2-tile BLK_M=32 grid (64^2 cells,
+    // ~52% waste).
+    auto tag_for = [](int x) {
+        return (x <= 8) ? 0 : (x <= 16) ? 1 : (x <= 32) ? 2 : 3;
+    };
+    const int blk_m_tag = tag_for(n); // kernel's M-dim grid -> wrapper n
+    const int blk_n_tag = tag_for(m); // kernel's N-dim grid -> wrapper m
+
+    switch (blk_m_tag * 4 + blk_n_tag) {
+        case  0: TN_DISPATCH( 8,  8); break;
+        case  1: TN_DISPATCH( 8, 16); break;
+        case  2: TN_DISPATCH( 8, 32); break;
+        case  3: TN_DISPATCH( 8, 48); break;
+        case  4: TN_DISPATCH(16,  8); break;
+        case  5: TN_DISPATCH(16, 16); break;
+        case  6: TN_DISPATCH(16, 32); break;
+        case  7: TN_DISPATCH(16, 48); break;
+        case  8: TN_DISPATCH(32,  8); break;
+        case  9: TN_DISPATCH(32, 16); break;
+        case 10: TN_DISPATCH(32, 32); break;
+        case 11: TN_DISPATCH(32, 48); break;
+        case 12: TN_DISPATCH(48,  8); break;
+        case 13: TN_DISPATCH(48, 16); break;
+        case 14: TN_DISPATCH(48, 32); break;
+        case 15: TN_DISPATCH(48, 48); break;
     }
 
     #undef TN_DISPATCH

@@ -20,10 +20,8 @@ bgrids_phi_start_(BatchBigGrid::get_max_batch_size(), stream_, true),
 atoms_iat_(BatchBigGrid::get_max_atoms_num(), stream_, true),
 atoms_bgrids_rcoords_(BatchBigGrid::get_max_atoms_num(), stream_, true),
 atoms_phi_start_(BatchBigGrid::get_max_atoms_num(), stream_, true),
-mgrids_local_idx_batch_(BatchBigGrid::get_max_batch_size() 
+mgrids_local_idx_batch_(BatchBigGrid::get_max_batch_size()
     * BatchBigGrid::get_bgrid_info()->get_mgrids_num(), stream_, true),
-// device-only: wrapper fills on the GPU, so no pinned-host mirror needed.
-gemm_mnk_scratch_(3 * BatchBigGrid::get_max_atom_pairs_num(), stream_, false),
 gemm_lda_(BatchBigGrid::get_max_atom_pairs_num(), stream_, true),
 gemm_ldb_(BatchBigGrid::get_max_atom_pairs_num(), stream_, true),
 gemm_ldc_(BatchBigGrid::get_max_atom_pairs_num(), stream_, true),
@@ -344,7 +342,6 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
         gemm_tn_vbatch<Real>(nw1,
                         nw2,
                         mgrids_num_,
-                        gemm_mnk_scratch_.get_device_ptr(),
                         gemm_A_.get_device_ptr() + b.off,
                         gemm_lda_.get_device_ptr() + b.off,
                         gemm_B_.get_device_ptr() + b.off,
@@ -452,7 +449,6 @@ void PhiOperatorGpu<Real>::phi_mul_dm(
         gemm_nn_vbatch<Real>(mgrids_num_,
                         nw2,
                         nw1,
-                        gemm_mnk_scratch_.get_device_ptr(),
                         gemm_A_.get_device_ptr() + b.off,
                         gemm_lda_.get_device_ptr() + b.off,
                         gemm_B_.get_device_ptr() + b.off,

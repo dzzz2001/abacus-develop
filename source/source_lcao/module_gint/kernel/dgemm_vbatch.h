@@ -6,21 +6,14 @@
 //
 // Every (A_i, B_i, C_i) in the batch has exactly the same (m, n, k); the
 // caller (phi_operator_gpu.cu) enforces this by bucketing atom pairs on
-// (nw1, nw2). The scalars drive tile-ladder selection and grid sizing
-// directly -- there is no "max" approximation left.
-//
-// `mnk_scratch_d` is a device-only scratch buffer of length >= 3*batchCount.
-// The wrapper fills it with per-batchid M/N/K arrays (one fused fill kernel
-// per call) before launching the underlying template kernel, which still
-// indexes `M[batchid]` / `N[batchid]` / `K[batchid]` internally. Once
-// gemm_{nn,tn}_vbatch.cuh is updated to take scalar M/N/K, the scratch
-// parameter disappears and the fill launch with it.
+// (nw1, nw2). The scalars drive tile-ladder selection, grid sizing, and
+// flow all the way through the kernel -- there is no per-batchid M/N/K
+// indirection left.
 
 // C(batch) = alpha * A(batch) * B(batch) + C(batch)
 template<typename T>
 void gemm_nn_vbatch(
     int m, int n, int k,
-    int* mnk_scratch_d,
     const T* const* A_array_d, const int* lda_d,
     const T* const* B_array_d, const int* ldb_d,
     T** C_array_d, const int* ldc_d,
@@ -31,7 +24,6 @@ void gemm_nn_vbatch(
 template<typename T>
 void gemm_tn_vbatch(
     int m, int n, int k,
-    int* mnk_scratch_d,
     const T* const* A_array_d, const int* lda_d,
     const T* const* B_array_d, const int* ldb_d,
     T** C_array_d, const int* ldc_d,

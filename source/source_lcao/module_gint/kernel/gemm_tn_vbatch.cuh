@@ -262,9 +262,9 @@ template <typename T,
           int DIM_YA,
           int DIM_XB,
           int DIM_YB>
-static __global__ void vbatched_gemm_nt_kernel(const int* M,
-                                              const int* N,
-                                              const int* K,
+static __global__ void vbatched_gemm_nt_kernel(int M,
+                                              int N,
+                                              int K,
                                               const T* const* global_A_array,
                                               const int* global_lda,
                                               const T* const* global_B_array,
@@ -277,14 +277,6 @@ static __global__ void vbatched_gemm_nt_kernel(const int* M,
     T* shared_mem = reinterpret_cast<T*>(smem);
 
     int batchid = blockIdx.z;
-    int local_M = (int)M[batchid];
-    int local_N = (int)N[batchid];
-    int local_K = (int)K[batchid];
-
-    if (blockIdx.x >= (local_M + BLK_M - 1) / BLK_M)
-        return;
-    if (blockIdx.y >= (local_N + BLK_N - 1) / BLK_N)
-        return;
 
     int shared_lda = BLK_M + 1;
     int shared_ldb = BLK_K + 1;
@@ -306,9 +298,9 @@ static __global__ void vbatched_gemm_nt_kernel(const int* M,
                            DIM_XB,
                            DIM_YB,
                            (BLK_M / DIM_X),
-                           (BLK_N / DIM_Y)>(local_M,
-                                            local_N,
-                                            local_K,
+                           (BLK_N / DIM_Y)>(M,
+                                            N,
+                                            K,
                                             global_A_array[batchid],
                                             (int)global_lda[batchid],
                                             global_B_array[batchid],
@@ -342,12 +334,9 @@ static __global__ void vbatched_gemm_nt_kernel(const int* M,
  * matrix B.
  * @tparam DIM_YB The number of threads in the y-dimension used for loading
  * matrix B.
- * @param max_m The maximum number of rows in the matrices.
- * @param max_n The maximum number of columns in the matrices.
- * @param m An array of batch sizes for the number of rows in each matrix.
- * @param n An array of batch sizes for the number of columns in each matrix.
- * @param k An array of batch sizes for the number of elements in each matrix
- * along the K dimension.
+ * @param m The number of rows in each matrix (same across the batch).
+ * @param n The number of columns in each matrix (same across the batch).
+ * @param k The number of elements along the K dimension (same across the batch).
  * @param global_A_array An array of pointers to the input matrices A.
  * @param global_lda An array of leading dimensions for the input matrices A.
  * @param global_B_array An array of pointers to the input matrices B.
@@ -394,11 +383,9 @@ template <typename T,
           int DIM_YA,
           int DIM_XB,
           int DIM_YB>
-void vbatched_gemm_tn_impl(int max_m,
-                           int max_n,
-                           const int* m,
-                           const int* n,
-                           const int* k,
+void vbatched_gemm_tn_impl(int m,
+                           int n,
+                           int k,
                            const T* const* global_A_array,
                            const int* global_lda,
                            const T* const* global_B_array,
@@ -422,8 +409,8 @@ void vbatched_gemm_tn_impl(int max_m,
     for (int i = 0; i < batchCount; i += max_batch_count)
     {
         const int ibatch = min(max_batch_count, batchCount - i);
-        dim3 dimGrid(ceil_div(max_n, BLK_M),
-                     ceil_div(max_m, BLK_N),
+        dim3 dimGrid(ceil_div(n, BLK_M),
+                     ceil_div(m, BLK_N),
                      ibatch);
         const T* alpha_tmp = nullptr;
         if (alpha != nullptr)
@@ -442,7 +429,7 @@ void vbatched_gemm_tn_impl(int max_m,
                                 DIM_XB,
                                 DIM_YB>
             <<<dimGrid, dimBlock, shared_mem_size, stream>>>(
-                n + i, m + i, k + i,
+                n, m, k,
                 global_B_array + i, global_ldb + i,
                 global_A_array + i, global_lda + i,
                 global_C_array + i, global_ldc + i,

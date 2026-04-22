@@ -124,14 +124,6 @@ private:
     // Mapping of the index of meshgrid in the batch of biggrids to the index of meshgrid in the local cell
     CudaMemWrapper<int> mgrids_local_idx_batch_;
 
-    // Device-only scratch of length 3 * max_atom_pairs, used by the
-    // gemm_{nn,tn}_vbatch wrappers as per-batchid M/N/K arrays. Since every
-    // pair in a homogeneous bucket has identical (m, n, k), we no longer
-    // scatter these host-side or H2D-copy them; the wrapper fills this
-    // buffer on the GPU with one fused kernel per bucket. Once
-    // gemm_{nn,tn}_vbatch.cuh is updated to accept scalar M/N/K, this
-    // buffer disappears.
-    mutable CudaMemWrapper<int> gemm_mnk_scratch_;
     mutable CudaMemWrapper<int> gemm_lda_;
     mutable CudaMemWrapper<int> gemm_ldb_;
     mutable CudaMemWrapper<int> gemm_ldc_;

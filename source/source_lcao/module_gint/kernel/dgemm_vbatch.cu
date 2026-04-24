@@ -117,11 +117,10 @@ void gemm_nn_vbatch(
     int batchCount, cudaStream_t stream,
     const T* alpha)
 {
-    // Phase V4 (FP64 only): route the largest shapes to a 256-thread
-    // 64x64 big tile. The big tile keeps more independent FMA chains in
-    // flight per block, which V100's strong FP64 pipe needs (Little's
-    // Law: ~300 in-flight FP64 FMAs per SM). The FP32 dispatch path is
-    // left untouched (3090 proxy already matches Iter 02 perf).
+    // FP64 big tile (256-thread 64x64). Little's Law says V100 needs
+    // ~300 in-flight FP64 FMAs/SM to saturate; the 16x16-thread 4x4
+    // register tile puts 4096 FMAs/step/block in flight, so one block
+    // already covers the pipe and the second one hides LDS latency.
     if (nn_try_big_tile_(m, n, k,
                          A_array_d, lda_d, B_array_d, ldb_d,
                          C_array_d, ldc_d, batchCount, stream, alpha))
@@ -129,71 +128,66 @@ void gemm_nn_vbatch(
         return;
     }
 
-    // 4x4 ladder (16 instantiations), tuned for Ampere:
-    //   n (nw2 axis)  -> BLK_M in {8, 16, 32, 48}     (threshold ladder)
-    //   m (bxyz axis) -> BLK_N in {16, 32, 48, 64}    (waste-minimizing)
-    //   BLK_K fixed at 16                             (nw1 axis, <=13 here)
+    // 4 x 2 ladder (8 instantiations), tuned for V100 / A100:
+    //   n (nw2 axis)  -> BLK_M in {8, 16, 32, 48}    (smallest full-cover)
+    //   m (bxyz axis) -> BLK_N in {32, 64}           (larger-is-better)
+    //   BLK_K fixed at 16                             (nw1 axis, <=27)
+    //   DIM_X=8, DIM_Y=16 (128 threads/block, unchanged)
     //
-    // After the A/B swap in vbatched_gemm_nn_impl, the kernel's N-axis covers
-    // the bxyz dimension of the output C. Because M = bxyz is a runtime
-    // scalar that varies across benchmark cases (27, 48, 64, 80, 100, 125)
-    // and the register tile THR_N = BLK_N / DIM_Y is unrolled at compile
-    // time, a BLK_N that does not evenly divide bxyz produces fully-computed
-    // but mostly-masked tiles -- pure FMA waste on the under-full last
-    // grid-y block.
+    // Philosophy vs the prior tail-waste-min ladder:
     //
-    // BLK_N is chosen by minimizing (tail_waste, grid_blocks)
-    // lexicographically over the candidate set. This lands bxyz=48 on
-    // BLK_N=48 (1 block, 0 waste) and bxyz=80/100 on BLK_N=16 (many blocks,
-    // 0 waste), while bxyz=64/125 still pick BLK_N=64 and bxyz=27 still
-    // picks BLK_N=32 (same 5-row tail as BLK_N=16 but 1 block instead of 2).
-    // All four BLK_N values satisfy BLK_N % DIM_Y = BLK_N % DIM_YB = 0, so
-    // the shmem-load loops and register tiles compile without changes.
+    // That ladder picked BLK_N by minimizing (tail_waste, grid_blocks)
+    // lexicographically. It's the right objective on sm_86 consumer
+    // Ampere (RTX 3090) where FP64 is 1/64 of FP32 -- every masked FMA
+    // there is a full FP64-pipe-bound cycle, so minimizing launched
+    // cells dominates.
+    //
+    // On V100 (sm_70) / A100 (sm_80) FP64 is a first-class pipe
+    // (7.8 / 9.7 TFLOPS peak, ridge ~6-9 FLOP/B), and the inner loop
+    // is LDS-bound for the nw1/nw2 ranges we see (ncu confirms L1/TEX
+    // >= 95% on these tiles). The right objective flips to maximizing
+    // per-block LDS reuse. The wide-LDS inner loop delivers
+    //     FMA / LDS  =  VK * THR_M * THR_N / (THR_M + THR_N)
+    // to the shmem pipe; for the scalar-K-tail regime (nw1 < BLK_K,
+    // hit by nw1 <= 16 on NN) the VK factor drops out but the ratio
+    // shape is the same. Rough V100 FP64 target ratio is 2 FMAs/LDS
+    // (32 FP64-FMA/cycle/SM vs LDS.64 delivering one serving/cycle).
+    //
+    // At DIM=8x16, BLK_N=64 gives THR_N=4, THR_M=4 -> FMA/LDS = 2.0
+    // (matched). BLK_N=32 drops it to 1.33 (LDS-bound, FP64 headroom
+    // unused). So BLK_N=64 is strictly better for every bxyz >= 48;
+    // only bxyz=27 still prefers BLK_N=32 to cap the N-axis mask waste
+    // below 50%. The intermediate rungs {16, 48} are dropped: {32, 64}
+    // covers bxyz in {27, 48, 64, 80, 100, 125} at its LDS-optimal
+    // point in every case.
+    //
+    // BLK_M retains four rungs: the nw2 axis is tiny (<=44 in practice)
+    // and a wrong-BLK_M costs twice -- masked FMAs *and* a wider sA
+    // row load per K-step. The 48-rung is kept specifically for nw2=44
+    // extended-basis atoms (Ti/Mn/Fe/Co/Ni/Cu/Zn/Zr/Ba); otherwise the
+    // 32-rung falls off to a 2-tile grid at ~31% total waste.
+    //
+    // All eight (BLK_M, BLK_N) satisfy the kernel's BLK_M % DIM_X=0
+    // and BLK_N % DIM_Y=0 constraints, and the tiny-tile {BLK_M=8,
+    // BLK_N=32} rung still has THR_M=1 which compiles cleanly.
     #define NN_DISPATCH(BLK_M_, BLK_N_)                                    \
         vbatched_gemm_nn_impl<T, 8, 16, BLK_M_, BLK_N_, 16, 8, 16, 8, 16>( \
             m, n, k,                                                       \
             A_array_d, lda_d, B_array_d, ldb_d,                            \
             C_array_d, ldc_d, batchCount, stream, alpha)
 
-    // VERIFICATION PATCH 2026-04-22: extend BLK_M ladder to include 48 so
-    // nw2 in (32, 48] (e.g. nw2=44 extended-basis atoms) lands on a 1-tile
-    // grid with ~10% waste instead of a 2-tile BLK_M=32 grid with ~45% waste.
     const int blk_m_tag = (n <= 8) ? 0 : (n <= 16) ? 1 : (n <= 32) ? 2 : 3;
+    const int blk_n_tag = (m < 48) ? 0 : 1;  // {32, 64}
 
-    int blk_n_tag = 0;
-    {
-        constexpr int cands[4] = {16, 32, 48, 64};
-        int best_waste  = ((m + cands[0] - 1) / cands[0]) * cands[0] - m;
-        int best_blocks = (m + cands[0] - 1) / cands[0];
-        for (int i = 1; i < 4; ++i) {
-            const int blocks = (m + cands[i] - 1) / cands[i];
-            const int waste  = blocks * cands[i] - m;
-            if (waste < best_waste ||
-                (waste == best_waste && blocks < best_blocks)) {
-                best_waste  = waste;
-                best_blocks = blocks;
-                blk_n_tag   = i;
-            }
-        }
-    }
-
-    switch (blk_m_tag * 4 + blk_n_tag) {
-        case  0: NN_DISPATCH( 8, 16); break;
-        case  1: NN_DISPATCH( 8, 32); break;
-        case  2: NN_DISPATCH( 8, 48); break;
-        case  3: NN_DISPATCH( 8, 64); break;
-        case  4: NN_DISPATCH(16, 16); break;
-        case  5: NN_DISPATCH(16, 32); break;
-        case  6: NN_DISPATCH(16, 48); break;
-        case  7: NN_DISPATCH(16, 64); break;
-        case  8: NN_DISPATCH(32, 16); break;
-        case  9: NN_DISPATCH(32, 32); break;
-        case 10: NN_DISPATCH(32, 48); break;
-        case 11: NN_DISPATCH(32, 64); break;
-        case 12: NN_DISPATCH(48, 16); break;
-        case 13: NN_DISPATCH(48, 32); break;
-        case 14: NN_DISPATCH(48, 48); break;
-        case 15: NN_DISPATCH(48, 64); break;
+    switch (blk_m_tag * 2 + blk_n_tag) {
+        case 0: NN_DISPATCH( 8, 32); break;
+        case 1: NN_DISPATCH( 8, 64); break;
+        case 2: NN_DISPATCH(16, 32); break;
+        case 3: NN_DISPATCH(16, 64); break;
+        case 4: NN_DISPATCH(32, 32); break;
+        case 5: NN_DISPATCH(32, 64); break;
+        case 6: NN_DISPATCH(48, 32); break;
+        case 7: NN_DISPATCH(48, 64); break;
     }
 
     #undef NN_DISPATCH
@@ -208,9 +202,10 @@ void gemm_tn_vbatch(
     int batchCount, cudaStream_t stream,
     const T* alpha)
 {
-    // Phase V4 (FP64 only): 256-thread 64x64 big tile for nw1 >= 48 &&
-    // nw2 >= 48 (axis flip vs NN: kernel M is wrapper n = nw2, kernel N
-    // is wrapper m = nw1, so the per-axis check is symmetric at 48).
+    // FP64 big tile (256-thread 64x64). Symmetric n>=48 && m>=48
+    // because, after the kernel's A/B swap, both output axes are small
+    // (kernel M = wrapper n = nw2, kernel N = wrapper m = nw1) and
+    // neither is intrinsically larger than the other.
     if (tn_try_big_tile_(m, n, k,
                          A_array_d, lda_d, B_array_d, ldb_d,
                          C_array_d, ldc_d, batchCount, stream, alpha))
@@ -218,31 +213,41 @@ void gemm_tn_vbatch(
         return;
     }
 
-    // 4x4 ladder (16 instantiations), tuned for A100:
+    // 4 x 4 ladder (16 instantiations), tuned for V100 / A100:
     //   n (nw2 axis) -> BLK_M in {8, 16, 32, 48}
     //   m (nw1 axis) -> BLK_N in {8, 16, 32, 48}
     //   BLK_K fixed at 32                        (bxyz axis)
+    //   DIM_X=8, DIM_Y=8 (64 threads/block)
     //
-    // BLK_K is not split by bxyz: the K-axis tail wastes only shmem loads
-    // (not FMAs), so a single BLK_K keeps the template table small while
-    // still covering bxyz in [27, 125] via ceil(bxyz/32) K-tiles. bxyz=27
-    // fits in one tile (5/32 = 16% load waste); larger bxyz wraps into
-    // 2-4 K-tiles with modest __syncthreads() overhead.
+    // Smallest-covering-tile selection, symmetric in both axes. This
+    // is *not* the same choice as NN -- on TN both output axes are
+    // small (nw1, nw2 in {4, 9, 13, 27, 44}) and neither is long
+    // enough to amortize the "prefer bigger" BLK_N logic from NN.
+    // Doubling BLK_* here would just push nw=4/9/13 cases off their
+    // exact-fit tile into a 2-4x mask-waste regime with no LDS-reuse
+    // upside (both axes of the output are already covered by one tile
+    // in this regime; a bigger tile just adds masked FMAs).
     //
-    // Block shape is DIM_X=8 x DIM_Y=8 (64 threads). Every (BLK_M, BLK_N)
-    // pair is divisible by DIM_X/DIM_Y/DIM_XA/DIM_YA/DIM_XB/DIM_YB = 8,
-    // so all nine combinations compile to valid kernels.
+    // The 48-rung covers nw=44 extended-basis atoms (Ti/Mn/Fe/Co/Ni/
+    // Cu/Zn/Zr/Ba) at ~8% mask waste per axis; without it those cases
+    // fall to a 2-tile BLK=32 grid at ~52% cell-launch waste.
+    //
+    // BLK_K=32 (larger than NN's 16) because K = bxyz here is large
+    // (27-125) and the K-axis tail wastes only shmem loads, never
+    // masked FMAs on the output -- bxyz <= 32 fits in one K-tile,
+    // larger bxyz wraps into 2-4 K-tiles. The modest __syncthreads()
+    // overhead from more K-tiles is cheaper than doubling BLK_K and
+    // forcing a re-tune of the `ra/rb` double-buffer register budget.
+    //
+    // All 16 (BLK_M, BLK_N) pairs are divisible by
+    // DIM_X/DIM_Y/DIM_XA/DIM_YA/DIM_XB/DIM_YB = 8, so every
+    // instantiation compiles to a valid kernel.
     #define TN_DISPATCH(BLK_M_, BLK_N_)                                 \
         vbatched_gemm_tn_impl<T, 8, 8, BLK_M_, BLK_N_, 32, 8, 8, 8, 8>( \
             m, n, k,                                                    \
             A_array_d, lda_d, B_array_d, ldb_d,                         \
             C_array_d, ldc_d, batchCount, stream, alpha)
 
-    // VERIFICATION PATCH 2026-04-22: extend both BLK_M and BLK_N ladders up
-    // to 48 so that nw in (32, 48] (extended-basis nw=44 atoms: Ti/Mn/Fe/Co/
-    // Ni/Cu/Zn/Zr/Ba) lands on a 1-tile grid per axis (48^2 cells for 44^2
-    // output, ~19% waste) instead of a 2-tile BLK_M=32 grid (64^2 cells,
-    // ~52% waste).
     auto tag_for = [](int x) {
         return (x <= 8) ? 0 : (x <= 16) ? 1 : (x <= 32) ? 2 : 3;
     };

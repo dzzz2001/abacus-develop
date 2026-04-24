@@ -4,6 +4,89 @@
 #include "source_base/module_device/device.h"
 
 // ----------------------------------------------------------------------------
+// FP64-only big-tile dispatch (Phase V4)
+// ----------------------------------------------------------------------------
+// Pattern mirrors the C++11-compatible overload trick used in
+// gint_vl.cpp / gint_rho.cpp (note in those files: "C++11-compatible
+// alternative to if constexpr"). The non-template double overload is the
+// preferred candidate when T = double; the template fallback returns
+// false for every other dtype so the FP32 path stays untouched (per the
+// V100 plan: 3090 FP32 was the test proxy and the big tile was not
+// validated on FP32).
+// Returns true if the big tile dispatched (caller should `return`).
+// ----------------------------------------------------------------------------
+
+inline bool nn_try_big_tile_(
+    int m, int n, int k,
+    const double* const* A_array_d, const int* lda_d,
+    const double* const* B_array_d, const int* ldb_d,
+    double** C_array_d, const int* ldc_d,
+    int batchCount, cudaStream_t stream, const double* alpha)
+{
+    // 16x16 threads = 256, BLK_M=BLK_N=64, BLK_K=16. THR_M = THR_N = 4
+    // -> 16 FMAs per inner step, 32 with VK=2. Loaders use DIM_*A=DIM_*B=16.
+    if (n >= 48 && m >= 64) {
+        vbatched_gemm_nn_impl<double,
+                              /*DIM_X */ 16, /*DIM_Y */ 16,
+                              /*BLK_M */ 64, /*BLK_N */ 64, /*BLK_K*/ 16,
+                              /*DIM_XA*/ 16, /*DIM_YA*/ 16,
+                              /*DIM_XB*/ 16, /*DIM_YB*/ 16>(
+            m, n, k,
+            A_array_d, lda_d, B_array_d, ldb_d,
+            C_array_d, ldc_d, batchCount, stream, alpha);
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+inline bool nn_try_big_tile_(
+    int /*m*/, int /*n*/, int /*k*/,
+    const T* const* /*A*/, const int* /*lda*/,
+    const T* const* /*B*/, const int* /*ldb*/,
+    T** /*C*/, const int* /*ldc*/,
+    int /*batch*/, cudaStream_t /*stream*/, const T* /*alpha*/)
+{
+    return false;
+}
+
+inline bool tn_try_big_tile_(
+    int m, int n, int k,
+    const double* const* A_array_d, const int* lda_d,
+    const double* const* B_array_d, const int* ldb_d,
+    double** C_array_d, const int* ldc_d,
+    int batchCount, cudaStream_t stream, const double* alpha)
+{
+    // Axis flip vs NN: kernel M = wrapper n = nw2, kernel N = wrapper m = nw1.
+    // Threshold is symmetric at 48 in both axes.
+    // BLK_K=16 (not 32 as in the existing TN ladder) keeps the big-tile shmem
+    // footprint at ~18 KB/block so 4 blocks/SM still fit on V100's 96 KB.
+    if (n >= 48 && m >= 48) {
+        vbatched_gemm_tn_impl<double,
+                              /*DIM_X */ 16, /*DIM_Y */ 16,
+                              /*BLK_M */ 64, /*BLK_N */ 64, /*BLK_K*/ 16,
+                              /*DIM_XA*/ 16, /*DIM_YA*/ 16,
+                              /*DIM_XB*/ 16, /*DIM_YB*/ 16>(
+            m, n, k,
+            A_array_d, lda_d, B_array_d, ldb_d,
+            C_array_d, ldc_d, batchCount, stream, alpha);
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+inline bool tn_try_big_tile_(
+    int /*m*/, int /*n*/, int /*k*/,
+    const T* const* /*A*/, const int* /*lda*/,
+    const T* const* /*B*/, const int* /*ldb*/,
+    T** /*C*/, const int* /*ldc*/,
+    int /*batch*/, cudaStream_t /*stream*/, const T* /*alpha*/)
+{
+    return false;
+}
+
+// ----------------------------------------------------------------------------
 // Shape-exact dispatch
 // ----------------------------------------------------------------------------
 //
@@ -34,8 +117,20 @@ void gemm_nn_vbatch(
     int batchCount, cudaStream_t stream,
     const T* alpha)
 {
-    // 3x4 ladder (12 instantiations), tuned for Ampere:
-    //   n (nw2 axis)  -> BLK_M in {8, 16, 32}         (threshold ladder)
+    // Phase V4 (FP64 only): route the largest shapes to a 256-thread
+    // 64x64 big tile. The big tile keeps more independent FMA chains in
+    // flight per block, which V100's strong FP64 pipe needs (Little's
+    // Law: ~300 in-flight FP64 FMAs per SM). The FP32 dispatch path is
+    // left untouched (3090 proxy already matches Iter 02 perf).
+    if (nn_try_big_tile_(m, n, k,
+                         A_array_d, lda_d, B_array_d, ldb_d,
+                         C_array_d, ldc_d, batchCount, stream, alpha))
+    {
+        return;
+    }
+
+    // 4x4 ladder (16 instantiations), tuned for Ampere:
+    //   n (nw2 axis)  -> BLK_M in {8, 16, 32, 48}     (threshold ladder)
     //   m (bxyz axis) -> BLK_N in {16, 32, 48, 64}    (waste-minimizing)
     //   BLK_K fixed at 16                             (nw1 axis, <=13 here)
     //
@@ -113,9 +208,19 @@ void gemm_tn_vbatch(
     int batchCount, cudaStream_t stream,
     const T* alpha)
 {
-    // 3x3 ladder (9 instantiations), tuned for A100:
-    //   n (nw2 axis) -> BLK_M in {8, 16, 32}
-    //   m (nw1 axis) -> BLK_N in {8, 16, 32}
+    // Phase V4 (FP64 only): 256-thread 64x64 big tile for nw1 >= 48 &&
+    // nw2 >= 48 (axis flip vs NN: kernel M is wrapper n = nw2, kernel N
+    // is wrapper m = nw1, so the per-axis check is symmetric at 48).
+    if (tn_try_big_tile_(m, n, k,
+                         A_array_d, lda_d, B_array_d, ldb_d,
+                         C_array_d, ldc_d, batchCount, stream, alpha))
+    {
+        return;
+    }
+
+    // 4x4 ladder (16 instantiations), tuned for A100:
+    //   n (nw2 axis) -> BLK_M in {8, 16, 32, 48}
+    //   m (nw1 axis) -> BLK_N in {8, 16, 32, 48}
     //   BLK_K fixed at 32                        (bxyz axis)
     //
     // BLK_K is not split by bxyz: the K-axis tail wastes only shmem loads

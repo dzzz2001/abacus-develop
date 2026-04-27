@@ -55,6 +55,22 @@ if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
+# Standalone CUDA microbench for the batched-GEMM dispatchers
+# (gemm_nn_vbatch / gemm_tn_vbatch). Built whenever USE_CUDA is on, so it's
+# available without BUILD_TESTING. Compiles dgemm_vbatch.cu into its own
+# translation unit so it doesn't link against the full gint library — keeps
+# iteration cheap and isolates the kernel under test.
+if(USE_CUDA)
+  add_executable(gint_vbatch_microbench
+      test/test_gemm_vbatch.cu
+      kernel/dgemm_vbatch.cu)
+  target_include_directories(gint_vbatch_microbench
+      PRIVATE ${CMAKE_SOURCE_DIR}/source)
+  target_link_libraries(gint_vbatch_microbench PRIVATE CUDA::cudart)
+  set_target_properties(gint_vbatch_microbench PROPERTIES
+      CUDA_SEPARABLE_COMPILATION OFF)
+endif()
+
 if(ENABLE_COVERAGE)
   add_coverage(gint)
 endif()

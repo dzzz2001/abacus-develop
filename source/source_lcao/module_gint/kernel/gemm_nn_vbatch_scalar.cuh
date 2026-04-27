@@ -1,5 +1,5 @@
-#ifndef GEMM_TN_VBATCH_CUH
-#define GEMM_TN_VBATCH_CUH
+#ifndef GEMM_NN_VBATCH_SCALAR_CUH
+#define GEMM_NN_VBATCH_SCALAR_CUH
 #include <assert.h> // for assert
 #include <cublas_v2.h>
 #include <cuda.h> // for CUDA_VERSION
@@ -12,15 +12,28 @@
 #include "source_base/module_device/device_check.h"
 #include "source_base/module_device/kernel_compat.h"
 
-// V1 K-inner shmem layout (matches gemm_nn_vbatch.cuh):
+// V1 K-inner shmem layout
 //   sA(m, k) = sA[m * slda + k]   row-major in M, K-inner; slda = BLK_K + PAD
 //   sB(k, n) = sB[n * sldb + k]   col-major in N, K-inner; sldb = BLK_K + PAD
-// PAD comes from gemm_vec_traits<T> (FP32: +4, FP64: +2) and makes the
-// stride 16-byte aligned + bank-conflict-free for warp-wide LDS.
-// See gemm_nn_vbatch.cuh for the full Phase V3 bank-conflict audit table;
-// the TN inner loop uses the same indexing pattern, so the same analysis
-// applies (the only structural difference is sB's load loop, which writes
-// to the same K-inner storage layout).
+// Both layouts make the inner loop read VK consecutive K elements per LDS,
+// turning one scalar LDS-per-FMA into one 16-byte LDS-per-VK-FMAs.
+// PAD comes from gemm_vec_traits<T>::PAD (FP32: +4, FP64: +2) and is what
+// makes slda/sldb 16-byte aligned for LDS.{64,128}.
+//
+// Phase V3 bank-conflict audit (sA inner-loop read, idx-strided lanes):
+//   FP64, DIM_X= 8 (8x16 thread tiles): slda=BLK_K+2 -> 8 lanes at
+//     stride 4 banks each side -> banks {0,4,...,28} disjoint -> 0 conflicts.
+//   FP32, DIM_X= 8 (8x16 thread tiles): slda=BLK_K+4 -> 8 lanes at
+//     stride 4 banks (4-bank vec) -> disjoint -> 0 conflicts.
+//   FP64, DIM_X=16 (V2 16x16 big tile): slda=BLK_K+2, 16 lanes; even
+//     slda forces gcd(2*slda,32) >= 2, so the LOW/HIGH bank pair lands
+//     on distinct banks for all 16 lanes only when 2*slda has order >=16
+//     mod 32. With BLK_K=16 -> slda=18 -> 36 mod 32 = 4 -> 8-distinct
+//     -> 2-way conflict. Accepted in V2: still beats scalar LDS by ~VK/2,
+//     and removing the conflict requires a swizzled layout (Step 2).
+//   sB inner-loop read uses idy-strided lanes; with DIM_Y in {8,16} the
+//     warp covers only 2-4 distinct n_col values, broadcast factor >= 8
+//     -> always conflict-free regardless of sldb.
 #define sA(i, j) sA[(i)*slda + (j)]
 #define sB(i, j) sB[(j)*sldb + (i)]
 #define fetch(A, m, n, bound) offs_d##A[min(n * LD##A + m, bound)]
@@ -37,7 +50,7 @@ template <typename T,
           int DIM_YB,
           int THR_M,
           int THR_N>
-static __device__ void vbatched_gemm_nt_device(int M,
+static __device__ void vbatched_gemm_nn_device(int M,
                                                int N,
                                                int K,
                                                const T* __restrict__ A,
@@ -55,18 +68,23 @@ static __device__ void vbatched_gemm_nt_device(int M,
     using vec_t = typename gemm_vec_traits<T>::vec_t;
     constexpr int VK = gemm_vec_traits<T>::VK;
 
+    // V1 contract: BLK_K must be a whole number of VK chunks so the
+    // vectorized FMA loop below covers it cleanly. PAD makes slda * 8/4
+    // a multiple of 16 (LDS alignment) -- enforced at the kernel scope.
     static_assert(BLK_K % VK == 0,
                   "BLK_K must be divisible by VK (16 / sizeof(T))");
 
-    // Tile-divisibility (Phase V3 audit): same checks as gemm_nn_vbatch.
-    // sB load loop in TN traverses (BLK_K rows x BLK_N cols), so the
-    // divisibility constraints on DIM_XB / DIM_YB are mirrored.
+    // Tile-divisibility (Phase V3 audit): every dev->shmem load loop
+    // assumes the BLK_* dim is an exact multiple of the corresponding
+    // DIM_*, and the per-thread fan-out THR_M/N is BLK_M/N / DIM_X/Y.
+    // A mis-spec'd new template instantiation would silently load
+    // garbage; these asserts surface it at compile time.
     static_assert(BLK_M % DIM_X  == 0, "BLK_M must be divisible by DIM_X");
     static_assert(BLK_N % DIM_Y  == 0, "BLK_N must be divisible by DIM_Y");
     static_assert(BLK_M % DIM_XA == 0, "BLK_M must be divisible by DIM_XA");
     static_assert(BLK_K % DIM_YA == 0, "BLK_K must be divisible by DIM_YA");
-    static_assert(BLK_N % DIM_XB == 0, "BLK_N must be divisible by DIM_XB");
-    static_assert(BLK_K % DIM_YB == 0, "BLK_K must be divisible by DIM_YB");
+    static_assert(BLK_K % DIM_XB == 0, "BLK_K must be divisible by DIM_XB");
+    static_assert(BLK_N % DIM_YB == 0, "BLK_N must be divisible by DIM_YB");
     static_assert(DIM_XA * DIM_YA == DIM_X * DIM_Y,
                   "A-loader thread grid must cover the whole block");
     static_assert(DIM_XB * DIM_YB == DIM_X * DIM_Y,
@@ -86,7 +104,7 @@ static __device__ void vbatched_gemm_nt_device(int M,
     int blx = blockIdx.x; // block's m dimension
     int bly = blockIdx.y; // block's n dimension
 
-    // Accumulator tile (registers).
+    // Accumulator tile (registers). Layout matches the original.
     T rC[THR_N][THR_M];
 
     // Per-VK-step shmem->reg tiles. One LDS feeds VK FMAs per (m,n).
@@ -95,7 +113,7 @@ static __device__ void vbatched_gemm_nt_device(int M,
 
     // Registers for the dev->shmem copy (next-K-tile prefetch).
     T ra[BLK_K / DIM_YA][BLK_M / DIM_XA];
-    T rb[BLK_K / DIM_YB][BLK_N / DIM_XB];
+    T rb[BLK_N / DIM_YB][BLK_K / DIM_XB];
 
     // bound is the correction to offs_d in order to not get out of memory bound
     // so bound could be negative value since offs_d could be out of bound
@@ -103,9 +121,9 @@ static __device__ void vbatched_gemm_nt_device(int M,
     int boundA
         = (LDA * (K - 1) + M) - (blx * BLK_M + idyA * LDA + idxA) - 1;
 
-    const T* offs_dB = B + bly * BLK_N + idyB * LDB + idxB;
+    const T* offs_dB = B + bly * BLK_N * LDB + idyB * LDB + idxB;
     int boundB
-        = (LDB * (K - 1) + N) - (bly * BLK_N + idyB * LDB + idxB) - 1;
+        = (LDB * (N - 1) + K) - (bly * BLK_N * LDB + idyB * LDB + idxB) - 1;
 
     int m, n, k, kk;
 
@@ -132,12 +150,12 @@ static __device__ void vbatched_gemm_nt_device(int M,
     }
 
 #pragma unroll
-    for (n = 0; n < BLK_K; n += DIM_YB)
+    for (n = 0; n < BLK_N; n += DIM_YB)
     {
 #pragma unroll
-        for (m = 0; m < BLK_N; m += DIM_XB)
+        for (m = 0; m < BLK_K; m += DIM_XB)
         {
-            sB(n + idyB, m + idxB) = fetch(B, m, n, boundB);
+            sB(m + idxB, n + idyB) = fetch(B, m, n, boundB);
         }
     }
 
@@ -148,8 +166,8 @@ static __device__ void vbatched_gemm_nt_device(int M,
         offs_dA += BLK_K * LDA;
         boundA -= BLK_K * LDA;
 
-        offs_dB += BLK_K * LDB;
-        boundB -= BLK_K * LDB;
+        offs_dB += BLK_K;
+        boundB -= BLK_K;
 
 // Load A dev->regs
 #pragma unroll
@@ -164,10 +182,10 @@ static __device__ void vbatched_gemm_nt_device(int M,
 
 // Load B dev->regs
 #pragma unroll
-        for (n = 0; n < BLK_K / DIM_YB; n++)
+        for (n = 0; n < BLK_N / DIM_YB; n++)
         {
 #pragma unroll
-            for (m = 0; m < BLK_N / DIM_XB; m++)
+            for (m = 0; m < BLK_K / DIM_XB; m++)
             {
                 rb[n][m] = fetch(B, m * DIM_XB, n * DIM_YB, boundB);
             }
@@ -176,6 +194,8 @@ static __device__ void vbatched_gemm_nt_device(int M,
 // Wide-LDS FMA: VK FMAs per shmem read.
 //   FP32: LDS.128 (float4)  -> 4 FMAs per (m,n) per inner step
 //   FP64: LDS.64  (double2) -> 2 FMAs per (m,n) per inner step
+// Both rely on slda/sldb being 16-byte aligned (PAD math) and on BLK_K
+// being a whole number of VK chunks (static_assert above).
 #pragma unroll
         for (k = 0; k < BLK_K; k += VK)
         {
@@ -228,19 +248,20 @@ static __device__ void vbatched_gemm_nt_device(int M,
 
 // Load B regs->shmem
 #pragma unroll
-        for (n = 0; n < BLK_K / DIM_YB; n++)
+        for (n = 0; n < BLK_N / DIM_YB; n++)
         {
 #pragma unroll
-            for (m = 0; m < BLK_N / DIM_XB; m++)
+            for (m = 0; m < BLK_K / DIM_XB; m++)
             {
-                sB(n * DIM_YB + idyB, m * DIM_XB + idxB) = rb[n][m];
+                sB(m * DIM_XB + idxB, n * DIM_YB + idyB) = rb[n][m];
             }
         }
         __syncthreads();
     }
 
-    // Tail: scalar from the K-inner layout. Partial-K blocks can be odd
-    // (bxyz=27 -> tail 11; bxyz=125 -> tail 13), so don't try to vectorize.
+    // Tail: last full (BLK_K) or partial block. Scalar from the K-inner
+    // layout -- the partial-K block can land on an odd k count (e.g.
+    // bxyz=27 -> tail 11), so don't try to vectorize it.
     // It's okay that m,n exceed matrix bounds as all work is in registers
     // or shared memory, and out-of-bounds rC[n][m] will not be saved later.
     kk = K - kk;
@@ -303,7 +324,7 @@ template <typename T,
           int DIM_XB,
           int DIM_YB>
 __launch_bounds__(DIM_X * DIM_Y, 2)
-static __global__ void vbatched_gemm_nt_kernel(int M,
+static __global__ void vbatched_gemm_nn_kernel(int M,
                                               int N,
                                               int K,
                                               const T* const* global_A_array,
@@ -327,8 +348,8 @@ static __global__ void vbatched_gemm_nt_kernel(int M,
     static_assert(BLK_K % gemm_vec_traits<T>::VK == 0,
                   "BLK_K must be divisible by VK = 16 / sizeof(T)");
 
-    // V1 K-inner: slda = K-axis stride for sA (BLK_M rows of (BLK_K + PAD)),
-    // sldb = K-axis stride for sB (BLK_N cols of (BLK_K + PAD)).
+    // V1 K-inner: slda is the K-axis stride for sA (M-rows of (BLK_K + PAD)),
+    // sldb is the K-axis stride for sB (N-cols of (BLK_K + PAD)).
     int shared_lda = BLK_K + PAD;
     int shared_ldb = BLK_K + PAD;
     T* shared_A = (T*)shared_mem;
@@ -338,7 +359,7 @@ static __global__ void vbatched_gemm_nt_kernel(int M,
     {
         alpha_tmp = alpha[batchid];
     }
-    vbatched_gemm_nt_device<T,
+    vbatched_gemm_nn_device<T,
                            DIM_X,
                            DIM_Y,
                            BLK_M,
@@ -369,7 +390,7 @@ static __global__ void vbatched_gemm_nt_kernel(int M,
  * Performs a batched matrix multiplication using the vbatched_gemm_impl
  * function.
  *
- * C = alpha * trans(A) * B + C
+ * C = alpha * A * B + C
  * @tparam T The data type of the matrices.
  * @tparam DIM_X The number of threads in the x-dimension of each block.
  * @tparam DIM_Y The number of threads in the y-dimension of each block.
@@ -399,31 +420,6 @@ static __global__ void vbatched_gemm_nt_kernel(int M,
  * @param alpha The scalar value to multiply the matrices by (optional, default
  * is nullptr). generate by copilot
  */
-
-/*
- * Why do we need to implement our own matrix multiplication based on the magma
- * code? There are two main reasons. First is when we are doing batch matrix
- * multiplication, since we need to accumulate the results of the
- * multiplications, it is necessary to pass the same memory address of matrix C
- * to different multiplications. This way, the accumulation can be done directly
- * through atomic operations during the matrix multiplication, avoiding the
- * reduction operations after the multiplication. Secondly, when calculating the
- * charge density, where C = alpha * A * B + C, the value of alpha might be
- * different for the same batch of matrices. Using the standard matrix
- * multiplication interface would require breaking down the batch matrix
- * multiplication into smaller batches. In practice, it is difficult to
- * accumulate a batch.
- *
- * Moreover, taking into account the specific requirements of our application,
- * especially the fact that we can relatively easily control the arrangement of
- * the matrix elements, we have only implemented one type of requirement for
- * matrix transposition. That is, we have implemented the operation C = alpha *
- * A * trans(B) + C under the constraint of column-major order.
- *
- * Finally, we would like to thank Magma for its contributions to the field of
- * scientific computing.
- */
-
 template <typename T,
           int DIM_X,
           int DIM_Y,
@@ -434,7 +430,7 @@ template <typename T,
           int DIM_YA,
           int DIM_XB,
           int DIM_YB>
-void vbatched_gemm_tn_impl(int m,
+void vbatched_gemm_nn_impl(int m,
                            int n,
                            int k,
                            const T* const* global_A_array,
@@ -448,10 +444,10 @@ void vbatched_gemm_tn_impl(int m,
                            const T* alpha = nullptr)
 {
     // The positions of A and B have been swapped here.
-    // This is because vbatch_gemm__tn_kernel is column major,
-    // but vatched_gemm_nt_impl is designed to be row major,
+    // This is because vbatch_gemm_nn_kernel is column major,
+    // but vatched_gemm_nn_impl is designed to be row major,
 
-    // V1 K-inner shmem footprint (matches gemm_nn_vbatch_impl):
+    // V1 K-inner shmem footprint:
     //   sA: BLK_M rows of (BLK_K + PAD) elements
     //   sB: BLK_N cols of (BLK_K + PAD) elements
     constexpr int PAD = gemm_vec_traits<T>::PAD;
@@ -473,7 +469,7 @@ void vbatched_gemm_tn_impl(int m,
             alpha_tmp = alpha + i;
         }
 
-        vbatched_gemm_nt_kernel<T,
+        vbatched_gemm_nn_kernel<T,
                                 DIM_X,
                                 DIM_Y,
                                 BLK_M,
@@ -493,4 +489,94 @@ void vbatched_gemm_tn_impl(int m,
     }
 }
 
-#endif // GEMM_TN_VBATCH_CUH
+// ----------------------------------------------------------------------------
+// FP64 big-tile dispatch (Phase V4) and scalar tile-ladder dispatch.
+// Moved here from dgemm_vbatch.cu so the v2 stub in gemm_nn_vbatch_v2.cuh can
+// forward to the scalar dispatcher during Phase 1 / when v2 is unavailable.
+//
+// Pattern mirrors the C++11-compatible overload trick used in
+// gint_vl.cpp / gint_rho.cpp ("C++11-compatible alternative to if constexpr").
+// The non-template double overload is the preferred candidate when T = double;
+// the template fallback returns false for every other dtype so the FP32 path
+// stays untouched.
+// ----------------------------------------------------------------------------
+
+inline bool nn_try_big_tile_scalar_(
+    int m, int n, int k,
+    const double* const* A_array_d, const int* lda_d,
+    const double* const* B_array_d, const int* ldb_d,
+    double** C_array_d, const int* ldc_d,
+    int batchCount, cudaStream_t stream, const double* alpha)
+{
+    // 16x16 threads = 256, BLK_M=BLK_N=64, BLK_K=16. THR_M = THR_N = 4
+    // -> 16 FMAs per inner step, 32 with VK=2. Loaders use DIM_*A=DIM_*B=16.
+    if (n >= 48 && m >= 64) {
+        vbatched_gemm_nn_impl<double,
+                              /*DIM_X */ 16, /*DIM_Y */ 16,
+                              /*BLK_M */ 64, /*BLK_N */ 64, /*BLK_K*/ 16,
+                              /*DIM_XA*/ 16, /*DIM_YA*/ 16,
+                              /*DIM_XB*/ 16, /*DIM_YB*/ 16>(
+            m, n, k,
+            A_array_d, lda_d, B_array_d, ldb_d,
+            C_array_d, ldc_d, batchCount, stream, alpha);
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+inline bool nn_try_big_tile_scalar_(
+    int /*m*/, int /*n*/, int /*k*/,
+    const T* const* /*A*/, const int* /*lda*/,
+    const T* const* /*B*/, const int* /*ldb*/,
+    T** /*C*/, const int* /*ldc*/,
+    int /*batch*/, cudaStream_t /*stream*/, const T* /*alpha*/)
+{
+    return false;
+}
+
+// 4 x 2 ladder (8 instantiations), tuned for V100 / A100. See dgemm_vbatch.cu
+// history (5a01d6d9c, 475b227b4, 769b61c75, 323382f34) for the LDS-bound FP64
+// rationale: BLK_N in {32, 64} maximizes FMA/LDS at the wide-LDS inner loop;
+// BLK_M ∈ {8, 16, 32, 48} retains four rungs because the nw2 axis is tiny
+// (≤ 44) and a wrong-BLK_M wastes both FMAs and shmem bandwidth.
+template<typename T>
+void gemm_nn_vbatch_scalar_dispatch(
+    int m, int n, int k,
+    const T* const* A_array_d, const int* lda_d,
+    const T* const* B_array_d, const int* ldb_d,
+    T** C_array_d, const int* ldc_d,
+    int batchCount, cudaStream_t stream,
+    const T* alpha)
+{
+    if (nn_try_big_tile_scalar_(m, n, k,
+                                A_array_d, lda_d, B_array_d, ldb_d,
+                                C_array_d, ldc_d, batchCount, stream, alpha))
+    {
+        return;
+    }
+
+    #define NN_SCALAR_DISPATCH(BLK_M_, BLK_N_)                             \
+        vbatched_gemm_nn_impl<T, 8, 16, BLK_M_, BLK_N_, 16, 8, 16, 8, 16>( \
+            m, n, k,                                                       \
+            A_array_d, lda_d, B_array_d, ldb_d,                            \
+            C_array_d, ldc_d, batchCount, stream, alpha)
+
+    const int blk_m_tag = (n <= 8) ? 0 : (n <= 16) ? 1 : (n <= 32) ? 2 : 3;
+    const int blk_n_tag = (m < 48) ? 0 : 1;  // {32, 64}
+
+    switch (blk_m_tag * 2 + blk_n_tag) {
+        case 0: NN_SCALAR_DISPATCH( 8, 32); break;
+        case 1: NN_SCALAR_DISPATCH( 8, 64); break;
+        case 2: NN_SCALAR_DISPATCH(16, 32); break;
+        case 3: NN_SCALAR_DISPATCH(16, 64); break;
+        case 4: NN_SCALAR_DISPATCH(32, 32); break;
+        case 5: NN_SCALAR_DISPATCH(32, 64); break;
+        case 6: NN_SCALAR_DISPATCH(48, 32); break;
+        case 7: NN_SCALAR_DISPATCH(48, 64); break;
+    }
+
+    #undef NN_SCALAR_DISPATCH
+}
+
+#endif // GEMM_NN_VBATCH_SCALAR_CUH

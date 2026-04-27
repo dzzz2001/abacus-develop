@@ -422,3 +422,75 @@ Verified on RTX 3090 (sm_86):
 A100 perf check (user-arranged): bench `cal_gint_rho` improvement on the
 six-case suite. Phase 2 success bar = +10 % on FP64-double runs;
 realistic gain estimate per the plan is +10 – 30 %.
+
+---
+
+## Phase 3 status snapshot (2026-04-27)
+
+Done:
+- `gemm_tn_vbatch_v2.cuh` ships the FP64 mma kernel
+  (`gemm_tn_v2::mma_fp64_kernel<BLK_M, BLK_N>`) with three rungs selected by
+  N at host dispatch (BLK_M is fixed at 32):
+    - `(BLK_M, BLK_N) = (32, 16)` for N ≤ 16 (covers nw2 ∈ {4, 9, 13, 16}).
+    - `(BLK_M, BLK_N) = (32, 32)` for 16 < N ≤ 32 (covers nw2 ∈ {25, 27}).
+    - `(BLK_M, BLK_N) = (32, 56)` for N >  32 (covers nw2 ∈ {44, 50}).
+- One CTA per matrix; 128 threads = 4 warps × 8 m-rows. Each warp covers
+  exactly one m=8 mma stripe per K-step (M_STRIPES = 1, simpler than NN's
+  2-stripe layout). For M > 32 (nw1 ∈ {44, 50}) the CTA loops over m-strips
+  internally; sB stays resident across strips so B is only loaded once per
+  matrix, mirroring the NN v2 pattern.
+- Shmem layout: `sA[K_pad × BLK_M]` K-major M-inner +
+  `sB[K_pad × BLK_N]` K-major N-inner. K-major sA matches HBM (K × M)
+  row-major coalesced reads naturally; the mma A frag load is reformulated
+  as `sA[(k_base+lc)*BLK_M + (warp_row+lr)]` (per-lane scalar
+  `ld.shared.f64`, no ldmatrix.trans — that's a Phase 4 perf concern, see
+  plan §"TN kernel" Option B).
+- `cudaFuncSetAttribute(MaxDynamicSharedMemorySize, 96 KB)` opt-in once per
+  kernel symbol (gated by per-instantiation `static int`). Required because
+  the (32, 56) rung at K = 125 (case6 bxyz=125) hits ~88 KB. 96 KB is the
+  largest portable opt-in value that still fits sm_86's 99 KB per-block cap
+  (used for force-v2 correctness validation on the 3090); A100 / H100
+  caps are much higher (163 KB / 227 KB).
+- atomicAdd C with per-batch alpha, m/n boundary-masked. Bit-correct vs
+  CPU reference at atol=1e-10 / rtol=1e-12 across all 75 microbench TN
+  shapes.
+- FP32 v2 path deferred (matches NN): `tn_try_v2_<T>()` non-double overload
+  returns false, so FP32 falls through to the scalar dispatch unchanged.
+- Force-v2 env var (`ABACUS_GEMM_FORCE_V2_FP64=1`) extends to TN: it now
+  routes both NN and TN FP64 to the v2 mma kernels on any sm_80+ arch.
+
+Same Phase-2 deviations apply to Phase 3:
+- **m8n8k4 instead of m16n8k8** — sm_80 is the largest-supported FP64 mma
+  shape until sm_90; portability win, throughput-neutral on the
+  HBM-bound workload (see Phase 2 deviation note above for the PTX-spec
+  citation).
+- **Scalar shmem loads instead of cp.async** — single-stage, no pipelined
+  K-staging in Phase 3. cp.async + 2-stage ping-pong for K ≥ 64 is the
+  Phase 4 work item.
+
+Verified on RTX 3090 (sm_86):
+- Microbench (FP64): 150/150 shape sweeps pass under default routing
+  (scalar fallback) and another 150/150 with `ABACUS_GEMM_FORCE_V2_FP64=1`,
+  which exercises both v2 mma kernels (NN + TN). Max normalized residual
+  reported as 0.00e+00 (i.e., absolute residual ≤ atol=1e-10 across all
+  shapes). TN sweep covers M, N ∈ {9, 13, 25, 44, 50} × K ∈ {27, 64, 125} —
+  exercises the 32×16, 32×32, 32×56 rungs, the 2-strip M ∈ {44, 50} path,
+  and K-tail rounding for K ∈ {27, 125} (K_pad ∈ {28, 128}).
+- ABACUS case1 (FP64, bxyz=27, 4-species superalloy): scalar dispatch and
+  force-v2 dispatch (both NN and TN routed to v2) produce **bit-identical**
+  FINAL_ETOT to all 16 reported digits (-372620.3119351120549254 eV vs
+  -372620.3119351120549254 eV). With both NN and TN now active on the v2
+  arm, the FP64 SCF result is invariant to kernel choice on this case —
+  the Phase 2 5.8e-7 eV scalar/v2 delta has shrunk to floor (0 eV)
+  for this shape mix.
+- Per-timer breakdown (cal_gint_vl / cal_gint_rho / cal_gint_fvl):
+  v2 arm 99.1 / 144.7 / 143.6 s vs scalar arm 56.1 / 56.6 / 57.7 s on
+  sm_86. v2 is 1.8–2.6× slower because mma.f64 decodes at scalar FP64
+  rate on consumer Ampere (1 TFLOPS vs A100's 19.5 TFLOPS). Production
+  routing (`fp64_use_v2_kernel()`) keeps sm_86 on the scalar tile-ladder
+  unchanged; the v2 arm only activates on sm_80 / sm_90 where mma.f64 has
+  HW acceleration.
+
+A100 perf check (user-arranged): same six-case suite as Phase 2.
+Phase 3 success bar = +10 % on `cal_gint_vl` / `cal_gint_fvl`
+(TN-dominated timers); realistic gain estimate is +10 – 30 % per the plan.

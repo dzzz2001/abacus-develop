@@ -5,6 +5,8 @@
 #include "dgemm_vbatch.h"
 #include "source_base/module_device/device.h"
 
+#include <cstdlib>  // std::getenv
+
 // ----------------------------------------------------------------------------
 // SM-arch dispatch (Phase 1 scaffolding, Phase 2+ active)
 // ----------------------------------------------------------------------------
@@ -30,6 +32,15 @@ namespace {
 
 bool detect_fp64_use_v2()
 {
+    // Test override: ABACUS_GEMM_FORCE_V2_FP64=1 routes FP64 to v2 on any
+    // sm_80+ arch. mma.f64 PTX decodes on consumer Ampere/Ada at scalar
+    // FP64 rate, so the kernel is bit-correct (just slow) — used to validate
+    // the v2 kernel locally on RTX 3090 (sm_86) before A100 perf runs.
+    if (const char* env = std::getenv("ABACUS_GEMM_FORCE_V2_FP64"))
+    {
+        if (env[0] == '1') { return true; }
+    }
+
     int dev = 0;
     cudaGetDevice(&dev);
     cudaDeviceProp props;

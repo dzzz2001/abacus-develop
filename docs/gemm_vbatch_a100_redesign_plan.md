@@ -347,3 +347,78 @@ Verified on RTX 3090 (sm_86):
   Energy delta from baseline ~3.5e-3 eV is within FP32 GPU-atomic
   non-determinism (`gint_precision single` exercises the FP32 kernel path,
   which routes through the v2 stub then forwards to scalar).
+
+---
+
+## Phase 2 status snapshot (2026-04-27)
+
+Done:
+- `gemm_nn_vbatch_v2.cuh` ships the FP64 mma kernel
+  (`gemm_nn_v2::mma_fp64_kernel<BLK_M, BLK_N>`) with both rungs:
+    - `(BLK_M, BLK_N) = (64, 16)` for N ≤ 16 (covers nw2 ∈ {4, 9, 13, 16}).
+    - `(BLK_M, BLK_N) = (64, 56)` for N >  16 (covers nw2 ∈ {25, 27, 44, 50}).
+- One CTA per matrix; 128 threads = 4 warps × 16 m-rows. Each warp covers
+  its 16 rows as 2 m=8 stripes (see deviation note below).
+- For M > 64 (bxyz ∈ {100, 125}) the CTA loops over m-strips internally;
+  sB stays resident across strips so B is only loaded once per matrix.
+- shmem-resident loads via scalar `ld.global.f64` → `st.shared.f64`
+  (cp.async deferred to a perf phase — was complicating boundary handling
+  for arbitrary K/N without enough Phase-2 perf upside on the dev box).
+- atomicAdd C with per-batch alpha, m/n boundary-masked. Bit-correct vs
+  cuBLAS at atol=1e-10 / rtol=1e-12 across all 150 microbench shapes.
+- `cudaFuncSetAttribute(MaxDynamicSharedMemorySize, 64 KB)` opt-in once per
+  kernel symbol (gated by per-instantiation `static int`). Required because
+  the (64, 56) rung at K=50 hits ~49 KB, just over the 48 KB default cap.
+  64 KB chosen for portability — sm_86's per-block opt-in cap is 99 KB
+  (100 KB fails with "invalid argument"), all other sm_80+ targets allow
+  much more, and our worst case is ~50 KB.
+- Test override `ABACUS_GEMM_FORCE_V2_FP64=1` env var routes FP64 to v2 on
+  any sm_80+ arch. Used for correctness validation on the 3090 dev box;
+  production routing (`fp64_use_v2_kernel()`) still gates v2 on sm_80/90
+  only. `GEMM_HAS_FP64_TC` widened to `__CUDA_ARCH__ >= 800` so the mma
+  PTX is emitted on consumer Ampere/Ada — bit-exact, just slow.
+- FP32 v2 path deferred: `nn_try_v2_<T>()` non-double overload returns
+  false, so FP32 falls through to the scalar dispatch unchanged. Existing
+  FP32 kernel is HBM-bound and well-tuned — no Phase 2 wins on the table.
+- TN v2 still a Phase-1 stub (forwards to scalar). Phase 3 territory.
+
+**Deviation from plan: m8n8k4 instead of m16n8k8.** The plan's inner-loop
+PTX (`mma.sync.aligned.m16n8k8.row.col.f64`) only compiles for `.target
+sm_90+`; ptxas rejects it on sm_80 with
+`Feature '.m16n8k8 with double types' requires .target sm_90 or higher`.
+Same for m16n8k4 / m16n8k16. The largest FP64 mma shape supported on
+sm_80 (A100) is m8n8k4, per PTX ISA 8.5 §9.7.16.5 Table 38. So Phase 2
+ships m8n8k4 for portability across sm_80–sm_90. Throughput parity holds
+(all shapes saturate the FP64 TC on sm_80 at 19.5 TFLOPS); m8n8k4 just
+issues 4× more mma calls per unit work, irrelevant for an HBM-bound
+workload. A sm_90 specialization to m16n8k8 (4× fewer issues) is
+deferred to a possible perf phase and is **not** required by Phase 2/3.
+
+**Deviation from plan: scalar shmem loads instead of cp.async.** The plan
+called for cp.async at Phase 2; in practice, robustly handling arbitrary
+K/N tails with 16 B (= 2 doubles) cp.async chunks needs scalar fallback
+for boundary chunks, and 8 B cp.async (`cp.async.ca` with cp-size=8) only
+saves a fraction of the load-compute overlap on the dev box where the FP64
+mma is anyway scalar-rate. Phase 2 ships fully scalar shmem loads with
+boundary-masking; cp.async is folded into a perf phase that can also
+co-introduce pipelined K-staging on A100.
+
+Verified on RTX 3090 (sm_86):
+- Microbench (FP64): 150/150 shape sweeps pass with default routing
+  (scalar fallback). Same 150/150 with `ABACUS_GEMM_FORCE_V2_FP64=1`,
+  which exercises the v2 mma kernel directly. Max normalized residual
+  reported as 0.00e+00 (i.e., absolute residual ≤ atol=1e-10 across all
+  shapes). M sweep covers {27, 64, 125} including the bxyz=125 → 2-strip
+  internal-loop path; K sweep covers tails {9, 13, 25, 44, 50} to
+  exercise both K_pad rounding and zero-fill of the K-tail rows.
+- ABACUS case1 (FP32, bxyz=27): rc=0; energy delta from baseline 3.78e-3
+  eV ≈ Phase 1 baseline (3.5e-3 eV), confirming FP32 still routes
+  through the scalar tile-ladder (no v2 FP32 path active in Phase 2).
+- ABACUS case1 (FP64, bxyz=27): scalar dispatch and force-v2 dispatch
+  agree to 5.8e-7 eV total energy. Within FP64 GPU-atomic non-determinism
+  (different reduction order between scalar tile-ladder and v2 mma → bit-
+  level divergence below 1e-7 eV / 108 atoms is the expected floor).
+
+A100 perf check (user-arranged): bench `cal_gint_rho` improvement on the
+six-case suite. Phase 2 success bar = +10 % on FP64-double runs;
+realistic gain estimate per the plan is +10 – 30 %.

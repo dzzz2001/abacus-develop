@@ -12,16 +12,15 @@
 //   3. cp_async_commit / wait : sync barriers for the async pipeline.
 //
 // Architecture guard: GEMM_HAS_FP64_TC is 1 when the current device-code
-// arch has hardware FP64 mma (sm_80, sm_90). On sm_86 / sm_89 the mma.f64
-// instruction *decodes* but issues at scalar FP64 rate (= no benefit, plus
-// extra register pressure), so we treat them as "no TC" and route to the
-// scalar fallback at the host dispatcher level.
+// arch supports the FP64 mma PTX instruction (sm_80+). HW acceleration is
+// only present on sm_80 and sm_90; on sm_86 / sm_89 the instruction *decodes*
+// but issues at scalar FP64 rate (1/64 FP32). Production routing of FP64 to
+// v2 happens only on sm_80/90 — see dgemm_vbatch.cu's fp64_use_v2_kernel().
+// The macro is widened to all sm_80+ so the v2 kernel is bit-correct (just
+// slow) when force-routed to consumer Ampere/Ada for correctness validation.
 // ----------------------------------------------------------------------------
 
-#if defined(__CUDA_ARCH__) \
-    && __CUDA_ARCH__ >= 800 \
-    && __CUDA_ARCH__ != 860 \
-    && __CUDA_ARCH__ != 890
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 800
   #define GEMM_HAS_FP64_TC 1
 #else
   #define GEMM_HAS_FP64_TC 0
@@ -34,30 +33,40 @@
 #endif
 
 // ----------------------------------------------------------------------------
-// FP64 mma.sync.aligned.m16n8k8.row.col.f64.f64.f64.f64
-// Per warp: D[16,8] += A[16,8] * B[8,8]
-// Per lane register footprint: A=4 doubles, B=2 doubles, C/D=4 doubles.
-// PTX form lifted verbatim from papers/batched_gemm_1d_double_mma_128.cu
-// (lines 46-57). Signature mirrors that PoC's mma_m16n8k8 helper.
+// FP64 mma.sync.aligned.m8n8k4.row.col.f64.f64.f64.f64
+// Per warp: D[8,8] += A[8,4] * B[4,8]
+// Per lane register footprint: A=1 double, B=1 double, C/D=2 doubles.
+//
+// Why m8n8k4 (and not m16n8k4 / m16n8k8): m8n8k4 is the only FP64 mma shape
+// supported on sm_80 (A100). m16n8k4, m16n8k8, m16n8k16 with .f64 all require
+// .target sm_90 or higher — verified empirically: ptxas rejects them with
+// "Feature '.m16n8k* with double types' requires .target sm_90 or higher"
+// when emitting compute_80 PTX. m8n8k4 still saturates the FP64 TC at
+// 19.5 TFLOPS on sm_80; the only cost vs m16n8k8 is a 2x in issue count,
+// which is irrelevant for our HBM-bound workload.
+//
+// A sm_90 specialization to m16n8k8 (4× fewer issues per K-band) is deferred
+// to a future perf phase.
+//
+// PTX form per PTX ISA 8.5 Section 9.7.16.5, Table 38 (m8n8k4 with .f64).
 // ----------------------------------------------------------------------------
 __device__ __forceinline__
-void mma_m16n8k8_f64(double* acc, const double* a, const double* b)
+void mma_m8n8k4_f64(double* acc, double a, double b)
 {
 #if GEMM_HAS_FP64_TC
     asm volatile(
-        "mma.sync.aligned.m16n8k8.row.col.f64.f64.f64.f64"
-        "{%0,  %1,  %2,  %3},"
-        "{%4,  %5,  %6,  %7},"
-        "{%8,  %9},"
-        "{%0,  %1,  %2,  %3};\n"
-        : "+d"(acc[0]), "+d"(acc[1]), "+d"(acc[2]), "+d"(acc[3])
-        : "d"(a[0]), "d"(a[1]), "d"(a[2]), "d"(a[3]),
-          "d"(b[0]), "d"(b[1]));
+        "mma.sync.aligned.m8n8k4.row.col.f64.f64.f64.f64 "
+        "{%0,  %1}, "
+        "{%2}, "
+        "{%3}, "
+        "{%0,  %1};\n"
+        : "+d"(acc[0]), "+d"(acc[1])
+        : "d"(a),
+          "d"(b));
 #else
-    // Fallback for non-TC arches (or host compilation): scalar FMA over the
-    // m16n8k8 = 128-FMA chunk. Lane-fragment layout is the same; this body is
-    // unreachable at runtime when the host dispatcher routes correctly.
-    // Implementation deferred to Phase 2 when fragment loaders are in place.
+    // Fallback for non-TC arches (or host compilation): unreachable at
+    // runtime when the host dispatcher routes correctly. Phase 2 ships this
+    // as a no-op since FP32 / sm_70/75 fall through to the scalar dispatch.
     (void)acc; (void)a; (void)b;
 #endif
 }

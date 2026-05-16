@@ -243,7 +243,7 @@ void gemm_tn_vbatch(
     // DIM_X/DIM_Y/DIM_XA/DIM_YA/DIM_XB/DIM_YB = 8, so every
     // instantiation compiles to a valid kernel.
     #define TN_DISPATCH(BLK_M_, BLK_N_)                                 \
-        vbatched_gemm_tn_impl<T, 4, 8, BLK_M_, BLK_N_, 16, 4, 8, 4, 8>( \
+        vbatched_gemm_tn_impl<T, 4, 8, BLK_M_, BLK_N_, 32, 4, 8, 4, 8>( \
             m, n, k,                                                    \
             A_array_d, lda_d, B_array_d, ldb_d,                         \
             C_array_d, ldc_d, batchCount, stream, alpha)

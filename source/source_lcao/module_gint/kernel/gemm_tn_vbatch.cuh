@@ -302,7 +302,6 @@ template <typename T,
           int DIM_YA,
           int DIM_XB,
           int DIM_YB>
-__launch_bounds__(DIM_X * DIM_Y, 2)
 static __global__ void vbatched_gemm_nt_kernel(int M,
                                               int N,
                                               int K,
